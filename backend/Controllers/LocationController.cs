@@ -39,5 +39,21 @@ namespace backend.Controllers
             var locations = await _context.Locations.ToListAsync();
             return Ok(locations);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLocation(int id)
+        {
+            var location = await _context.Locations.FindAsync(id);
+            if (location == null)
+            {
+                return NotFound();
+            }
+
+            _context.Locations.Remove(location);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models
 {
@@ -10,6 +11,6 @@ namespace backend.Models
         public int UserID { get; set; }
         [Required]
         [Column("Comment")]
-        public string UserComment { get; set; }  
+        public string UserComment { get; set; }
     }
 }
