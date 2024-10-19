@@ -11,9 +11,10 @@ let currentRating : number = 0; // Selected rating
     const [hover, setHover] = useState(0); // Hovered star
     const [loading, setLoading] = useState(true); // Loading state
 
+    // Fetch rating from backend and update currentRating and stop loading
     useEffect(() => {
       const fetchRating = async () => {
-        const fetchedRating = await getRating(1, 7); // Replace with actual user ID and location ID
+        const fetchedRating = await getRating(1, 7); //TODO: Replace with actual user ID and location ID
         if (fetchedRating) {
           currentRating = fetchedRating.getRating();
         }else {
@@ -50,6 +51,7 @@ let currentRating : number = 0; // Selected rating
       const response = await axios.get<Rating>(url);
       const ratingData = response.data;
       console.log(ratingData);
+      // Have to use column names from the db so theres errors.
       let fetchedRating = new Rating(ratingData.userID, ratingData.locationID, ratingData.userRating);
       console.log(fetchedRating);
       return fetchedRating

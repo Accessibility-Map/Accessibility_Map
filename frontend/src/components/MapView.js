@@ -6,6 +6,7 @@ import {useState, useEffect} from 'react'
 import axios from 'axios'
 import {Button, Container} from 'semantic-ui-react'
 import {Icon} from 'leaflet'
+import StarRating from './StarRating.tsx'
 
 // Filter examples, replace with API later
 const filterExamples = [
@@ -182,6 +183,7 @@ const MapView = () => {
                 <p>id: {location.locationID}</p>
                 <p>latitude: {location.latitude}</p>
                 <p>longitude: {location.longitude}</p>
+                <StarRating/>
                 <button className='popup-button' onClick={() => deleteMarker(location.locationID)}>
                   Delete Location
                 </button>
