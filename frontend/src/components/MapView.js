@@ -91,7 +91,7 @@ const MapView = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get('http://localhost:5232/api/locations')
+        const response = await axios.get(process.env.REACT_APP_API_URL + 'api/locations')
         setLocations(response.data)
       } catch (error) {
         console.error('Error fetching locations:', error)
@@ -135,7 +135,7 @@ const MapView = () => {
     try {
       if (newMarker) {
         const markerWithDetails = {...newMarker, locationName}
-        const response = await axios.post('http://localhost:5232/api/locations', markerWithDetails)
+        const response = await axios.post(process.env.REACT_APP_API_URL + 'api/locations', markerWithDetails)
         setLocations([...locations, response.data])
         setNewMarker(null)
         setLocationName('')
@@ -147,7 +147,7 @@ const MapView = () => {
 
   const deleteMarker = async id => {
     try {
-      await axios.delete(`http://localhost:5232/api/locations/${id}`)
+      await axios.delete(process.env.REACT_APP_API_URL + `api/locations/${id}`)
       setLocations(locations.filter(location => location.locationID !== id))
     } catch (error) {
       console.error('Error deleting location:', error)
