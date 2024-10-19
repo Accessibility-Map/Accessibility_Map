@@ -12,6 +12,6 @@ namespace backend.Models
         public int UserID { get; set; }
         [Required]
         [Column("Comment")]
-        public string UserComment { get; set; }  
+        public string UserComment { get; set; }
     }
 }

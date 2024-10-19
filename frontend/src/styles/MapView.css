@@ -1,7 +1,71 @@
 /* MapView.css */
+
+/* Fixing the animation so it only applies on toggle */
+@keyframes slideIn {
+  0% {
+     transform: translateX(50px); 
+   
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50px); 
+  }
+}
+
 .map-container {
-  height: 100vh; /* Full viewport height */
-  width: 100%; /* Full width */
+  height: 100vh;
+  width: 100%;
   position: relative;
 }
-  
+
+.leaflet-container {
+  height: 100vh;
+  width: 100%;
+}
+.popup-content {
+  font-family: Arial, sans-serif;
+  color: #333;
+  text-align: left;
+}
+
+.popup-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.popup-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.popup-button:hover {
+  background-color: #0056b3;
+}
+
+.popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-form input[type="text"] {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
