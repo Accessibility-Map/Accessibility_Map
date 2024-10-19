@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000")  // Allow requests from React app
+            builder.WithOrigins("http://localhost:3000", "https://salmon-bush-*.azurestaticapps.net/")  // Allow requests from React app
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
