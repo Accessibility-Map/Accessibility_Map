@@ -17,6 +17,7 @@ builder.Services.AddCors(options =>
         });
 });
 
+var app = builder.Build();
 
 // Update DbContext to use MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -28,9 +29,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
-// Enable CORS before request pipeline
-app.UseCors("AllowSpecificOrigin");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -42,6 +40,10 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+
+// Enable CORS before request pipeline
+app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthorization();
 app.MapControllers();
