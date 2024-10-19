@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
 {
+    [PrimaryKey(nameof(UserID), nameof(LocationID))]
     public class Favorite
     {
-        [Key]
         public int UserID { get; set; }
-        [Key]
         public int LocationID { get; set; }
     }
 }
