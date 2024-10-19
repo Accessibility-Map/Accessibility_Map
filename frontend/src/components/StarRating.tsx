@@ -47,7 +47,7 @@ let currentRating : number = 0; // Selected rating
 
   async function getRating (userID: number, locationID: number): Promise<Rating | null> {
     try {
-      const url = `http://localhost:5232/api/ratings/${userID}/${locationID}`;
+      const url = process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}`;
       const response = await axios.get<Rating>(url);
       const ratingData = response.data;
       console.log(ratingData);
@@ -63,7 +63,7 @@ let currentRating : number = 0; // Selected rating
 
   async function setRating(userID: number, locationID: number, rating: number) {
     try {
-      const url = `http://localhost:5232/api/ratings/${userID}/${locationID}/${rating}`;
+      const url = process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}/${rating}`;
       await axios.put(url);
     } catch (error) {
       console.error('Error setting rating:', error);
@@ -72,7 +72,7 @@ let currentRating : number = 0; // Selected rating
 
   async function createRating(userID: number, locationID: number, rating: number) {
     try {
-      const url = `http://localhost:5232/api/ratings/${userID}/${locationID}/${rating}`;
+      const url = process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}/${rating}`;
       await axios.post(url);
     } catch (error) {
       console.error('Error creating rating:', error);
