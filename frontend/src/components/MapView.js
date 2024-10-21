@@ -180,8 +180,8 @@ const MapView = () => {
               <div className='popup-content'>
                 <div className='popup-header'>{location.locationName}</div>
                 <p>id: {location.locationID}</p>
-                <p>latitude: {location.latitude}</p>
-                <p>longitude: {location.longitude}</p>
+               {/*  <p>latitude: {location.latitude}</p>
+                <p>longitude: {location.longitude}</p> */}
                 <StarRating/>
                 <button className='popup-button' onClick={() => deleteMarker(location.locationID)}>
                   Delete Location
