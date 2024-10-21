@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000")  // Allow requests from React app
+            builder.WithOrigins("http://localhost:3000", "https://salmon-bush-*.azurestaticapps.net/")  // Allow requests from React app
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -29,8 +29,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-// Enable CORS before request pipeline
-app.UseCors("AllowSpecificOrigin");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -42,6 +41,19 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+
+// Enable CORS before request pipeline
+app.UseCors("AllowSpecificOrigin");
+
+app.Use(async (context, next) => {
+    context.Response.OnStarting(() => {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        return Task.FromResult(0);
+    });
+
+    await next();
+});
 
 app.UseAuthorization();
 app.MapControllers();

@@ -1,16 +1,27 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace backend.Models
 {
+    [PrimaryKey(nameof(UserID), nameof(LocationID))]
     public class Rating
     {
-        [Key]
+
         public int UserID { get; set; }
-        [Key]
         public int LocationID { get; set; }
         [Required]
         [Column("Rating")]
-        public sbyte UserRating { get; set; }
+        public int UserRating { get; set; }
+
+        public Rating() { }
+
+        public Rating(int userID, int locationID, int userRating)
+        {
+            UserID = userID;
+            LocationID = locationID;
+            UserRating = userRating;
+        }
     }
 }

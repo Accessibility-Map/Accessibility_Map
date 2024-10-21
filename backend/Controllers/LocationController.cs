@@ -54,6 +54,36 @@ namespace backend.Controllers
 
             return NoContent();
         }
+    [HttpGet("dto")]
+    public ActionResult<IEnumerable<LocationDto>> GetLocationsDto()
+    {
+        var locations = _context.Locations
+            .Select(l => new LocationDto
+            {
+                LocationID = l.LocationID,
+                LocationName = l.LocationName,
+                AccessibilityDescription = l.AccessibilityDescription,
+            })
+            .ToList();
+
+        return Ok(locations);
+    }
+
+    [HttpGet("mapdata")]
+public ActionResult<IEnumerable<LocationMapDto>> GetMapLocations()
+{
+    var locations = _context.Locations
+        .Select(l => new LocationMapDto
+        {
+            LocationID = l.LocationID,
+            LocationName = l.LocationName,
+            Latitude = l.Latitude,
+            Longitude = l.Longitude
+        })
+        .ToList();
+
+    return Ok(locations);
+}
 
     }
 }

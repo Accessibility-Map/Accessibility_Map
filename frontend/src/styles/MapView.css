@@ -1,3 +1,27 @@
+/* MapView.css */
+
+/* Fixing the animation so it only applies on toggle */
+@keyframes slideIn {
+  0% {
+    transform: translateX(50px);
+
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(50px);
+  }
+}
+
 .map-container {
   height: 100vh;
   width: 100%;
@@ -8,7 +32,6 @@
   height: 100vh;
   width: 100%;
 }
-
 
 .popup-content {
   font-family: Arial, sans-serif;

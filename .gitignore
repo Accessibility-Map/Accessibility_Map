@@ -26,3 +26,5 @@ yarn-error.log*
 bin/
 obj/
 .vs
+Accessibility_Map.sln
+.env*.local

@@ -1,4 +1,4 @@
-.search-bar {
+/* .search-bar {
     display: flex;
     justify-content: space-between;
     padding: 10px;
@@ -17,4 +17,10 @@ input {
     border: none;
     font-size: 24px;
     color: #ffffff;
-}
+} */
+ /* Hide the element if the screen width is less than 600px */
+@media (max-width: 1200px) {
+    .hide-on-small {
+      display: none;
+    }
+  }
