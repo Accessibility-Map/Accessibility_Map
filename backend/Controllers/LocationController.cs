@@ -54,36 +54,26 @@ namespace backend.Controllers
 
             return NoContent();
         }
-//     [HttpGet("dto")]
-//     public ActionResult<IEnumerable<LocationDto>> GetLocationsDto()
-//     {
-//         var locations = _context.Locations
-//             .Select(l => new LocationDto
-//             {
-//                 LocationID = l.LocationID,
-//                 LocationName = l.LocationName,
-//                 AccessibilityDescription = l.AccessibilityDescription,
-//             })
-//             .ToList();
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLocation(int id, [FromBody] Location updatedLocation)
+        {
+            var location = await _context.Locations.FindAsync(id);
+            if (location == null)
+            {
+                return NotFound();
+            }
 
-//         return Ok(locations);
-//     }
+            // Update the location's details
+            location.LocationName = updatedLocation.LocationName;
 
-//     [HttpGet("mapdata")]
-// public ActionResult<IEnumerable<LocationMapDto>> GetMapLocations()
-// {
-//     var locations = _context.Locations
-//         .Select(l => new LocationMapDto
-//         {
-//             LocationID = l.LocationID,
-//             LocationName = l.LocationName,
-//             Latitude = l.Latitude,
-//             Longitude = l.Longitude
-//         })
-//         .ToList();
+            location.AccessibilityFeatures = updatedLocation.AccessibilityFeatures;
+            location.Pictures = updatedLocation.Pictures;
+            location.AccessibilityDescriptions = updatedLocation.AccessibilityDescriptions;
 
-//     return Ok(locations);
-// }
+            await _context.SaveChangesAsync();
+
+            return Ok(location);
+        }
 
     }
 }
