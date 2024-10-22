@@ -9,9 +9,33 @@ import {
 import "../styles/MapView.css"; // Link to external CSS
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
-import { Button, Container } from "semantic-ui-react";
+import { Button } from "semantic-ui-react";
 import { Icon } from "leaflet";
 import StarRating from "./StarRating.tsx";
+
+const filterExamples = [
+  {
+    id: 1,
+    locationID: 7,
+    feature: "Elevator",
+    notes: "Located on 1-5 floor, east side of the building",
+  },
+  {
+    id: 2,
+    locationID: 6,
+    feature: "Ramp",
+    notes: "West entrance of the building",
+  },
+  {
+    id: 3,
+    locationID: 14,
+    feature: "Restroom",
+    notes: "Equipped in every bathroom",
+  },
+];
+
+// Available filter options
+const filterOptions = ["Ramp", "Elevator", "Parking", "Restroom"];
 
 const UCCoordinates = [39.1317, -84.515]; // University of Cincinnati coordinates
 
@@ -42,9 +66,9 @@ const MapView = () => {
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
   const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState([]); // State to manage selected filters
   const [editingLocation, setEditingLocation] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);  // State to track if in editing mode
+  const [isEditing, setIsEditing] = useState(false);  // New state for editing mode
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -60,9 +84,16 @@ const MapView = () => {
     fetchLocations();
   }, []);
 
-  // Filter matching logic
-  const matchesFilters = (item) => {
-    return true; // Assuming no filter logic for now
+  // Filter logic based on selected filters
+  const matchesFilters = (location) => {
+    const locationFeatures = filterExamples
+      .filter((f) => f.locationID === location.locationID)
+      .map((f) => f.feature);
+
+    if (selectedFilters.length === 0) {
+      return true; // Show all locations if no filters are selected
+    }
+    return selectedFilters.some((filter) => locationFeatures.includes(filter));
   };
 
   // Handle filter toggle
@@ -79,14 +110,12 @@ const MapView = () => {
     const matchesSearchTerm = item.locationName
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    return matchesSearchTerm && matchesFilters(item);
+    return matchesSearchTerm && matchesFilters(item); // Include filter matching logic
   });
 
   const handleAddMarker = (location) => {
-    // Only set a new marker if not editing
     if (!isEditing) {
       setNewMarker(location);
-      // Reset form fields
       setLocationName("");
       setAccessibilityFeatures("");
       setAccessibilityDescriptions("");
@@ -159,7 +188,7 @@ const MapView = () => {
 
   return (
     <div>
-      <Container style={styles.container}>
+      <div style={styles.container}>
         <div style={styles.searchBarContainer}>
           <input
             type="text"
@@ -168,8 +197,29 @@ const MapView = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={styles.searchInput}
           />
+          <div style={styles.filters}>
+            {filterOptions.map((filter) => (
+              <Button
+                key={filter}
+                className={`filter-button ${
+                  selectedFilters.includes(filter) ? "selected" : ""
+                }`}
+                style={{
+                  ...styles.filterButton,
+                  backgroundColor: selectedFilters.includes(filter)
+                    ? "#007bff"
+                    : "#fff",
+                  color: selectedFilters.includes(filter) ? "#fff" : "#000",
+                  transition: "background-color 0.3s ease",
+                }}
+                onClick={() => toggleFilter(filter)}
+              >
+                {filter}
+              </Button>
+            ))}
+          </div>
         </div>
-      </Container>
+      </div>
 
       <MapContainer
         center={UCCoordinates}
@@ -248,7 +298,7 @@ const MapView = () => {
           </Marker>
         ))}
 
-        {newMarker && (
+        {newMarker && !isEditing && (
           <Marker
             position={[newMarker.latitude, newMarker.longitude]}
             icon={customMarkerIcon}
@@ -319,6 +369,19 @@ const styles = {
     border: "none",
     outline: "none",
     width: "400px",
+  },
+  filters: {
+    display: "flex",
+    gap: "10px",
+    marginLeft: "20px",
+  },
+  filterButton: {
+    borderRadius: "20px",
+    border: "none",
+    padding: "10px 15px",
+    fontSize: "15px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    cursor: "pointer",
   },
 };
 
