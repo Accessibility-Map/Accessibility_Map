@@ -13,9 +13,6 @@ import { Button, Container } from "semantic-ui-react";
 import { Icon } from "leaflet";
 import StarRating from "./StarRating.tsx";
 
-// Available filter options
-const filterOptions = ["Ramp", "Elevator", "Parking", "Restroom"];
-
 const UCCoordinates = [39.1317, -84.515]; // University of Cincinnati coordinates
 
 // Custom Marker Icon
@@ -47,11 +44,14 @@ const MapView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [editingLocation, setEditingLocation] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);  // State to track if in editing mode
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/locations`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/locations`
+        );
         setLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -62,8 +62,7 @@ const MapView = () => {
 
   // Filter matching logic
   const matchesFilters = (item) => {
-    return selectedFilters.length === 0 || selectedFilters.some((filter) => 
-      item.accessibilityFeatures?.includes(filter));
+    return true; // Assuming no filter logic for now
   };
 
   // Handle filter toggle
@@ -84,10 +83,14 @@ const MapView = () => {
   });
 
   const handleAddMarker = (location) => {
-    setNewMarker(location);
-    setLocationName("");
-    setAccessibilityFeatures("");
-    setAccessibilityDescriptions("");
+    // Only set a new marker if not editing
+    if (!isEditing) {
+      setNewMarker(location);
+      // Reset form fields
+      setLocationName("");
+      setAccessibilityFeatures("");
+      setAccessibilityDescriptions("");
+    }
   };
 
   const saveMarker = async () => {
@@ -104,7 +107,7 @@ const MapView = () => {
           markerWithDetails
         );
         setLocations([...locations, response.data]);
-        setNewMarker(null);
+        setNewMarker(null); // Clear the new marker
       }
     } catch (error) {
       console.error("Error saving marker:", error);
@@ -116,25 +119,30 @@ const MapView = () => {
     setLocationName(location.locationName);
     setAccessibilityFeatures(location.accessibilityFeatures);
     setAccessibilityDescriptions(location.accessibilityDescriptions);
+    setIsEditing(true);  // Set to editing mode
   };
 
   const saveEdit = async () => {
     try {
-      const updatedLocation = {
-        ...editingLocation,
-        locationName,
-        accessibilityFeatures,
-        accessibilityDescriptions,
-      };
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/locations/${editingLocation.locationID}`,
-        updatedLocation
-      );
-      const updatedLocations = locations.map((location) =>
-        location.locationID === editingLocation.locationID ? response.data : location
-      );
-      setLocations(updatedLocations);
-      setEditingLocation(null);
+      if (editingLocation) {
+        const updatedLocation = {
+          ...editingLocation,
+          locationName,
+          accessibilityFeatures,
+          accessibilityDescriptions,
+        };
+        const response = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/locations/${editingLocation.locationID}`,
+          updatedLocation
+        );
+        // Update the list of locations with the new data
+        const updatedLocations = locations.map((location) =>
+          location.locationID === editingLocation.locationID ? response.data : location
+        );
+        setLocations(updatedLocations);
+        setEditingLocation(null);
+        setIsEditing(false);  // Exit editing mode
+      }
     } catch (error) {
       console.error("Error updating location:", error);
     }
@@ -160,26 +168,6 @@ const MapView = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={styles.searchInput}
           />
-          <div style={styles.filters}>
-            {filterOptions.map((filter) => (
-              <Button
-                key={filter}
-                className={`filter-button ${
-                  selectedFilters.includes(filter) ? "selected" : ""
-                }`}
-                style={{
-                  ...styles.filterButton,
-                  backgroundColor: selectedFilters.includes(filter)
-                    ? "#007bff"
-                    : "#fff",
-                  color: selectedFilters.includes(filter) ? "#fff" : "#000",
-                }}
-                onClick={() => toggleFilter(filter)}
-              >
-                {filter}
-              </Button>
-            ))}
-          </div>
         </div>
       </Container>
 
@@ -200,7 +188,7 @@ const MapView = () => {
           >
             <Popup>
               <div className="popup-content">
-                {editingLocation?.locationID === location.locationID ? (
+                {isEditing && editingLocation?.locationID === location.locationID ? (
                   <>
                     <div className="popup-header">Edit Location</div>
                     <form className="popup-form">
@@ -331,19 +319,6 @@ const styles = {
     border: "none",
     outline: "none",
     width: "400px",
-  },
-  filters: {
-    display: "flex",
-    gap: "10px",
-    marginLeft: "20px",
-  },
-  filterButton: {
-    borderRadius: "20px",
-    border: "none",
-    padding: "10px 15px",
-    fontSize: "15px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-    cursor: "pointer",
   },
 };
 
