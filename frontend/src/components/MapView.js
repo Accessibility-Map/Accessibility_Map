@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -8,33 +8,10 @@ import {
 } from "react-leaflet";
 import "../styles/MapView.css"; // Link to external CSS
 import "leaflet/dist/leaflet.css";
-import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button, Container } from "semantic-ui-react";
 import { Icon } from "leaflet";
 import StarRating from "./StarRating.tsx";
-
-// Filter examples, replace with API later
-const filterExamples = [
-  {
-    id: 1,
-    locationID: 7,
-    feature: "Elevator",
-    notes: "Located on 1-5 floor, east side of the building",
-  },
-  {
-    id: 2,
-    locationID: 6,
-    feature: "Ramp",
-    notes: "West entrance of the building",
-  },
-  {
-    id: 3,
-    locationID: 14,
-    feature: "Restroom",
-    notes: "Equipped in every bathroom",
-  },
-];
 
 // Available filter options
 const filterOptions = ["Ramp", "Elevator", "Parking", "Restroom"];
@@ -60,60 +37,21 @@ const AddMarkerOnClick = ({ onAddMarker }) => {
   return null;
 };
 
-// SearchBar Component
-const SearchBar = ({ searchTerm, onChange }) => {
-  return (
-    <input
-      type="text"
-      placeholder="Search for accessible places..."
-      value={searchTerm}
-      onChange={onChange}
-      style={styles.searchInput}
-    />
-  );
-};
-
-// FilterButtons Component
-const FilterButtons = ({ filters, selectedFilters, toggleFilter }) => {
-  return (
-    <div style={styles.filters}>
-      {filters.map((filter) => (
-        <Button
-          key={filter}
-          className={`filter-button ${
-            selectedFilters.includes(filter) ? "selected" : ""
-          }`}
-          style={{
-            ...styles.filterButton,
-            backgroundColor: selectedFilters.includes(filter)
-              ? "#007bff"
-              : "#fff",
-            color: selectedFilters.includes(filter) ? "#fff" : "#000",
-            transition: "background-color 0.3s ease",
-          }}
-          onClick={() => toggleFilter(filter)}
-        >
-          {filter}
-        </Button>
-      ))}
-    </div>
-  );
-};
-
 // Main MapView Component
 const MapView = () => {
   const [locations, setLocations] = useState([]);
   const [newMarker, setNewMarker] = useState(null);
   const [locationName, setLocationName] = useState("");
+  const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
+  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [editingLocation, setEditingLocation] = useState(null);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(
-          process.env.REACT_APP_API_URL + "api/locations"
-        );
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/locations`);
         setLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -124,14 +62,8 @@ const MapView = () => {
 
   // Filter matching logic
   const matchesFilters = (item) => {
-    const locationFeatures = filterExamples
-      .filter((f) => f.locationID === item.locationID)
-      .map((f) => f.feature);
-
-    if (selectedFilters.length === 0) {
-      return true;
-    }
-    return selectedFilters.some((filter) => locationFeatures.includes(filter));
+    return selectedFilters.length === 0 || selectedFilters.some((filter) => 
+      item.accessibilityFeatures?.includes(filter));
   };
 
   // Handle filter toggle
@@ -153,28 +85,64 @@ const MapView = () => {
 
   const handleAddMarker = (location) => {
     setNewMarker(location);
+    setLocationName("");
+    setAccessibilityFeatures("");
+    setAccessibilityDescriptions("");
   };
 
   const saveMarker = async () => {
     try {
       if (newMarker) {
-        const markerWithDetails = { ...newMarker, locationName };
+        const markerWithDetails = {
+          ...newMarker,
+          locationName,
+          accessibilityFeatures,
+          accessibilityDescriptions,
+        };
         const response = await axios.post(
-          process.env.REACT_APP_API_URL + "api/locations",
+          `${process.env.REACT_APP_API_URL}/api/locations`,
           markerWithDetails
         );
         setLocations([...locations, response.data]);
         setNewMarker(null);
-        setLocationName("");
       }
     } catch (error) {
       console.error("Error saving marker:", error);
     }
   };
 
+  const handleEditClick = (location) => {
+    setEditingLocation(location);
+    setLocationName(location.locationName);
+    setAccessibilityFeatures(location.accessibilityFeatures);
+    setAccessibilityDescriptions(location.accessibilityDescriptions);
+  };
+
+  const saveEdit = async () => {
+    try {
+      const updatedLocation = {
+        ...editingLocation,
+        locationName,
+        accessibilityFeatures,
+        accessibilityDescriptions,
+      };
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/locations/${editingLocation.locationID}`,
+        updatedLocation
+      );
+      const updatedLocations = locations.map((location) =>
+        location.locationID === editingLocation.locationID ? response.data : location
+      );
+      setLocations(updatedLocations);
+      setEditingLocation(null);
+    } catch (error) {
+      console.error("Error updating location:", error);
+    }
+  };
+
   const deleteMarker = async (id) => {
     try {
-      await axios.delete(process.env.REACT_APP_API_URL + `api/locations/${id}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/locations/${id}`);
       setLocations(locations.filter((location) => location.locationID !== id));
     } catch (error) {
       console.error("Error deleting location:", error);
@@ -185,15 +153,33 @@ const MapView = () => {
     <div>
       <Container style={styles.container}>
         <div style={styles.searchBarContainer}>
-          <SearchBar
-            searchTerm={searchTerm}
+          <input
+            type="text"
+            placeholder="Search for accessible places..."
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchInput}
           />
-          <FilterButtons
-            filters={filterOptions}
-            selectedFilters={selectedFilters}
-            toggleFilter={toggleFilter}
-          />
+          <div style={styles.filters}>
+            {filterOptions.map((filter) => (
+              <Button
+                key={filter}
+                className={`filter-button ${
+                  selectedFilters.includes(filter) ? "selected" : ""
+                }`}
+                style={{
+                  ...styles.filterButton,
+                  backgroundColor: selectedFilters.includes(filter)
+                    ? "#007bff"
+                    : "#fff",
+                  color: selectedFilters.includes(filter) ? "#fff" : "#000",
+                }}
+                onClick={() => toggleFilter(filter)}
+              >
+                {filter}
+              </Button>
+            ))}
+          </div>
         </div>
       </Container>
 
@@ -214,22 +200,61 @@ const MapView = () => {
           >
             <Popup>
               <div className="popup-content">
-                <div className="popup-header">{location.locationName}</div>
-                <p>id: {location.locationID}</p>
-                {location.accessibilityDescriptions ? (
-                  <p>description: {location.accessibilityDescriptions}</p>
+                {editingLocation?.locationID === location.locationID ? (
+                  <>
+                    <div className="popup-header">Edit Location</div>
+                    <form className="popup-form">
+                      <input
+                        type="text"
+                        placeholder="Location Name"
+                        value={locationName}
+                        onChange={(e) => setLocationName(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Accessibility Features"
+                        value={accessibilityFeatures}
+                        onChange={(e) =>
+                          setAccessibilityFeatures(e.target.value)
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Accessibility Description"
+                        value={accessibilityDescriptions}
+                        onChange={(e) =>
+                          setAccessibilityDescriptions(e.target.value)
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="popup-button"
+                        onClick={saveEdit}
+                      >
+                        Save Changes
+                      </button>
+                    </form>
+                  </>
                 ) : (
-                  <p>No accessibility description available.</p>
+                  <>
+                    <div className="popup-header">{location.locationName}</div>
+                    <p>Features: {location.accessibilityFeatures}</p>
+                    <p>Description: {location.accessibilityDescriptions}</p>
+                    <StarRating />
+                    <button
+                      className="popup-button"
+                      onClick={() => deleteMarker(location.locationID)}
+                    >
+                      Delete Location
+                    </button>
+                    <button
+                      className="popup-button"
+                      onClick={() => handleEditClick(location)}
+                    >
+                      Edit Location
+                    </button>
+                  </>
                 )}
-                <p>features: {location.accessibilityFeatures}</p>
-
-                <StarRating />
-                <button
-                  className="popup-button"
-                  onClick={() => deleteMarker(location.locationID)}
-                >
-                  Delete Location
-                </button>
               </div>
             </Popup>
           </Marker>
@@ -250,6 +275,20 @@ const MapView = () => {
                     value={locationName}
                     onChange={(e) => setLocationName(e.target.value)}
                   />
+                  <input
+                    type="text"
+                    placeholder="Accessibility Features"
+                    value={accessibilityFeatures}
+                    onChange={(e) => setAccessibilityFeatures(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Accessibility Description"
+                    value={accessibilityDescriptions}
+                    onChange={(e) =>
+                      setAccessibilityDescriptions(e.target.value)
+                    }
+                  />
                   <button
                     type="button"
                     className="popup-button"
@@ -269,7 +308,6 @@ const MapView = () => {
   );
 };
 
-// Styles
 const styles = {
   container: {
     position: "absolute",
@@ -310,8 +348,3 @@ const styles = {
 };
 
 export default MapView;
-
-{
-  /*  <p>latitude: {location.latitude}</p>
-                <p>longitude: {location.longitude}</p> */
-}
