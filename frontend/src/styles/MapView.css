@@ -55,7 +55,8 @@
   border-radius: 4px;
   margin-top: 5px;
 }
-.popup-button-delete{
+
+.popup-button-delete {
   background-color: #ff0000;
   color: white;
   border: none;
@@ -65,6 +66,7 @@
   border-radius: 4px;
   margin-top: 5px;
 }
+
 .popup-button:hover {
   background-color: #0056b3;
 }

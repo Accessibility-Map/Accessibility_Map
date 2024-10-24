@@ -1,7 +1,7 @@
 .fa-star {
-  color: #888888; /* Default grey color */
+  color: #888888;
 }
 
 .fa-star.filled {
-  color: #ffd700; /* Yellow color for selected stars */
+  color: #ffd700;
 }

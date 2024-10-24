@@ -10,7 +10,7 @@ import AddMarkerOnClick from "./AddMarkerOnClick";
 const UCCoordinates = [39.1317, -84.515];
 
 const MapView = () => {
-  const [openPopupId, setOpenPopupId] = useState(null); 
+  const [openPopupId, setOpenPopupId] = useState(null);
 
   const [locations, setLocations] = useState([]);
   const [newMarker, setNewMarker] = useState(null);
@@ -35,10 +35,10 @@ const MapView = () => {
     };
     fetchLocations();
   }, []);
- // Function to handle setting the popup ID (you can also include this inline)
- const handleOpenPopup = (id) => {
-  setOpenPopupId(id);
-};
+  // Function to handle setting the popup ID (you can also include this inline)
+  const handleOpenPopup = (id) => {
+    setOpenPopupId(id);
+  };
   const handleAddMarker = (location) => {
     setNewMarker(location);
     setLocationName("");
@@ -46,11 +46,11 @@ const MapView = () => {
     setAccessibilityDescriptions("");
   };
   const handleEditClick = (location) => {
-    setEditingLocation(location); 
-    setLocationName(location.locationName); 
+    setEditingLocation(location);
+    setLocationName(location.locationName);
     setAccessibilityFeatures(location.accessibilityFeatures);
     setAccessibilityDescriptions(location.accessibilityDescriptions);
-    setIsEditing(true); 
+    setIsEditing(true);
   };
   const saveEdit = async (location) => {
     if (editingLocation) {
@@ -60,17 +60,19 @@ const MapView = () => {
         accessibilityFeatures,
         accessibilityDescriptions,
       };
-  
+
       try {
         const response = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/locations/${editingLocation.locationID}`,
           updatedLocation
         );
-  
-        setLocations(locations.map((loc) =>
-          loc.locationID === editingLocation.locationID ? response.data : loc
-        ));
-  
+
+        setLocations(
+          locations.map((loc) =>
+            loc.locationID === editingLocation.locationID ? response.data : loc
+          )
+        );
+
         // Keep popup open after saving
         setIsEditing(false);
         setEditingLocation(null);
@@ -82,8 +84,12 @@ const MapView = () => {
 
   const deleteMarker = async (locationID) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/locations/${locationID}`);
-      setLocations(locations.filter((location) => location.locationID !== locationID));
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/locations/${locationID}`
+      );
+      setLocations(
+        locations.filter((location) => location.locationID !== locationID)
+      );
     } catch (error) {
       console.error("Error deleting location:", error);
     }
@@ -128,7 +134,7 @@ const MapView = () => {
             deleteMarker={deleteMarker}
             handleEditClick={handleEditClick}
             openPopupId={openPopupId}
-            setOpenPopupId={setOpenPopupId} 
+            setOpenPopupId={setOpenPopupId}
           />
         ))}
         <AddMarkerOnClick onAddMarker={handleAddMarker} />

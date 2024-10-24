@@ -1,7 +1,13 @@
 import React from "react";
 import { Button } from "semantic-ui-react";
 
-const SearchBar = ({ searchTerm, setSearchTerm, filterOptions, selectedFilters, toggleFilter }) => {
+const SearchBar = ({
+  searchTerm,
+  setSearchTerm,
+  filterOptions,
+  selectedFilters,
+  toggleFilter,
+}) => {
   return (
     <div style={styles.container}>
       <div style={styles.searchBarContainer}>
