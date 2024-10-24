@@ -1,7 +1,7 @@
 import '../styles/StarRating.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Rating from '../models/Rating.ts'
+import Rating from '../models/Rating.ts';
 
 
 let currentRating : number = 0; // Selected rating
@@ -48,12 +48,11 @@ let currentRating : number = 0; // Selected rating
   async function getRating (userID: number, locationID: number): Promise<Rating | null> {
     try {
       const url = process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}`;
-      const response = await axios.get<Rating>(url);
+      const response = await axios.get(url);
       const ratingData = response.data;
-      console.log(ratingData);
       // Have to use column names from the db so theres errors.
       let fetchedRating = new Rating(ratingData.userID, ratingData.locationID, ratingData.userRating);
-      console.log(fetchedRating);
+
       return fetchedRating
     } catch (error) {
       console.error('Error retrieving rating:', error);
