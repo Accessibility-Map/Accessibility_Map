@@ -146,7 +146,7 @@ const MarkerPopup = ({
                 Edit Location
               </button>
               <button
-                className="popup-button"
+                className="popup-button-delete"
                 onClick={() => {
                   console.log(
                     "Delete clicked for location:",
