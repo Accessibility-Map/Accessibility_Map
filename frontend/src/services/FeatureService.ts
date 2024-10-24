@@ -1,4 +1,6 @@
+import { create } from "domain";
 import Feature from "../models/Feature.ts";
+import axios from 'axios';
 
 export default class FeatureService {
     public async getFeaturesByLocationID(locationID: number): Promise<Feature[]> {
@@ -8,12 +10,22 @@ export default class FeatureService {
             let features: Feature[] = [];
             data.forEach((element: Feature) => {
                 // Column names from the backend model, but they get sent with lowercase names for some reason
-                features.push(new Feature(element.id, element.locationID, element.locationFeature, element.notes));
+                features.push(new Feature(element?.id, element.locationID, element.locationFeature, element.notes));
             });
             return features;
         } catch (error) {
             console.error('Error fetching features:', error);
             return [];
+        }
+    }
+
+    public async createFeature(locationID: number, locationFeature: string, notes: string) {
+        new Feature(locationID, locationFeature, notes);
+        try {
+            const url = process.env.REACT_APP_API_URL + 'api/features';
+            await axios.post(url, {locationID, locationFeature, notes});
+        } catch (error) {
+            console.error('Error creating feature:', error);
         }
     }
 }
