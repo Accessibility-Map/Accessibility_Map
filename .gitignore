@@ -23,8 +23,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-/backend/bin
-/backend/obj
+bin/
+obj/
 .vs
 Accessibility_Map.sln
 .env*.local

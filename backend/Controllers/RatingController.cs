@@ -38,13 +38,14 @@ namespace backend.Controllers
         {
             var rating = await _context.Ratings.Where(entry => entry.UserID == UserID && entry.LocationID == LocationID).FirstOrDefaultAsync();
 
-            if (rating == null){
+            if (rating == null)
+            {
                 rating = new Rating();
                 rating.UserID = UserID;
                 rating.LocationID = LocationID;
                 rating.UserRating = 0;
             }
-           return Ok(rating);
+            return Ok(rating);
         }
 
         [HttpPost("{UserID}/{LocationID}/{Rating}")]

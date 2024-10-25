@@ -54,6 +54,22 @@ namespace backend.Controllers
 
             return NoContent();
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLocation(int id, [FromBody] Location location)
+        {
+            var existingLocation = await _context.Locations.FindAsync(id);
+            if (existingLocation == null)
+            {
+                return NotFound();
+            }
 
+            existingLocation.LocationName = location.LocationName;
+            existingLocation.AccessibilityFeatures = location.AccessibilityFeatures;
+            existingLocation.AccessibilityDescriptions = location.AccessibilityDescriptions;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(existingLocation);
+        }
     }
 }

@@ -1,15 +1,17 @@
-export default class Rating {
-    public UserID: number;
-    public LocationID: number;
-    public Rating: number;
+class Rating {
+  public UserID: number;
+  public LocationID: number;
+  public UserRating: number;
 
-    constructor(UserID: number, LocationID: number, Rating: number) {
-        this.UserID = UserID;
-        this.LocationID = LocationID;
-        this.Rating = Rating;
-    }
+  constructor(userID: number, locationID: number, userRating: number) {
+    this.UserID = userID;
+    this.LocationID = locationID;
+    this.UserRating = userRating;
+  }
 
-    public getRating(): number {
-        return this.Rating;
-    }
+  getRating(): number {
+    return this.UserRating;
+  }
 }
+
+export default Rating;
