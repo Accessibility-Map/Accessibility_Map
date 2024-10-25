@@ -18,18 +18,18 @@ namespace backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateLocation([FromBody] Favorite favorite)
+        public async Task<IActionResult> CreateFavorite([FromBody] Favorite favorite)
         {
             if (favorite == null)
             {
-                return BadRequest("Invalid location data.");
+                return BadRequest("Invalid favorite data.");
             }
 
-            // Add the location to the database
+            // Add the favorite to the database
             _context.Favorites.Add(favorite);
             await _context.SaveChangesAsync();
 
-            // Return a response with the created location
+            // Return a response with the created favorite
             return Ok(favorite);
         }
 

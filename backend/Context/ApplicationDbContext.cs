@@ -13,5 +13,6 @@ namespace backend.Context  // Ensure this matches what you're using in Program.c
         public DbSet<Location> Locations { get; set; }  // The Location model DbSet
         public DbSet<Favorite> Favorites { get; set; }  // The Favorite model DbSet
         public DbSet<Rating> Ratings { get; set; }  // The Rating model DbSet
+        public DbSet<Feature> Features { get; set; }  // The Feature model DbSet
     }
 }
