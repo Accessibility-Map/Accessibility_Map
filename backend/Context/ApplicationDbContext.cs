@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using backend.Models; 
+using backend.Models;
 
-namespace backend.Context  
+namespace backend.Context
 {
     public class ApplicationDbContext : DbContext
     {
@@ -14,5 +14,7 @@ namespace backend.Context
         public DbSet<Favorite> Favorites { get; set; }  // The Favorite model DbSet
         public DbSet<Rating> Ratings { get; set; }  // The Rating model DbSet
         public DbSet<Feature> Features { get; set; }  // The Feature model DbSet
+        public DbSet<Picture> Pictures { get; set; }
+
     }
 }
