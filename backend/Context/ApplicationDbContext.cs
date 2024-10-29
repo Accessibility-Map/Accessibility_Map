@@ -10,10 +10,9 @@ namespace backend.Context
         {
         }
 
-        public DbSet<Location> Locations { get; set; } 
-        public DbSet<Favorite> Favorites { get; set; } 
-        public DbSet<Picture> Pictures { get; set; } 
-
-        public DbSet<Rating> Ratings { get; set; } 
+        public DbSet<Location> Locations { get; set; }  // The Location model DbSet
+        public DbSet<Favorite> Favorites { get; set; }  // The Favorite model DbSet
+        public DbSet<Rating> Ratings { get; set; }  // The Rating model DbSet
+        public DbSet<Feature> Features { get; set; }  // The Feature model DbSet
     }
 }

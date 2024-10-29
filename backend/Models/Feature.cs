@@ -8,6 +8,7 @@ namespace backend.Models
     public class Feature
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id { get; set; }
         [Required]
         public int LocationID { get; set; }

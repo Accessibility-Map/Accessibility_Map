@@ -1,7 +1,7 @@
-import "../styles/StarRating.css";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Rating from "../models/Rating.ts";
+import '../styles/StarRating.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Rating from '../models/Rating.ts';
 
 const StarRating = () => {
   const [hover, setHover] = useState(0); // Hovered star
