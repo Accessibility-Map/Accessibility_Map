@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import axios from "axios";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -27,6 +28,9 @@ const MarkerPopup = ({
   openDefaultPopupOnStart,
 }) => {
   const markerRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null); // State for the selected image file
+  const [uploading, setUploading] = useState(false); // Upload status
+  const [images, setImages] = useState([]); // State to hold multiple image URLs
 
   // Open the popup programmatically
   const openPopup = () => {
@@ -41,23 +45,34 @@ const MarkerPopup = ({
     }
   };
 
-  // Ensure the default popup opens when the map starts
-  useEffect(() => {
-    if (openDefaultPopupOnStart && openPopupId === location.locationID) {
-      openPopup();
-    }
-  }, [openDefaultPopupOnStart, openPopupId, location.locationID]);
+// Ensure the default popup opens when the map starts
+useEffect(() => {
+  if (openDefaultPopupOnStart && openPopupId === location.locationID) {
+    openPopup();
+  }
+}, [openDefaultPopupOnStart, openPopupId, location.locationID]);
 
-  // Ensure the popup opens when editing starts
-  useEffect(() => {
-    if (isEditing && editingLocation?.locationID === location.locationID) {
-      console.log(
-        "Popup opened during editing for location:",
-        location.locationID
+// Ensure the popup opens when editing starts
+useEffect(() => {
+  if (isEditing && editingLocation?.locationID === location.locationID) {
+    openPopup();
+  }
+}, [isEditing, editingLocation, location.locationID]);
+
+// Fetch existing images for the location when the component mounts
+useEffect(() => {
+  const fetchImages = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/pictures`
       );
-      openPopup();
+      setImages(response.data.map(picture => `${process.env.REACT_APP_API_URL}${picture.imageUrl}`)); // Update images state
+    } catch (error) {
+      console.error("Error fetching images:", error);
     }
-  }, [isEditing, editingLocation, location.locationID]);
+  };
+  fetchImages();
+}, [location.locationID]);
 
   // Handle opening popup during edit
   const handleEdit = (location) => {
@@ -79,13 +94,52 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
+  // Handle image file selection
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  // Handle image upload
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setUploading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('File uploaded successfully:', response.data);
+
+// imageUrl state with the full response URL
+setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${response.data.imageUrl}`]);
+
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+
   return (
     <Marker
       ref={markerRef}
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
     >
-      <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
+       <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
         <div className="popup-content">
           {isEditing && editingLocation?.locationID === location.locationID ? (
             <>
@@ -96,7 +150,6 @@ const MarkerPopup = ({
                   placeholder="Location Name"
                   value={locationName}
                   onChange={(e) => {
-                    console.log("Editing location name:", e.target.value);
                     setLocationName(e.target.value);
                   }}
                 />
@@ -132,6 +185,14 @@ const MarkerPopup = ({
                   Save Changes
                 </button>
               </form>
+              {/* Image Upload Form */}
+              <div className="upload-section">
+                <h3>Upload Image</h3>
+                <input type="file" onChange={handleFileChange} />
+                <button onClick={handleUpload} disabled={uploading}>
+                  {uploading ? 'Uploading...' : 'Upload Image'}
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -139,6 +200,10 @@ const MarkerPopup = ({
               <p>Location ID: {location.locationID}</p>
               <p>Features: {location.accessibilityFeatures}</p>
               <p>Description: {location.accessibilityDescriptions}</p>
+
+              {images && images.map((url, index) => (
+                <img key={index} src={url} alt="Uploaded location" style={{ width: "100%", marginTop: "10px" }} />
+              ))}
               <button
                 className="popup-button"
                 onClick={() => handleEdit(location)}

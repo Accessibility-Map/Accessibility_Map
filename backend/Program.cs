@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Context;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,7 +55,12 @@ app.Use(async (context, next) => {
 
     await next();
 });
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+    RequestPath = "/uploads"
+});
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using backend.Models; // Ensure this matches the namespace in the Location model
+using backend.Models; 
 
-namespace backend.Context  // Ensure this matches what you're using in Program.cs
+namespace backend.Context  
 {
     public class ApplicationDbContext : DbContext
     {
@@ -10,8 +10,10 @@ namespace backend.Context  // Ensure this matches what you're using in Program.c
         {
         }
 
-        public DbSet<Location> Locations { get; set; }  // The Location model DbSet
-        public DbSet<Favorite> Favorites { get; set; }  // The Favorite model DbSet
-        public DbSet<Rating> Ratings { get; set; }  // The Rating model DbSet
+        public DbSet<Location> Locations { get; set; } 
+        public DbSet<Favorite> Favorites { get; set; } 
+        public DbSet<Picture> Pictures { get; set; } 
+
+        public DbSet<Rating> Ratings { get; set; } 
     }
 }
