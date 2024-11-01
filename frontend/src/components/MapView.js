@@ -13,7 +13,7 @@ const MapView = () => {
   const [openPopupId, setOpenPopupId] = useState(null);
 
   const [locations, setLocations] = useState([]);
-  const [setNewMarker] = useState(null);
+  const [newMarker, setNewMarker] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
   const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
