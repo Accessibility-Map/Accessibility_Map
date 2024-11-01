@@ -28,11 +28,30 @@ const MarkerPopup = ({
   openDefaultPopupOnStart,
 }) => {
   const markerRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null); // State for the selected image file
-  const [uploading, setUploading] = useState(false); // Upload status
-  const [images, setImages] = useState([]); // State to hold multiple image URLs
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState([]);
 
-  // Open the popup programmatically
+  useEffect(() => {
+    if (isEditing && editingLocation?.locationID === location.locationID) {
+      // Only set values if they are empty to avoid overwriting user input during rerenders
+      if (locationName === "") setLocationName(location.locationName || "");
+      if (accessibilityFeatures === "") setAccessibilityFeatures(location.accessibilityFeatures || "");
+      if (accessibilityDescriptions === "") setAccessibilityDescriptions(location.accessibilityDescriptions || "");
+    }
+  }, [
+    isEditing,
+    editingLocation,
+    location,
+    locationName,
+    accessibilityFeatures,
+    accessibilityDescriptions,
+    setLocationName,
+    setAccessibilityFeatures,
+    setAccessibilityDescriptions,
+  ]);
+  
+
   const openPopup = () => {
     if (markerRef.current && markerRef.current._popup) {
       const popup = markerRef.current._popup;
@@ -45,52 +64,54 @@ const MarkerPopup = ({
     }
   };
 
-// Ensure the default popup opens when the map starts
-useEffect(() => {
-  if (openDefaultPopupOnStart && openPopupId === location.locationID) {
-    openPopup();
-  }
-}, [openDefaultPopupOnStart, openPopupId, location.locationID]);
-
-// Ensure the popup opens when editing starts
-useEffect(() => {
-  if (isEditing && editingLocation?.locationID === location.locationID) {
-    openPopup();
-  }
-}, [isEditing, editingLocation, location.locationID]);
-
-// Fetch existing images for the location when the component mounts
-useEffect(() => {
-  const fetchImages = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/pictures`
-      );
-      setImages(response.data.map(picture => `${process.env.REACT_APP_API_URL}${picture.imageUrl}`)); // Update images state
-    } catch (error) {
-      console.error("Error fetching images:", error);
+  useEffect(() => {
+    if (openDefaultPopupOnStart && openPopupId === location.locationID) {
+      openPopup();
     }
-  };
-  fetchImages();
-}, [location.locationID]);
+  }, [openDefaultPopupOnStart, openPopupId, location.locationID]);
+
+  useEffect(() => {
+    if (isEditing && editingLocation?.locationID === location.locationID) {
+      openPopup();
+    }
+  }, [isEditing, editingLocation, location.locationID]);
+
+  // Fetch existing images for the location when the component mounts
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/pictures`
+        );
+        setImages(
+          response.data.map(
+            (picture) => `${process.env.REACT_APP_API_URL}${picture.imageUrl}`
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching images:", error);
+      }
+    };
+    fetchImages();
+  }, [location.locationID]);
 
   // Handle opening popup during edit
   const handleEdit = (location) => {
-    console.log("Edit clicked for location:", location.locationID);
     handleEditClick(location);
     setOpenPopupId(location.locationID);
+    setLocationName(location.locationName || "");
+    setAccessibilityFeatures(location.accessibilityFeatures || "");
+    setAccessibilityDescriptions(location.accessibilityDescriptions || "");
     openPopup();
   };
 
   const handleSaveEdit = () => {
-    console.log("Save clicked for location:", location.locationID);
     saveEdit(location);
     setOpenPopupId(location.locationID);
     openPopup();
   };
 
   const handleClosePopup = () => {
-    console.log("Closing popup for location:", location.locationID);
     setOpenPopupId(null);
   };
 
@@ -116,22 +137,20 @@ useEffect(() => {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-      console.log('File uploaded successfully:', response.data);
-
-// imageUrl state with the full response URL
-setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${response.data.imageUrl}`]);
-
+      setImages((prevImages) => [
+        ...prevImages,
+        `${process.env.REACT_APP_API_URL}${response.data.imageUrl}`,
+      ]);
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
     } finally {
       setUploading(false);
     }
   };
-
 
   return (
     <Marker
@@ -139,7 +158,7 @@ setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${respo
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
     >
-       <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
+      <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
         <div className="popup-content">
           {isEditing && editingLocation?.locationID === location.locationID ? (
             <>
@@ -149,33 +168,19 @@ setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${respo
                   type="text"
                   placeholder="Location Name"
                   value={locationName}
-                  onChange={(e) => {
-                    setLocationName(e.target.value);
-                  }}
+                  onChange={(e) => setLocationName(e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder="Accessibility Features"
                   value={accessibilityFeatures}
-                  onChange={(e) => {
-                    console.log(
-                      "Editing accessibility features:",
-                      e.target.value
-                    );
-                    setAccessibilityFeatures(e.target.value);
-                  }}
+                  onChange={(e) => setAccessibilityFeatures(e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder="Accessibility Description"
                   value={accessibilityDescriptions}
-                  onChange={(e) => {
-                    console.log(
-                      "Editing accessibility descriptions:",
-                      e.target.value
-                    );
-                    setAccessibilityDescriptions(e.target.value);
-                  }}
+                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
                 />
                 <button
                   type="button"
@@ -185,12 +190,11 @@ setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${respo
                   Save Changes
                 </button>
               </form>
-              {/* Image Upload Form */}
               <div className="upload-section">
                 <h3>Upload Image</h3>
                 <input type="file" onChange={handleFileChange} />
                 <button onClick={handleUpload} disabled={uploading}>
-                  {uploading ? 'Uploading...' : 'Upload Image'}
+                  {uploading ? "Uploading..." : "Upload Image"}
                 </button>
               </div>
             </>
@@ -201,9 +205,15 @@ setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${respo
               <p>Features: {location.accessibilityFeatures}</p>
               <p>Description: {location.accessibilityDescriptions}</p>
 
-              {images && images.map((url, index) => (
-                <img key={index} src={url} alt="Uploaded location" style={{ width: "100%", marginTop: "10px" }} />
-              ))}
+              {images &&
+                images.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt="Uploaded location"
+                    style={{ width: "100%", marginTop: "10px" }}
+                  />
+                ))}
               <button
                 className="popup-button"
                 onClick={() => handleEdit(location)}
@@ -212,13 +222,7 @@ setImages(prevImages => [...prevImages, `${process.env.REACT_APP_API_URL}${respo
               </button>
               <button
                 className="popup-button-delete"
-                onClick={() => {
-                  console.log(
-                    "Delete clicked for location:",
-                    location.locationID
-                  );
-                  deleteMarker(location.locationID);
-                }}
+                onClick={() => deleteMarker(location.locationID)}
               >
                 Delete Location
               </button>
