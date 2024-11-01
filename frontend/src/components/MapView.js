@@ -13,7 +13,7 @@ const MapView = () => {
   const [openPopupId, setOpenPopupId] = useState(null);
 
   const [locations, setLocations] = useState([]);
-  const [newMarker, setNewMarker] = useState(null);
+  const [setNewMarker] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
   const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
@@ -35,10 +35,8 @@ const MapView = () => {
     };
     fetchLocations();
   }, []);
-  // Function to handle setting the popup ID (you can also include this inline)
-  const handleOpenPopup = (id) => {
-    setOpenPopupId(id);
-  };
+
+
   const handleAddMarker = (location) => {
     setNewMarker(location);
     setLocationName("");
