@@ -8,7 +8,7 @@ namespace backend.Models
     [PrimaryKey(nameof(UserID), nameof(LocationID))]
     public class Rating
     {
-        
+
         public int UserID { get; set; }
         public int LocationID { get; set; }
         [Required]
