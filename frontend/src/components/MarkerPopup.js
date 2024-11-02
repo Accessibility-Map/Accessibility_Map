@@ -1,6 +1,10 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import FeatureService from "../services/FeatureService.ts";
+import "../styles/MarkerPopup.css";
+import AddFeatureButton from "./AddFeatureButton.tsx";
+import StarRating from "./StarRating.tsx";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -27,6 +31,7 @@ const MarkerPopup = ({
   openDefaultPopupOnStart,
 }) => {
   const markerRef = useRef(null);
+  const [featuresList, setFeaturesList] = useState([]);
 
   // Open the popup programmatically
   const openPopup = () => {
@@ -79,6 +84,25 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
+  const getAccessibilityFeatures = async (locationID) => {
+    let features = await FeatureService.getFeaturesByLocationID(locationID);
+    return features;
+  }
+
+  useEffect(() => {
+    getAccessibilityFeatures(location.locationID).then((features) => {
+      console.log("features", features);
+      const list = features.map(feature =>
+        <p key={feature.id}>
+          <span className="feature">{feature.LocationFeature}</span><br/>
+          <span className="feature-description">{feature.Notes}</span>
+        </p>  
+      );
+      console.log("Marker",list);
+      setFeaturesList(list); // Update the state with the list of features
+    });
+  }, [location.locationID]);
+
   return (
     <Marker
       ref={markerRef}
@@ -100,7 +124,7 @@ const MarkerPopup = ({
                     setLocationName(e.target.value);
                   }}
                 />
-                <input
+                {/* <input
                   type="text"
                   placeholder="Accessibility Features"
                   value={accessibilityFeatures}
@@ -111,8 +135,8 @@ const MarkerPopup = ({
                     );
                     setAccessibilityFeatures(e.target.value);
                   }}
-                />
-                <input
+                /> */}
+                {/* <input
                   type="text"
                   placeholder="Accessibility Description"
                   value={accessibilityDescriptions}
@@ -123,7 +147,7 @@ const MarkerPopup = ({
                     );
                     setAccessibilityDescriptions(e.target.value);
                   }}
-                />
+                /> */}
                 <button
                   type="button"
                   className="popup-button"
@@ -137,14 +161,11 @@ const MarkerPopup = ({
             <>
               <div className="popup-header">{location.locationName}</div>
               <p>Location ID: {location.locationID}</p>
-              <p>Features: {location.accessibilityFeatures}</p>
+              <p>Features:</p>
+              <div>{featuresList}</div>
               <p>Description: {location.accessibilityDescriptions}</p>
-              <button
-                className="popup-button"
-                onClick={() => handleEdit(location)}
-              >
-                Edit Location
-              </button>
+              <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
               <button
                 className="popup-button-delete"
                 onClick={() => {

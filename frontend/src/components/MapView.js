@@ -15,8 +15,7 @@ const MapView = () => {
   const [locations, setLocations] = useState([]);
   const [newMarker, setNewMarker] = useState(null);
   const [locationName, setLocationName] = useState("");
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
+  const [accessibilityFeatures, setAccessibilityFeatures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [editingLocation, setEditingLocation] = useState(null);
@@ -26,7 +25,7 @@ const MapView = () => {
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/locations`
+          `${process.env.REACT_APP_API_URL}` + `api/locations`
         );
         setLocations(response.data);
       } catch (error) {
@@ -43,49 +42,12 @@ const MapView = () => {
     setNewMarker(location);
     setLocationName("");
     setAccessibilityFeatures("");
-    setAccessibilityDescriptions("");
-  };
-  const handleEditClick = (location) => {
-    setEditingLocation(location);
-    setLocationName(location.locationName);
-    setAccessibilityFeatures(location.accessibilityFeatures);
-    setAccessibilityDescriptions(location.accessibilityDescriptions);
-    setIsEditing(true);
-  };
-  const saveEdit = async (location) => {
-    if (editingLocation) {
-      const updatedLocation = {
-        ...editingLocation,
-        locationName,
-        accessibilityFeatures,
-        accessibilityDescriptions,
-      };
-
-      try {
-        const response = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/locations/${editingLocation.locationID}`,
-          updatedLocation
-        );
-
-        setLocations(
-          locations.map((loc) =>
-            loc.locationID === editingLocation.locationID ? response.data : loc
-          )
-        );
-
-        // Keep popup open after saving
-        setIsEditing(false);
-        setEditingLocation(null);
-      } catch (error) {
-        console.error("Error saving edited location:", error);
-      }
-    }
   };
 
   const deleteMarker = async (locationID) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/locations/${locationID}`
+        `${process.env.REACT_APP_API_URL}api/locations/${locationID}`
       );
       setLocations(
         locations.filter((location) => location.locationID !== locationID)
@@ -128,11 +90,7 @@ const MapView = () => {
             setLocationName={setLocationName}
             accessibilityFeatures={accessibilityFeatures}
             setAccessibilityFeatures={setAccessibilityFeatures}
-            accessibilityDescriptions={accessibilityDescriptions}
-            setAccessibilityDescriptions={setAccessibilityDescriptions}
-            saveEdit={saveEdit}
             deleteMarker={deleteMarker}
-            handleEditClick={handleEditClick}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
           />

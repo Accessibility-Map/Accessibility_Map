@@ -1,13 +1,13 @@
 export default class Feature {
     public id?: number;
     public locationID: number;
-    public locationFeature: string;
-    public notes: string;
+    public LocationFeature: string;
+    public Notes: string;
 
     constructor(LocationID: number, Feature: string, Notes: string, id?: number) {
         this.id = id;
         this.locationID = LocationID;
-        this.locationFeature = Feature;
-        this.notes = Notes;
+        this.LocationFeature = Feature;
+        this.Notes = Notes;
     }
 }

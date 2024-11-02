@@ -16,8 +16,6 @@ namespace backend.Models
 
         public string? AccessibilityFeatures { get; set; }  // Field for accessibility features
 
-        public string? Pictures { get; set; }  // Field for pictures (URLs or file paths)
-
         public string? AccessibilityDescriptions { get; set; }  // Field for detailed accessibility descriptions
     }
 }

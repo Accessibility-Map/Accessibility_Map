@@ -1,21 +1,23 @@
 import '../styles/StarRating.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import axios from 'axios';
 import Rating from '../models/Rating.ts';
 
-const StarRating = () => {
+const StarRating = (locationID: number) => {
   const [hover, setHover] = useState(0); // Hovered star
-  const [currentRating, setCurrentRating] = useState(4); // Set default rating to 4
+  const [currentRating, setCurrentRating] = useState(0); // Set default rating to 4
   const [loading, setLoading] = useState(true); // Loading state
+  const [unset, setUnset] = useState(false); // never been set in db flag
 
   // Fetch rating from backend and update currentRating and stop loading
   useEffect(() => {
     const fetchRating = async () => {
-      const fetchedRating = await getRating(1, 7); // Replace with actual user ID and location ID
-      if (fetchedRating && fetchedRating.getRating() !== undefined) {
+      const fetchedRating = await getRating(1, locationID.locationID); // Replace with actual user ID and location ID
+      if (fetchedRating && fetchedRating.getRating() !== 0) {
         setCurrentRating(fetchedRating.getRating()); // Update state with fetched rating
       } else {
-        setCurrentRating(4); // If no rating is found or rating is undefined, default to 4
+        setCurrentRating(0); // If no rating is found or rating is undefined, default to 4
+        setUnset(true);
       }
       setLoading(false);
     };
@@ -32,13 +34,16 @@ const StarRating = () => {
     }
 
     // Update the current rating and backend API
-    if (rating === 0) {
+    if (unset) {
       setCurrentRating(0);  // Properly update state with useState's function
-      createRating(1, 7, rating);  // Backend call to create a rating
+      createRating(1, locationID.locationID, rating);  // Backend call to create a rating
+      setUnset(false);
     } else {
       setCurrentRating(rating);  // Properly update state with useState's function
-      setRating(1, 7, rating);   // Backend call to set a rating
+      setRating(1, locationID.locationID, rating);   // Backend call to set a rating
     }
+
+    setCurrentRating(rating);
   };
 
   if (loading) {
@@ -68,14 +73,14 @@ async function getRating(
   try {
     const url =
       process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}`;
-    const response = await axios.get<Rating>(url);
+    const response = await axios.get(url);
     const ratingData = response.data;
 
     // Map backend response to frontend Rating class
     let fetchedRating = new Rating(
-      ratingData.UserID,
-      ratingData.LocationID,
-      ratingData.UserRating
+      ratingData.userID,
+      ratingData.locationID,
+      ratingData.userRating
     );
 
     return fetchedRating;
