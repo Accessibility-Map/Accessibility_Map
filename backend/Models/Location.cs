@@ -14,7 +14,7 @@ namespace backend.Models
         [Required]
         public double Longitude { get; set; }
 
-        public string? AccessibilityFeatures { get; set; }  // Field for accessibility features
+        public string? AccessibilityFeatures { get; set; }  
 
         public string? AccessibilityDescriptions { get; set; }  // Field for detailed accessibility descriptions
     }

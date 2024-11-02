@@ -34,10 +34,8 @@ const MapView = () => {
     };
     fetchLocations();
   }, []);
-  // Function to handle setting the popup ID (you can also include this inline)
-  const handleOpenPopup = (id) => {
-    setOpenPopupId(id);
-  };
+
+
   const handleAddMarker = (location) => {
     setNewMarker(location);
     setLocationName("");
