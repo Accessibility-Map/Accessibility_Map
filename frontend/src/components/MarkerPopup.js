@@ -1,6 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import FeatureService from "../services/FeatureService.ts";
+import "../styles/MarkerPopup.css";
+import AddFeatureButton from "./AddFeatureButton.tsx";
+import StarRating from "./StarRating.tsx";
 import axios from "axios";
 
 const customMarkerIcon = new Icon({
@@ -28,29 +32,8 @@ const MarkerPopup = ({
   openDefaultPopupOnStart,
 }) => {
   const markerRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [images, setImages] = useState([]);
+  const [featuresList, setFeaturesList] = useState([]);
 
-  useEffect(() => {
-    if (isEditing && editingLocation?.locationID === location.locationID) {
-      // Only set values if they are empty to avoid overwriting user input during rerenders
-      if (locationName === "") setLocationName(location.locationName || "");
-      if (accessibilityFeatures === "") setAccessibilityFeatures(location.accessibilityFeatures || "");
-      if (accessibilityDescriptions === "") setAccessibilityDescriptions(location.accessibilityDescriptions || "");
-    }
-  }, [
-    isEditing,
-    editingLocation,
-    location,
-    locationName,
-    accessibilityFeatures,
-    accessibilityDescriptions,
-    setLocationName,
-    setAccessibilityFeatures,
-    setAccessibilityDescriptions,
-  ]);
-  
 
   const openPopup = () => {
     if (markerRef.current && markerRef.current._popup) {
@@ -115,6 +98,26 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
+
+  const getAccessibilityFeatures = async (locationID) => {
+    let features = await FeatureService.getFeaturesByLocationID(locationID);
+    return features;
+  }
+
+  useEffect(() => {
+    getAccessibilityFeatures(location.locationID).then((features) => {
+      console.log("features", features);
+      const list = features.map(feature =>
+        <p key={feature.id}>
+          <span className="feature">{feature.LocationFeature}</span><br/>
+          <span className="feature-description">{feature.Notes}</span>
+        </p>  
+      );
+      console.log("Marker",list);
+      setFeaturesList(list); // Update the state with the list of features
+    });
+  }, [location.locationID]);
+
   // Handle image file selection
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -170,18 +173,6 @@ const MarkerPopup = ({
                   value={locationName}
                   onChange={(e) => setLocationName(e.target.value)}
                 />
-                <input
-                  type="text"
-                  placeholder="Accessibility Features"
-                  value={accessibilityFeatures}
-                  onChange={(e) => setAccessibilityFeatures(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Accessibility Description"
-                  value={accessibilityDescriptions}
-                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
-                />
                 <button
                   type="button"
                   className="popup-button"
@@ -202,8 +193,11 @@ const MarkerPopup = ({
             <>
               <div className="popup-header">{location.locationName}</div>
               <p>Location ID: {location.locationID}</p>
-              <p>Features: {location.accessibilityFeatures}</p>
+              <p>Features:</p>
+              <div>{featuresList}</div>
               <p>Description: {location.accessibilityDescriptions}</p>
+              <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
 
               {images &&
                 images.map((url, index) => (
@@ -220,6 +214,7 @@ const MarkerPopup = ({
               >
                 Edit Location
               </button>
+
               <button
                 className="popup-button-delete"
                 onClick={() => deleteMarker(location.locationID)}

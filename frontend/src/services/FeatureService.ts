@@ -3,14 +3,15 @@ import Feature from "../models/Feature.ts";
 import axios from 'axios';
 
 export default class FeatureService {
-    public async getFeaturesByLocationID(locationID: number): Promise<Feature[]> {
+    public static async getFeaturesByLocationID(locationID: number): Promise<Feature[]> {
         try {
-            const response = await fetch(process.env.REACT_APP_API_URL + `api/features/${locationID}`);
-            const data = await response.json();
+            const url = process.env.REACT_APP_API_URL + `api/features/location/${locationID}`;
+            const response = await axios.get<Feature[]>(url);
+            const data = await response.data;
             let features: Feature[] = [];
             data.forEach((element: Feature) => {
                 // Column names from the backend model, but they get sent with lowercase names for some reason
-                features.push(new Feature(element?.id, element.locationID, element.locationFeature, element.notes));
+                features.push(new Feature(element.locationID, element.locationFeature, element.notes, element?.id));
             });
             return features;
         } catch (error) {
@@ -19,8 +20,8 @@ export default class FeatureService {
         }
     }
 
-    public async createFeature(locationID: number, locationFeature: string, notes: string) {
-        new Feature(locationID, locationFeature, notes);
+    public static async createFeature(locationID: number, locationFeature: string, notes: string) {
+        
         try {
             const url = process.env.REACT_APP_API_URL + 'api/features';
             await axios.post(url, {locationID, locationFeature, notes});
