@@ -18,14 +18,12 @@ const MapView = () => {
   const [accessibilityFeatures, setAccessibilityFeatures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
-  const [editingLocation, setEditingLocation] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}` + `api/locations`
+          `${process.env.REACT_APP_API_URL}/api/locations`
         );
         setLocations(response.data);
       } catch (error) {
@@ -45,7 +43,7 @@ const MapView = () => {
   const deleteMarker = async (locationID) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_URL}api/locations/${locationID}`
+        `${process.env.REACT_APP_API_URL}/api/locations/${locationID}`
       );
       setLocations(
         locations.filter((location) => location.locationID !== locationID)
@@ -82,8 +80,6 @@ const MapView = () => {
           <MarkerPopup
             key={location.locationID}
             location={location}
-            isEditing={isEditing}
-            editingLocation={editingLocation}
             locationName={locationName}
             setLocationName={setLocationName}
             accessibilityFeatures={accessibilityFeatures}

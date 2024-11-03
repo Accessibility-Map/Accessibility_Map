@@ -1,5 +1,5 @@
 import '../styles/StarRating.css';
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Rating from '../models/Rating.ts';
 
@@ -72,7 +72,7 @@ async function getRating(
 ): Promise<Rating | null> {
   try {
     const url =
-      process.env.REACT_APP_API_URL + `api/ratings/${userID}/${locationID}`;
+      process.env.REACT_APP_API_URL + `/api/ratings/${userID}/${locationID}`;
     const response = await axios.get(url);
     const ratingData = response.data;
 
@@ -94,7 +94,7 @@ async function setRating(userID: number, locationID: number, rating: number) {
   try {
     const url =
       process.env.REACT_APP_API_URL +
-      `api/ratings/${userID}/${locationID}/${rating}`;
+      `/api/ratings/${userID}/${locationID}/${rating}`;
     await axios.put(url);
   } catch (error) {
     console.error("Error setting rating:", error);
@@ -109,7 +109,7 @@ async function createRating(
   try {
     const url =
       process.env.REACT_APP_API_URL +
-      `api/ratings/${userID}/${locationID}/${rating}`;
+      `/api/ratings/${userID}/${locationID}/${rating}`;
     await axios.post(url);
   } catch (error) {
     console.error("Error creating rating:", error);
