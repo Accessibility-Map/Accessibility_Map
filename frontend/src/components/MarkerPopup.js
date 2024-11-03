@@ -16,6 +16,7 @@ const customMarkerIcon = new Icon({
 
 const MarkerPopup = ({
   location,
+  isEditing,
   editingLocation,
   locationName,
   setLocationName,
@@ -25,16 +26,13 @@ const MarkerPopup = ({
   setAccessibilityDescriptions,
   saveEdit,
   deleteMarker,
+  handleEditClick,
   openPopupId,
   setOpenPopupId,
   openDefaultPopupOnStart,
 }) => {
   const markerRef = useRef(null);
   const [featuresList, setFeaturesList] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [images, setImages] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
 
 
   const openPopup = () => {
@@ -80,14 +78,13 @@ const MarkerPopup = ({
     fetchImages();
   }, [location.locationID]);
 
-
   // Handle opening popup during edit
   const handleEdit = (location) => {
+    handleEditClick(location);
     setOpenPopupId(location.locationID);
-    setIsEditing(true);
-    // setLocationName(location.locationName || "");
-    // setAccessibilityFeatures(location.accessibilityFeatures || "");
-    // setAccessibilityDescriptions(location.accessibilityDescriptions || "");
+    setLocationName(location.locationName || "");
+    setAccessibilityFeatures(location.accessibilityFeatures || "");
+    setAccessibilityDescriptions(location.accessibilityDescriptions || "");
     openPopup();
   };
 
@@ -166,7 +163,7 @@ const MarkerPopup = ({
     >
       <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
         <div className="popup-content">
-          {isEditing ? (
+          {isEditing && editingLocation?.locationID === location.locationID ? (
             <>
               <div className="popup-header">Edit Location</div>
               <form className="popup-form">
@@ -184,8 +181,6 @@ const MarkerPopup = ({
                   Save Changes
                 </button>
               </form>
-              <div>{featuresList}</div>
-              <AddFeatureButton locationID={location.locationID} />
               <div className="upload-section">
                 <h3>Upload Image</h3>
                 <input type="file" onChange={handleFileChange} />
@@ -200,19 +195,18 @@ const MarkerPopup = ({
               <p>Location ID: {location.locationID}</p>
               <p>Features:</p>
               <div>{featuresList}</div>
+              <p>Description: {location.accessibilityDescriptions}</p>
               <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
 
               {images &&
                 images.map((url, index) => (
-                  <>
                   <img
                     key={index}
                     src={url}
                     alt="Uploaded location"
                     style={{ width: "100%", marginTop: "10px" }}
                   />
-                  <br/>
-                  </>
                 ))}
               <button
                 className="popup-button"
