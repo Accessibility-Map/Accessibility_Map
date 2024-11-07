@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
-import "../styles/MapView.css";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import SearchBar from "./SearchBar";
 import MarkerPopup from "./MarkerPopup";
 import AddMarkerOnClick from "./AddMarkerOnClick";
+import './styles/MapView.css';
+
 
 const UCCoordinates = [39.1317, -84.515];
 
@@ -18,32 +19,56 @@ const MapView = () => {
   const [accessibilityFeatures, setAccessibilityFeatures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [editingLocation, setEditingLocation] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchLocationData = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/locations`
+          `${process.env.REACT_APP_API_URL}api/locations`
         );
         setLocations(response.data);
       } catch (error) {
-        console.error("Error fetching locations:", error);
+        console.error("Error fetching location data:", error);
       }
     };
-    fetchLocations();
+    fetchLocationData();
   }, []);
-
+  
 
   const handleAddMarker = (location) => {
     setNewMarker(location);
     setLocationName("");
     setAccessibilityFeatures("");
   };
-
+  const saveEdit = async (updatedLocation) => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
+        updatedLocation
+      );
+      
+      setLocations((prevLocations) =>
+        prevLocations.map((location) =>
+          location.locationID === updatedLocation.locationID
+            ? updatedLocation
+            : location
+        )
+      );
+  
+      setEditingLocation(null);
+      setIsEditing(false);
+      setOpenPopupId(null);
+    } catch (error) {
+      console.error("Error saving location:", error);
+    }
+  };
+  
   const deleteMarker = async (locationID) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/locations/${locationID}`
+        `${process.env.REACT_APP_API_URL}api/locations/${locationID}`
       );
       setLocations(
         locations.filter((location) => location.locationID !== locationID)
@@ -52,6 +77,7 @@ const MapView = () => {
       console.error("Error deleting location:", error);
     }
   };
+
   return (
     <div>
       <SearchBar
@@ -80,10 +106,16 @@ const MapView = () => {
           <MarkerPopup
             key={location.locationID}
             location={location}
+            isEditing={isEditing}
+            editingLocation={editingLocation}
+            setEditingLocation={setEditingLocation} // Pass setEditingLocation
+            setIsEditing={setIsEditing}             // Pass setIsEditing
             locationName={locationName}
             setLocationName={setLocationName}
             accessibilityFeatures={accessibilityFeatures}
             setAccessibilityFeatures={setAccessibilityFeatures}
+            saveEdit={saveEdit}                
+
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
