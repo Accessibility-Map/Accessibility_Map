@@ -81,17 +81,21 @@ namespace backend.Controllers
         }
 
 
-        // Get Pictures of a Specific Location
         [HttpGet("{id}/pictures")]
         public async Task<IActionResult> GetPictures(int id)
         {
             var pictures = await _context.Pictures
                 .Where(p => p.LocationID == id)
+                .Select(p => new { p.ImageUrl })  // Only return ImageUrl
                 .ToListAsync();
+
+            if (!pictures.Any())
+            {
+                return NotFound("No pictures found for this location.");
+            }
 
             return Ok(pictures);
         }
-
         // Create Location
         [HttpPost]
         public async Task<IActionResult> CreateLocation([FromBody] Location location)
