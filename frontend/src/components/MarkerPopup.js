@@ -80,25 +80,27 @@ const MarkerPopup = ({
     const fetchImages = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/pictures`
+          `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
         );
-        setImages(
-          response.data.map(
-            (picture) => `${process.env.REACT_APP_API_URL}${picture.ImageUrl}`
-          )
-        );
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          console.log("No images found for this location.");
-          setImages([]);
+        if (response.status === 200 && response.data.length > 0) {
+          setImages(
+            response.data.map(
+              (picture) =>
+                `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${picture.imageUrl.replace(/^\/+/, "")}`
+            )
+          );
         } else {
-          console.error("Error fetching images:", error);
+          setImages([]); // Clear images if no pictures found
         }
+      } catch (error) {
+        console.error("Error fetching images:", error);
+        setImages([]); // Clear images if an error occurs
       }
     };
-
+  
     fetchImages();
   }, [location.locationID]);
+  
 
   const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); // Remove any trailing slash
 
@@ -163,18 +165,23 @@ const MarkerPopup = ({
     setUploading(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/locations/${location.locationID}/upload`,
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         }
+
       );
+
+      console.log("Image URL from response:", response.data.imageUrl);
+
       setImages((prevImages) => [
         ...prevImages,
-        `${process.env.REACT_APP_API_URL}${response.data.imageUrl}`,
+        `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${response.data.imageUrl.replace(/^\/+/, "")}`
       ]);
+      
     } catch (error) {
       console.error("Error uploading file:", error);
     }
