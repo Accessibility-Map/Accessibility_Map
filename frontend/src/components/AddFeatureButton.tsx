@@ -23,7 +23,7 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        // event.preventDefault();
+        event.preventDefault();
         console.log("Form submitted with locationID:", locationID);
 
         if (isNaN(locationID)) {

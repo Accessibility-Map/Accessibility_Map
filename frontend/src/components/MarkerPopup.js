@@ -262,10 +262,10 @@ const MarkerPopup = ({
                 {featuresList.map((feature) => (
                   <div key={feature.id}>
                     <p>
-                      <strong>Feature:</strong> {feature.LocationFeature}
+                      <strong>Feature:</strong> {feature.locationFeature}
                     </p>
                     <p>
-                      <strong>Notes:</strong> {feature.Notes}
+                      <strong>Notes:</strong> {feature.notes}
                     </p>
                   </div>
                 ))}
