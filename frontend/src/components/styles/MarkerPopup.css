@@ -1,7 +1,18 @@
-.feature{
+.feature {
     font-weight: bold;
 }
 
-.feature-description{
+.feature-description {
     font-style: italic;
+}
+.delete-feature-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    margin-left: 8px;
+}
+
+.delete-feature-button:hover {
+    color: darkred;
 }

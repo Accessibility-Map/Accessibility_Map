@@ -6,7 +6,7 @@ import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
 import axios from "axios";
 import FeaturesListWithToggle from "./FeaturesListWithToggle"; // Import the new component
-import './styles/MarkerPopup.css';
+import "./styles/MarkerPopup.css";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -34,7 +34,8 @@ const MarkerPopup = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
+  const [accessibilityDescriptions, setAccessibilityDescriptions] =
+    useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -42,7 +43,6 @@ const MarkerPopup = ({
       setLocationName(location.locationName || "");
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
-  
 
   const handleEditLocation = () => {
     setTimeout(() => {
@@ -51,7 +51,12 @@ const MarkerPopup = ({
       setIsEditing(true);
     }, 0);
   };
-  
+
+  const handleDeleteFeature = (featureId) => {
+    setFeaturesList((prevFeatures) =>
+      prevFeatures.filter((feature) => feature.id !== featureId)
+    );
+  };
 
   const openPopup = () => {
     if (markerRef.current && markerRef.current._popup) {
@@ -87,23 +92,25 @@ const MarkerPopup = ({
           setImages(
             response.data.map(
               (picture) =>
-                `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${picture.imageUrl.replace(/^\/+/, "")}`
+                `${process.env.REACT_APP_API_URL.replace(
+                  /\/+$/,
+                  ""
+                )}/${picture.imageUrl.replace(/^\/+/, "")}`
             )
           );
         } else {
-          setImages([]); 
+          setImages([]);
         }
       } catch (error) {
         console.error("Error fetching images:", error);
         setImages([]);
       }
     };
-  
+
     fetchImages();
   }, [location.locationID]);
-  
 
-  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); 
+  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
 
   const handleSaveEdit = async () => {
     const updatedLocation = {
@@ -173,16 +180,17 @@ const MarkerPopup = ({
             "Content-Type": "multipart/form-data",
           },
         }
-
       );
 
       console.log("Image URL from response:", response.data.imageUrl);
 
       setImages((prevImages) => [
         ...prevImages,
-        `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${response.data.imageUrl.replace(/^\/+/, "")}`
+        `${process.env.REACT_APP_API_URL.replace(
+          /\/+$/,
+          ""
+        )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
       ]);
-      
     } catch (error) {
       console.error("Error uploading file:", error);
     }
@@ -235,6 +243,12 @@ const MarkerPopup = ({
                       placeholder="Notes"
                       rows={2}
                     />
+                    <button
+                      onClick={() => handleDeleteFeature(feature.id)}
+                      className="delete-feature-button"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 ))}
 
