@@ -213,11 +213,11 @@ const MarkerPopup = ({
                   <div key={feature.id} className="feature-item">
                     <input
                       type="text"
-                      value={feature.LocationFeature}
+                      value={feature.locationFeature}
                       onChange={(e) => {
                         const updatedFeatures = featuresList.map((f, i) =>
                           i === index
-                            ? { ...f, LocationFeature: e.target.value }
+                            ? { ...f, locationFeature: e.target.value }
                             : f
                         );
                         setFeaturesList(updatedFeatures);
@@ -225,7 +225,7 @@ const MarkerPopup = ({
                       placeholder="Feature"
                     />
                     <textarea
-                      value={feature.Notes || ""}
+                      value={feature.notes || ""}
                       onChange={(e) => {
                         const updatedFeatures = [...featuresList];
                         updatedFeatures[index].Notes = e.target.value;
