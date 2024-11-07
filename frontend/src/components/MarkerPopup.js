@@ -5,6 +5,7 @@ import FeatureService from "./services/FeatureService.ts";
 import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
 import axios from "axios";
+import FeaturesListWithToggle from "./FeaturesListWithToggle"; // Import the new component
 import './styles/MarkerPopup.css';
 
 const customMarkerIcon = new Icon({
@@ -90,11 +91,11 @@ const MarkerPopup = ({
             )
           );
         } else {
-          setImages([]); // Clear images if no pictures found
+          setImages([]); 
         }
       } catch (error) {
         console.error("Error fetching images:", error);
-        setImages([]); // Clear images if an error occurs
+        setImages([]);
       }
     };
   
@@ -102,7 +103,7 @@ const MarkerPopup = ({
   }, [location.locationID]);
   
 
-  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); // Remove any trailing slash
+  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); 
 
   const handleSaveEdit = async () => {
     const updatedLocation = {
@@ -265,18 +266,7 @@ const MarkerPopup = ({
               <div className="popup-header">{location.locationName}</div>
               <p>Location ID: {location.locationID}</p>
               <p>Features:</p>
-              <div>
-                {featuresList.map((feature) => (
-                  <div key={feature.id}>
-                    <p>
-                      <strong>Feature:</strong> {feature.locationFeature}
-                    </p>
-                    <p>
-                      <strong>Notes:</strong> {feature.notes}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <FeaturesListWithToggle featuresList={featuresList} />
               <p>Description: {location.accessibilityDescriptions}</p>
               <StarRating locationID={location.locationID} />
               <AddFeatureButton locationID={location.locationID} />
