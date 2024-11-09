@@ -5,7 +5,7 @@ import FeatureService from "./services/FeatureService.ts";
 import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
 import axios from "axios";
-import FeaturesListWithToggle from "./FeaturesListWithToggle"; // Import the new component
+import FeaturesListWithToggle from "./FeaturesListWithToggle";
 import "./styles/MarkerPopup.css";
 
 const customMarkerIcon = new Icon({
@@ -34,8 +34,7 @@ const MarkerPopup = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] =
-    useState("");
+  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
