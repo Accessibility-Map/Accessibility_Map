@@ -59,12 +59,12 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
   sx={{
     backgroundColor: '#3d85c6',
     color: 'white',
-    padding: '4px 12px', // Smaller padding for a compact look
-    fontSize: '0.80rem', // Slightly smaller font size
-    borderRadius: '8px', // Softened corners
-    textTransform: 'none', // Keep text as-is without uppercase transformation
+    padding: '4px 12px', 
+    fontSize: '0.80rem', 
+    borderRadius: '8px', 
+    textTransform: 'none',
     '&:hover': {
-      backgroundColor: '#2c6da4', // Darker shade on hover for effect
+      backgroundColor: '#2c6da4', 
     },
   }}
 >
