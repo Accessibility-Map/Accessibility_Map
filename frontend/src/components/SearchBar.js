@@ -1,5 +1,4 @@
-import React from "react";
-import { Button } from "semantic-ui-react";
+// import { Button } from "semantic-ui-react";
 
 const SearchBar = ({
   searchTerm,
@@ -20,7 +19,7 @@ const SearchBar = ({
         />
         <div style={styles.filters}>
           {filterOptions.map((filter) => (
-            <Button
+            <button
               key={filter}
               className={`filter-button ${
                 selectedFilters.includes(filter) ? "selected" : ""
@@ -36,7 +35,7 @@ const SearchBar = ({
               onClick={() => toggleFilter(filter)}
             >
               {filter}
-            </Button>
+            </button>
           ))}
         </div>
       </div>

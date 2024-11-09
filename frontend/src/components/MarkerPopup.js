@@ -7,6 +7,8 @@ import StarRating from "./StarRating.tsx";
 import axios from "axios";
 import FeaturesListWithToggle from "./FeaturesListWithToggle"; // Import the new component
 import "./styles/MarkerPopup.css";
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
