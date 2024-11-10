@@ -34,12 +34,14 @@ const MarkerPopup = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
+  const [accessibilityDescriptions, setAccessibilityDescriptions] =
+    useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (isEditing && editingLocation?.locationID === location.locationID) {
       setLocationName(location.locationName || "");
+      setAccessibilityDescriptions(location.accessibilityDescriptions || "");
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
 
@@ -51,10 +53,18 @@ const MarkerPopup = ({
     }, 0);
   };
 
-  const handleDeleteFeature = (featureId) => {
-    setFeaturesList((prevFeatures) =>
-      prevFeatures.filter((feature) => feature.id !== featureId)
-    );
+  const handleDeleteFeature = async (featureId) => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}api/features/${featureId}`
+      );
+      setFeaturesList((prevFeatures) =>
+        prevFeatures.filter((feature) => feature.id !== featureId)
+      );
+      setIsEditing(true);
+    } catch (error) {
+      console.error("Error deleting feature:", error);
+    }
   };
 
   const openPopup = () => {
@@ -89,13 +99,15 @@ const MarkerPopup = ({
         );
         if (response.status === 200 && response.data.length > 0) {
           setImages(
-            response.data.map(
-              (picture) =>
-                `${process.env.REACT_APP_API_URL.replace(
-                  /\/+$/,
-                  ""
-                )}/${picture.imageUrl.replace(/^\/+/, "")}`
-            )
+            response.data
+              .filter((picture) => picture.ImageUrl)
+              .map(
+                (picture) =>
+                  `${process.env.REACT_APP_API_URL.replace(
+                    /\/+$/,
+                    ""
+                  )}/${picture.ImageUrl.replace(/^\/+/, "")}`
+              )
           );
         } else {
           setImages([]);
@@ -123,17 +135,21 @@ const MarkerPopup = ({
       // Save location changes
       await saveEdit(updatedLocation);
 
-      // Update features with the corrected URL
       await Promise.all(
         featuresList.map((feature) => {
           const featureUrl = `${apiUrl}/api/features/${feature.id}`;
-          console.log("Updating feature URL:", featureUrl);
-
-          return axios.put(featureUrl, feature);
+          return axios.put(featureUrl, {
+            id: feature.id,
+            locationFeature: feature.locationFeature,
+            notes: feature.notes,
+          });
         })
       );
 
       setIsEditing(false);
+      getAccessibilityFeatures(location.locationID).then((features) => {
+        setFeaturesList(features);
+      });
       setEditingLocation(null);
     } catch (error) {
       console.error("Error saving changes:", error);
@@ -235,15 +251,20 @@ const MarkerPopup = ({
                     <textarea
                       value={feature.notes || ""}
                       onChange={(e) => {
-                        const updatedFeatures = [...featuresList];
-                        updatedFeatures[index].Notes = e.target.value;
+                        const updatedFeatures = featuresList.map((f, i) =>
+                          i === index ? { ...f, notes: e.target.value } : f
+                        );
                         setFeaturesList(updatedFeatures);
                       }}
                       placeholder="Notes"
                       rows={2}
                     />
                     <button
-                      onClick={() => handleDeleteFeature(feature.id)}
+                      type="button" // Prevent form submission
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent event propagation
+                        handleDeleteFeature(feature.id);
+                      }}
                       className="delete-feature-button"
                     >
                       🗑️
