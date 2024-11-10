@@ -51,6 +51,21 @@ namespace backend.Controllers
             var features = await _context.Features.Where(entry => entry.LocationID == locationID).ToListAsync();
             return Ok(features);
         }
+// DELETE: api/features/{id}
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteFeature(int id)
+{
+    var feature = await _context.Features.FindAsync(id);
+    if (feature == null)
+    {
+        return NotFound("Feature not found.");
+    }
+
+    _context.Features.Remove(feature);
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
 
         [HttpGet("feature/{feature}")]
         public async Task<IActionResult> getEntriesByFeature(string feature){
