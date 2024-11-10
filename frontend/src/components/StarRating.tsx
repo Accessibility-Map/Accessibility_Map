@@ -1,34 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Rating from '@mui/material/Rating';
+import Box from '@mui/material/Box';
+import RatingService from './services/RatingService';
 
-const StarRating = ({ locationID }: { locationID: number }) => {
-  const [hover, setHover] = useState(0); // Hovered star
-  const [currentRating, setCurrentRating] = useState(0); // Set default rating to 0
-  const [unset, setUnset] = useState(false); // never been set in db flag
+interface StarRatingProps {
+  locationID: number;
+}
 
-  // Function to update rating in the state
-  const updateRating = (rating: number) => {
-    if (rating > 5 || rating < 1) {
-      return;
+const StarRating = ({ locationID }: StarRatingProps) => {
+  const [currentRating, setCurrentRating] = useState<number | null>(null);
+  const [hover, setHover] = useState(-1); // Hovered star
+  const [unset, setUnset] = useState(false); // Flag to check if the rating has never been set in the database
+
+  // Fetch the initial rating from the backend
+  useEffect(() => {
+    RatingService.getRating(1, locationID).then((rating) => {
+      if (rating && rating.getRating() !== 0) {
+        setCurrentRating(rating.getRating());
+      } else {
+        setUnset(true); // Set flag if no rating is found
+      }
+    });
+  }, [locationID]);
+
+  // Function to update rating in the state and backend
+  const updateRating = (newRating: number | null) => {
+    if (!newRating || newRating < 1 || newRating > 5) return;
+
+    if (unset) {
+      RatingService.createRating(1, locationID, newRating); // Backend call to create a rating
+      setUnset(false);
+    } else {
+      RatingService.setRating(1, locationID, newRating); // Backend call to update the rating
     }
-
-    // Update the current rating state
-    setCurrentRating(rating);
-    setUnset(false);
+    setCurrentRating(newRating); // Update the current rating state
   };
 
   return (
-    <div className="star-rating">
-      {[1, 2, 3, 4, 5].map((value) => (
-        <span
-          key={value}
-          className={`fa fa-star ${value <= (hover || currentRating) ? "filled" : ""}`}
-          onMouseEnter={() => setHover(value)}
-          onMouseLeave={() => setHover(0)}
-          onClick={() => updateRating(value)}
-          style={{ cursor: "pointer" }}
-        ></span>
-      ))}
-    </div>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Rating
+        name="hover-feedback"
+        value={currentRating}
+        precision={1}
+        onChange={(event, newValue) => updateRating(newValue)}
+        onChangeActive={(event, newHover) => setHover(newHover)}
+        emptyIcon={<span style={{ opacity: 0.55 }} className="fa fa-star" />}
+      />
+      {currentRating !== null && (
+        <Box sx={{ ml: 2 }}>{hover !== -1 ? hover : currentRating} Stars</Box>
+      )}
+    </Box>
   );
 };
 

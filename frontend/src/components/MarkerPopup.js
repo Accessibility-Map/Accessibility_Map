@@ -51,11 +51,17 @@ const MarkerPopup = ({
     }, 0);
   };
 
-  const handleDeleteFeature = (featureId) => {
-    setFeaturesList((prevFeatures) =>
-      prevFeatures.filter((feature) => feature.id !== featureId)
-    );
+  const handleDeleteFeature = async (featureId) => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}api/features/${featureId}`);
+      setFeaturesList((prevFeatures) =>
+        prevFeatures.filter((feature) => feature.id !== featureId)
+      );
+    } catch (error) {
+      console.error("Error deleting feature:", error);
+    }
   };
+  
 
   const openPopup = () => {
     if (markerRef.current && markerRef.current._popup) {
@@ -118,27 +124,32 @@ const MarkerPopup = ({
       accessibilityFeatures,
       accessibilityDescriptions,
     };
-
+  
     try {
       // Save location changes
       await saveEdit(updatedLocation);
-
-      // Update features with the corrected URL
+  
+      // Update features with the corrected URL, including notes and other changes
       await Promise.all(
         featuresList.map((feature) => {
           const featureUrl = `${apiUrl}/api/features/${feature.id}`;
-          console.log("Updating feature URL:", featureUrl);
-
-          return axios.put(featureUrl, feature);
+          return axios.put(featureUrl, {
+            locationFeature: feature.locationFeature,
+            notes: feature.notes,
+          });
         })
       );
-
+  
       setIsEditing(false);
+      getAccessibilityFeatures(location.locationID).then((features) => {
+        setFeaturesList(features);
+      });
       setEditingLocation(null);
     } catch (error) {
       console.error("Error saving changes:", error);
     }
   };
+  
 
   const handleClosePopup = () => {
     setOpenPopupId(null);
@@ -232,16 +243,18 @@ const MarkerPopup = ({
                       }}
                       placeholder="Feature"
                     />
-                    <textarea
-                      value={feature.notes || ""}
-                      onChange={(e) => {
-                        const updatedFeatures = [...featuresList];
-                        updatedFeatures[index].Notes = e.target.value;
-                        setFeaturesList(updatedFeatures);
-                      }}
-                      placeholder="Notes"
-                      rows={2}
-                    />
+                 <textarea
+  value={feature.notes || ""}
+  onChange={(e) => {
+    const updatedFeatures = featuresList.map((f, i) =>
+      i === index ? { ...f, notes: e.target.value } : f
+    );
+    setFeaturesList(updatedFeatures);
+  }}
+  placeholder="Notes"
+  rows={2}
+/>
+
                     <button
                       onClick={() => handleDeleteFeature(feature.id)}
                       className="delete-feature-button"
