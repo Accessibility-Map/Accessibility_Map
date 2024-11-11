@@ -97,18 +97,19 @@ const MarkerPopup = ({
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
         );
+        
+        console.log("Fetched images data:", response.data); // Log the fetched data
+  
         if (response.status === 200 && response.data.length > 0) {
-          setImages(
-            response.data
-              .filter((picture) => picture.ImageUrl)
-              .map(
-                (picture) =>
-                  `${process.env.REACT_APP_API_URL.replace(
-                    /\/+$/,
-                    ""
-                  )}/${picture.ImageUrl.replace(/^\/+/, "")}`
-              )
-          );
+          // Construct image URLs using "imageUrl" exactly as it appears in the response
+          const imageUrls = response.data
+            .filter((picture) => picture.imageUrl) // Ensure imageUrl exists
+            .map((picture) =>
+              `${process.env.REACT_APP_API_URL}${picture.imageUrl.replace(/^\/+/, "")}`
+            );
+  
+          console.log("Constructed Image URLs:", imageUrls); // Log URLs before setting them
+          setImages(imageUrls);
         } else {
           setImages([]);
         }
@@ -117,9 +118,12 @@ const MarkerPopup = ({
         setImages([]);
       }
     };
-
+  
     fetchImages();
   }, [location.locationID]);
+  
+  
+  
 
   const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
 
@@ -211,7 +215,6 @@ const MarkerPopup = ({
     }
   };
 
-  console.log("Rendering with locationName:", locationName);
 
   return (
     <Marker
