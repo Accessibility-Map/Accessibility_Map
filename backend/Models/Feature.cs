@@ -17,6 +17,11 @@ namespace backend.Models
         [Column("Feature")]
         public string LocationFeature { get; set; }
 
-[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string Notes { get; set; } = string.Empty;    }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string Notes { get; set; } = string.Empty;
+
+        // Navigation property to Location
+        [JsonIgnore]
+        public Location? Location { get; set; }
+    }
 }
