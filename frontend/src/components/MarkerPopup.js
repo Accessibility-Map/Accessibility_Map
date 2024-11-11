@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import axios from "axios";
 import FeatureService from "./services/FeatureService.ts";
 import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
-import axios from "axios";
 import FeaturesListWithToggle from "./FeaturesListWithToggle";
 import "./styles/MarkerPopup.css";
 
@@ -34,8 +34,7 @@ const MarkerPopup = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
   const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] =
-    useState("");
+  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -45,6 +44,12 @@ const MarkerPopup = ({
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
 
+  useEffect(() => {
+    if (openPopupId === location.locationID && markerRef.current) {
+      markerRef.current.openPopup();
+    }
+  }, [openPopupId, location.locationID]);
+
   const handleEditLocation = () => {
     setTimeout(() => {
       setLocationName(location.locationName || "");
@@ -52,6 +57,47 @@ const MarkerPopup = ({
       setIsEditing(true);
     }, 0);
   };
+// Define handleFileChange function here
+const handleFileChange = (e) => {
+  setSelectedFile(e.target.files[0]);
+};
+
+const handleUpload = async () => {
+  if (!selectedFile) {
+    alert("Please select a file.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", selectedFile);
+
+  setUploading(true);
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log("Image URL from response:", response.data.imageUrl);
+
+    setImages((prevImages) => [
+      ...prevImages,
+      `${process.env.REACT_APP_API_URL.replace(
+        /\/+$/,
+        ""
+      )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
+    ]);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleDeleteFeature = async (featureId) => {
     try {
@@ -67,63 +113,30 @@ const MarkerPopup = ({
     }
   };
 
-  const openPopup = () => {
-    if (markerRef.current && markerRef.current._popup) {
-      const popup = markerRef.current._popup;
-      const mapInstance = markerRef.current._map;
-      if (mapInstance) {
-        popup.openOn(mapInstance);
+  const fetchImages = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
+      );
+      if (response.status === 200 && response.data.length > 0) {
+        const imageUrls = response.data
+          .filter((picture) => picture.imageUrl)
+          .map((picture) =>
+            `${process.env.REACT_APP_API_URL}${picture.imageUrl.replace(/^\/+/, "")}`
+          );
+        setImages(imageUrls);
       } else {
-        console.error("Map instance is not available.");
+        setImages([]);
       }
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      setImages([]);
     }
   };
 
   useEffect(() => {
-    if (openDefaultPopupOnStart && openPopupId === location.locationID) {
-      openPopup();
-    }
-  }, [openDefaultPopupOnStart, openPopupId, location.locationID]);
-
-  useEffect(() => {
-    if (isEditing && editingLocation?.locationID === location.locationID) {
-      openPopup();
-    }
-  }, [isEditing, editingLocation, location.locationID]);
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
-        );
-        
-        console.log("Fetched images data:", response.data); // Log the fetched data
-  
-        if (response.status === 200 && response.data.length > 0) {
-          // Construct image URLs using "imageUrl" exactly as it appears in the response
-          const imageUrls = response.data
-            .filter((picture) => picture.imageUrl) // Ensure imageUrl exists
-            .map((picture) =>
-              `${process.env.REACT_APP_API_URL}${picture.imageUrl.replace(/^\/+/, "")}`
-            );
-  
-          console.log("Constructed Image URLs:", imageUrls); // Log URLs before setting them
-          setImages(imageUrls);
-        } else {
-          setImages([]);
-        }
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        setImages([]);
-      }
-    };
-  
     fetchImages();
   }, [location.locationID]);
-  
-  
-  
 
   const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
 
@@ -136,9 +149,7 @@ const MarkerPopup = ({
     };
 
     try {
-      // Save location changes
       await saveEdit(updatedLocation);
-
       await Promise.all(
         featuresList.map((feature) => {
           const featureUrl = `${apiUrl}/api/features/${feature.id}`;
@@ -149,11 +160,7 @@ const MarkerPopup = ({
           });
         })
       );
-
       setIsEditing(false);
-      getAccessibilityFeatures(location.locationID).then((features) => {
-        setFeaturesList(features);
-      });
       setEditingLocation(null);
     } catch (error) {
       console.error("Error saving changes:", error);
@@ -164,63 +171,20 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
-  const getAccessibilityFeatures = async (locationID) => {
-    let features = await FeatureService.getFeaturesByLocationID(locationID);
-    return features;
-  };
-
   useEffect(() => {
-    getAccessibilityFeatures(location.locationID).then((features) => {
-      console.log("Fetched features:", features);
+    FeatureService.getFeaturesByLocationID(location.locationID).then((features) => {
       setFeaturesList(features);
     });
   }, [location.locationID]);
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Please select a file.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    setUploading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log("Image URL from response:", response.data.imageUrl);
-
-      setImages((prevImages) => [
-        ...prevImages,
-        `${process.env.REACT_APP_API_URL.replace(
-          /\/+$/,
-          ""
-        )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
-      ]);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    }
-  };
-
 
   return (
     <Marker
       ref={markerRef}
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
+      eventHandlers={{
+        click: () => setOpenPopupId(location.locationID), // Open popup on click
+      }}
     >
       <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
         <div className="popup-content">

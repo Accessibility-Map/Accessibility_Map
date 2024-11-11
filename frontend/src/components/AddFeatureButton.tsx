@@ -25,7 +25,6 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
     setFeature(event.target.value as string);
   };
 
-  console.log("Rendering AddFeatureButton with locationID:", locationID);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

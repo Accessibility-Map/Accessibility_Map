@@ -9,6 +9,27 @@ namespace backend.Context
             : base(options)
         {
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Location>()
+                .HasMany(l => l.Features)
+                .WithOne(f => f.Location)
+                .HasForeignKey(f => f.LocationID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Location>()
+                .HasMany(l => l.Ratings)
+                .WithOne(r => r.Location)
+                .HasForeignKey(r => r.LocationID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Rating>()
+                .HasKey(r => new { r.UserID, r.LocationID }); // Composite key for Rating
+
+            base.OnModelCreating(modelBuilder);
+        }
+
+
 
         public DbSet<Location> Locations { get; set; }  // The Location model DbSet
         public DbSet<Favorite> Favorites { get; set; }  // The Favorite model DbSet
