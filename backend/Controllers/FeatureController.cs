@@ -10,7 +10,14 @@ namespace backend.Controllers
     [Route("api/features")]
     [ApiController]
     public class FeatureController : ControllerBase
+
     {
+        [HttpGet]
+        public async Task<IActionResult> GetAllFeatures()
+        {
+            var features = await _context.Features.ToListAsync();
+            return Ok(features);
+        }
         private readonly ApplicationDbContext _context;
         private readonly ILogger<FeatureController> _logger;
 
@@ -51,24 +58,25 @@ namespace backend.Controllers
             var features = await _context.Features.Where(entry => entry.LocationID == locationID).ToListAsync();
             return Ok(features);
         }
-// DELETE: api/features/{id}
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteFeature(int id)
-{
-    var feature = await _context.Features.FindAsync(id);
-    if (feature == null)
-    {
-        return NotFound("Feature not found.");
-    }
+        // DELETE: api/features/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteFeature(int id)
+        {
+            var feature = await _context.Features.FindAsync(id);
+            if (feature == null)
+            {
+                return NotFound("Feature not found.");
+            }
 
-    _context.Features.Remove(feature);
-    await _context.SaveChangesAsync();
+            _context.Features.Remove(feature);
+            await _context.SaveChangesAsync();
 
-    return NoContent();
-}
+            return NoContent();
+        }
 
         [HttpGet("feature/{feature}")]
-        public async Task<IActionResult> getEntriesByFeature(string feature){
+        public async Task<IActionResult> getEntriesByFeature(string feature)
+        {
             var entries = await _context.Features.Where(entry => entry.LocationFeature == feature).ToListAsync();
             return Ok(entries);
         }
