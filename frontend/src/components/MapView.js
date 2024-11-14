@@ -1,31 +1,17 @@
-import React from 'react'
-import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet'
-import '../styles/MapView.css' // Link to external CSS
+import React, {useState, useEffect} from 'react'
+import {MapContainer, TileLayer, Marker} from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import {useState, useEffect} from 'react'
 import axios from 'axios'
-import {Button, Container} from 'semantic-ui-react'
 import {Icon} from 'leaflet'
-import StarRating from './StarRating.tsx'
 
-// Filter examples, replace with API later
-const filterExamples = [
-  {
-    id: 1,
-    locationID: 7,
-    feature: 'Elevator',
-    notes: 'Located on 1-5 floor, east side of the building',
-  },
-  {id: 2, locationID: 6, feature: 'Ramp', notes: 'West entrance of the building'},
-  {id: 3, locationID: 14, feature: 'Restroom', notes: 'Equipped in every bathroom'},
-]
+import SearchBar from './SearchBar'
+import MarkerPopup from './MarkerPopup'
+import AddMarkerOnClick from './AddMarkerOnClick'
+import './styles/MapView.css'
 
-// Available filter options
-const filterOptions = ['Ramp', 'Elevator', 'Parking', 'Restroom']
+const UCCoordinates = [39.1317, -84.515]
 
-const UCCoordinates = [39.1317, -84.515] // University of Cincinnati coordinates
-
-// Custom Marker Icon
+// Define customMarkerIcon here
 const customMarkerIcon = new Icon({
   iconUrl: '/Icons/Mapmarker.png',
   iconSize: [38, 38],
@@ -33,122 +19,103 @@ const customMarkerIcon = new Icon({
   popupAnchor: [0, -40],
 })
 
-// AddMarker component to handle adding new markers
-const AddMarkerOnClick = ({onAddMarker}) => {
-  useMapEvents({
-    click(e) {
-      const {lat, lng} = e.latlng
-      onAddMarker({latitude: lat, longitude: lng})
-    },
-  })
-  return null
-}
+const filters = ['Ramp', 'Elevator', 'Parking', 'Accessible Bathroom']
 
-// SearchBar Component
-const SearchBar = ({searchTerm, onChange}) => {
-  return (
-    <input
-      type='text'
-      placeholder='Search for accessible places...'
-      value={searchTerm}
-      onChange={onChange}
-      style={styles.searchInput}
-    />
-  )
-}
-
-// FilterButtons Component
-const FilterButtons = ({filters, selectedFilters, toggleFilter}) => {
-  return (
-    <div style={styles.filters}>
-      {filters.map(filter => (
-        <Button
-          key={filter}
-          className={`filter-button ${selectedFilters.includes(filter) ? 'selected' : ''}`}
-          style={{
-            ...styles.filterButton,
-            backgroundColor: selectedFilters.includes(filter) ? '#007bff' : '#fff',
-            color: selectedFilters.includes(filter) ? '#fff' : '#000',
-            transition: 'background-color 0.3s ease',
-          }}
-          onClick={() => toggleFilter(filter)}>
-          {filter}
-        </Button>
-      ))}
-    </div>
-  )
-}
-
-// Main MapView Component
 const MapView = () => {
+  const [openPopupId, setOpenPopupId] = useState(null)
   const [locations, setLocations] = useState([])
+  const [features, setFeatures] = useState([])
   const [newMarker, setNewMarker] = useState(null)
   const [locationName, setLocationName] = useState('')
+  const [accessibilityFeatures, setAccessibilityFeatures] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilters, setSelectedFilters] = useState([])
+  const [editingLocation, setEditingLocation] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState('')
 
-  // Fetch locations from the backend API
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchLocationData = async () => {
       try {
-        const response = await axios.get(process.env.REACT_APP_API_URL + 'api/locations')
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/locations`)
         setLocations(response.data)
+        console.log(response.data)
       } catch (error) {
-        console.error('Error fetching locations:', error)
+        console.error('Error fetching location data:', error)
       }
     }
-    fetchLocations()
+    const fetchFeaturesData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
+        setFeatures(response.data)
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error fetching features data:', error)
+      }
+    }
+    fetchFeaturesData()
+    fetchLocationData()
   }, [])
 
-  // Filter matching logic
-  const matchesFilters = item => {
-    const locationFeatures = filterExamples
-      .filter(f => f.locationID === item.locationID)
-      .map(f => f.feature)
+  const filteredLocations = locations.filter(location => {
+    if (selectedFilters.length === 0) return true // Show all if no filters are selected
 
-    if (selectedFilters.length === 0) {
-      return true
-    }
-    return selectedFilters.some(filter => locationFeatures.includes(filter))
-  }
+    const locationFeatures = features
+      .filter(feature => feature.locationID === location.locationID)
+      .map(feature => feature.locationFeature)
 
-  // Handle filter toggle
-  const toggleFilter = filter => {
-    setSelectedFilters(prevSelected =>
-      prevSelected.includes(filter)
-        ? prevSelected.filter(f => f !== filter)
-        : [...prevSelected, filter]
-    )
-  }
-
-  // Filtered results based on search term and selected filters
-  const filteredResults = locations.filter(item => {
-    const matchesSearchTerm = item.locationName.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearchTerm && matchesFilters(item)
+    return selectedFilters.every(filter => locationFeatures.includes(filter))
   })
-
-  const handleAddMarker = location => {
-    setNewMarker(location)
-  }
-
-  const saveMarker = async () => {
+  const handleAddMarker = async location => {
     try {
-      if (newMarker) {
-        const markerWithDetails = {...newMarker, locationName}
-        const response = await axios.post(process.env.REACT_APP_API_URL + 'api/locations', markerWithDetails)
-        setLocations([...locations, response.data])
-        setNewMarker(null)
-        setLocationName('')
+      const payload = {
+        locationName: locationName || 'Default Location Name',
+        latitude: location.latitude || 0,
+        longitude: location.longitude || 0,
+        accessibilityFeatures: (accessibilityFeatures || []).join(', '),
+        accessibilityDescriptions: accessibilityDescriptions || '',
       }
+      console.log('Payload for POST request:', payload)
+
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
+      const newLocation = response.data
+
+      setLocations(prevLocations => [...prevLocations, newLocation])
+      setNewMarker(newLocation)
+      setLocationName(newLocation.locationName || '')
+      setAccessibilityFeatures(newLocation.accessibilityFeatures || '')
+      setAccessibilityDescriptions(newLocation.accessibilityDescriptions || '')
+      setOpenPopupId(newLocation.locationID)
     } catch (error) {
-      console.error('Error saving marker:', error)
+      console.error('Error creating new marker:', error)
     }
   }
 
-  const deleteMarker = async id => {
+  const saveEdit = async updatedLocation => {
     try {
-      await axios.delete(process.env.REACT_APP_API_URL + `api/locations/${id}`)
-      setLocations(locations.filter(location => location.locationID !== id))
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
+        updatedLocation
+      )
+
+      setLocations(prevLocations =>
+        prevLocations.map(location =>
+          location.locationID === updatedLocation.locationID ? updatedLocation : location
+        )
+      )
+
+      setEditingLocation(null)
+      setIsEditing(false)
+      setOpenPopupId(null)
+    } catch (error) {
+      console.error('Error saving location:', error)
+    }
+  }
+
+  const deleteMarker = async locationID => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
+      setLocations(locations.filter(location => location.locationID !== locationID))
     } catch (error) {
       console.error('Error deleting location:', error)
     }
@@ -156,107 +123,63 @@ const MapView = () => {
 
   return (
     <div>
-      <Container style={styles.container}>
-        <div style={styles.searchBarContainer}>
-          <SearchBar searchTerm={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          <FilterButtons
-            filters={filterOptions}
-            selectedFilters={selectedFilters}
-            toggleFilter={toggleFilter}
-          />
-        </div>
-      </Container>
-
-      <MapContainer center={UCCoordinates} zoom={17.5} style={{height: '100vh', width: '100%'}}>
+      <SearchBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterOptions={filters}
+        selectedFilters={selectedFilters}
+        toggleFilter={filter =>
+          setSelectedFilters(prev =>
+            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+          )
+        }
+      />
+      <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {filteredResults.map(location => (
-          <Marker
+        {filteredLocations.map(location => (
+          <MarkerPopup
             key={location.locationID}
-            position={[location.latitude, location.longitude]}
-            icon={customMarkerIcon}>
-            <Popup>
-              <div className='popup-content'>
-                <div className='popup-header'>{location.locationName}</div>
-                <p>id: {location.locationID}</p>
-                <p>latitude: {location.latitude}</p>
-                <p>longitude: {location.longitude}</p>
-                <StarRating/>
-                <button className='popup-button' onClick={() => deleteMarker(location.locationID)}>
-                  Delete Location
-                </button>
-              </div>
-            </Popup>
-          </Marker>
+            location={location}
+            isEditing={isEditing}
+            editingLocation={editingLocation}
+            setEditingLocation={setEditingLocation}
+            setIsEditing={setIsEditing}
+            locationName={locationName}
+            setLocationName={setLocationName}
+            accessibilityFeatures={accessibilityFeatures}
+            setAccessibilityFeatures={setAccessibilityFeatures}
+            saveEdit={saveEdit}
+            deleteMarker={deleteMarker}
+            openPopupId={openPopupId}
+            setOpenPopupId={setOpenPopupId}
+          />
         ))}
-
         {newMarker && (
           <Marker position={[newMarker.latitude, newMarker.longitude]} icon={customMarkerIcon}>
-            <Popup>
-              <div className='popup-content'>
-                <div className='popup-header'>New Location</div>
-                <form className='popup-form'>
-                  <input
-                    type='text'
-                    placeholder='Location Name'
-                    value={locationName}
-                    onChange={e => setLocationName(e.target.value)}
-                  />
-                  <button type='button' className='popup-button' onClick={saveMarker}>
-                    Save Location
-                  </button>
-                </form>
-              </div>
-            </Popup>
+            <MarkerPopup
+              location={newMarker}
+              isEditing={isEditing}
+              editingLocation={editingLocation}
+              setEditingLocation={setEditingLocation}
+              setIsEditing={setIsEditing}
+              locationName={locationName}
+              setLocationName={setLocationName}
+              accessibilityFeatures={accessibilityFeatures}
+              setAccessibilityFeatures={setAccessibilityFeatures}
+              saveEdit={saveEdit}
+              deleteMarker={deleteMarker}
+              openPopupId={openPopupId}
+              setOpenPopupId={setOpenPopupId}
+            />
           </Marker>
         )}
-
         <AddMarkerOnClick onAddMarker={handleAddMarker} />
       </MapContainer>
     </div>
   )
-}
-
-// Styles
-const styles = {
-  container: {
-    position: 'absolute',
-    top: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '90%',
-    zIndex: 1000,
-  },
-  searchBarContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '1000px',
-  },
-  searchInput: {
-    borderRadius: '30px',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-    backgroundColor: '#fff',
-    fontSize: '15px',
-    padding: '15px 25px',
-    border: 'none',
-    outline: 'none',
-    width: '400px',
-  },
-  filters: {
-    display: 'flex',
-    gap: '10px',
-    marginLeft: '20px',
-  },
-  filterButton: {
-    borderRadius: '20px',
-    border: 'none',
-    padding: '10px 15px',
-    fontSize: '15px',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-    cursor: 'pointer',
-  },
 }
 
 export default MapView
