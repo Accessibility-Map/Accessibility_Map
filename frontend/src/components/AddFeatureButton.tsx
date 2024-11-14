@@ -59,16 +59,14 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
     <>
       <Button
         onClick={handleOpen}
+        variant="outlined"
         sx={{
-          backgroundColor: "#3d85c6",
-          color: "white",
+
+
           padding: "4px 12px",
-          fontSize: "0.80rem",
-          borderRadius: "8px",
+          
           textTransform: "none",
-          "&:hover": {
-            backgroundColor: "#2c6da4",
-          },
+
         }}
       >
         Add Feature

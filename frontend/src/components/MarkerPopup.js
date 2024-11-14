@@ -7,6 +7,10 @@ import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
 import FeaturesListWithToggle from "./FeaturesListWithToggle";
 import "./styles/MarkerPopup.css";
+import ImageScroller from "./ImageScroller";
+
+import Divider from "@mui/material/Divider";
+import Chip from "@mui/material/Chip";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -198,6 +202,12 @@ const handleUpload = async () => {
                   onChange={(e) => setLocationName(e.target.value)}
                   placeholder="Location Name"
                 />
+                <textarea
+                  value={accessibilityDescriptions}
+                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
+                  placeholder="Building Description"
+                  rows={2}
+                />
 
                 <h4>Features</h4>
                 {featuresList.map((feature, index) => (
@@ -239,13 +249,6 @@ const handleUpload = async () => {
                   </div>
                 ))}
 
-                <textarea
-                  value={accessibilityDescriptions}
-                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
-                  placeholder="Accessibility Description"
-                  rows={2}
-                />
-
                 <button
                   type="button"
                   className="popup-button"
@@ -265,14 +268,9 @@ const handleUpload = async () => {
           ) : (
             <>
               <div className="popup-header">{location.locationName}</div>
-              <p>Location ID: {location.locationID}</p>
-              <p>Features:</p>
-              <FeaturesListWithToggle featuresList={featuresList} />
-              <p>Description: {location.accessibilityDescriptions}</p>
-              <StarRating locationID={location.locationID} />
-              <AddFeatureButton locationID={location.locationID} />
-
-              {images &&
+              <p>{location.accessibilityDescriptions}</p>
+              <ImageScroller images={images} />
+              {/* {images &&
                 images.map((url, index) => (
                   <img
                     key={index}
@@ -280,7 +278,15 @@ const handleUpload = async () => {
                     alt="Uploaded location"
                     style={{ width: "100%", marginTop: "10px" }}
                   />
-                ))}
+              ))} */}
+              <br/>
+              <br/>
+              <Divider><Chip label="Features" size="small"></Chip></Divider>
+              <FeaturesListWithToggle featuresList={featuresList} />
+              <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
+
+              
               <button className="popup-button" onClick={handleEditLocation}>
                 Edit Location
               </button>
