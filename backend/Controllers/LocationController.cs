@@ -46,6 +46,9 @@ namespace backend.Controllers
                     ? Path.Combine(_environment.WebRootPath, "uploads")
                     : Path.Combine(Directory.GetCurrentDirectory(), "uploads");
 
+                // Log uploadsFolder
+                Console.WriteLine(uploadsFolder);
+
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
