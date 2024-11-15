@@ -1,11 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import axios from "axios";
 import FeatureService from "./services/FeatureService.ts";
 import AddFeatureButton from "./AddFeatureButton.tsx";
 import StarRating from "./StarRating.tsx";
-import axios from "axios";
-import './styles/MarkerPopup.css';
+import FeaturesListWithToggle from "./FeaturesListWithToggle";
+import "./styles/MarkerPopup.css";
+import ImageScroller from "./ImageScroller";
+
+import Divider from "@mui/material/Divider";
+import Chip from "@mui/material/Chip";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -39,9 +44,15 @@ const MarkerPopup = ({
   useEffect(() => {
     if (isEditing && editingLocation?.locationID === location.locationID) {
       setLocationName(location.locationName || "");
+      setAccessibilityDescriptions(location.accessibilityDescriptions || "");
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
-  
+
+  useEffect(() => {
+    if (openPopupId === location.locationID && markerRef.current) {
+      markerRef.current.openPopup();
+    }
+  }, [openPopupId, location.locationID]);
 
   const handleEditLocation = () => {
     setTimeout(() => {
@@ -50,59 +61,88 @@ const MarkerPopup = ({
       setIsEditing(true);
     }, 0);
   };
-  
+// Define handleFileChange function here
+const handleFileChange = (e) => {
+  setSelectedFile(e.target.files[0]);
+};
 
-  const openPopup = () => {
-    if (markerRef.current && markerRef.current._popup) {
-      const popup = markerRef.current._popup;
-      const mapInstance = markerRef.current._map;
-      if (mapInstance) {
-        popup.openOn(mapInstance);
-      } else {
-        console.error("Map instance is not available.");
+const handleUpload = async () => {
+  if (!selectedFile) {
+    alert("Please select a file.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", selectedFile);
+
+  setUploading(true);
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
+    );
+
+    console.log("Image URL from response:", response.data.imageUrl);
+
+    setImages((prevImages) => [
+      ...prevImages,
+      `${process.env.REACT_APP_API_URL.replace(
+        /\/+$/,
+        ""
+      )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
+    ]);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  } finally {
+    setUploading(false);
+  }
+};
+
+  const handleDeleteFeature = async (featureId) => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}api/features/${featureId}`
+      );
+      setFeaturesList((prevFeatures) =>
+        prevFeatures.filter((feature) => feature.id !== featureId)
+      );
+      setIsEditing(true);
+    } catch (error) {
+      console.error("Error deleting feature:", error);
+    }
+  };
+
+  const fetchImages = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
+      );
+      if (response.status === 200 && response.data.length > 0) {
+        const imageUrls = response.data
+          .filter((picture) => picture.imageUrl)
+          .map((picture) =>
+            `${process.env.REACT_APP_API_URL}${picture.imageUrl.replace(/^\/+/, "")}`
+          );
+        setImages(imageUrls);
+      } else {
+        setImages([]);
+      }
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      setImages([]);
     }
   };
 
   useEffect(() => {
-    if (openDefaultPopupOnStart && openPopupId === location.locationID) {
-      openPopup();
-    }
-  }, [openDefaultPopupOnStart, openPopupId, location.locationID]);
-
-  useEffect(() => {
-    if (isEditing && editingLocation?.locationID === location.locationID) {
-      openPopup();
-    }
-  }, [isEditing, editingLocation, location.locationID]);
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
-        );
-        if (response.status === 200 && response.data.length > 0) {
-          setImages(
-            response.data.map(
-              (picture) =>
-                `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${picture.imageUrl.replace(/^\/+/, "")}`
-            )
-          );
-        } else {
-          setImages([]); // Clear images if no pictures found
-        }
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        setImages([]); // Clear images if an error occurs
-      }
-    };
-  
     fetchImages();
   }, [location.locationID]);
-  
 
-  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); // Remove any trailing slash
+  const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
 
   const handleSaveEdit = async () => {
     const updatedLocation = {
@@ -113,19 +153,17 @@ const MarkerPopup = ({
     };
 
     try {
-      // Save location changes
       await saveEdit(updatedLocation);
-
-      // Update features with the corrected URL
       await Promise.all(
         featuresList.map((feature) => {
           const featureUrl = `${apiUrl}/api/features/${feature.id}`;
-          console.log("Updating feature URL:", featureUrl);
-
-          return axios.put(featureUrl, feature);
+          return axios.put(featureUrl, {
+            id: feature.id,
+            locationFeature: feature.locationFeature,
+            notes: feature.notes,
+          });
         })
       );
-
       setIsEditing(false);
       setEditingLocation(null);
     } catch (error) {
@@ -137,63 +175,20 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
-  const getAccessibilityFeatures = async (locationID) => {
-    let features = await FeatureService.getFeaturesByLocationID(locationID);
-    return features;
-  };
-
   useEffect(() => {
-    getAccessibilityFeatures(location.locationID).then((features) => {
-      console.log("Fetched features:", features);
+    FeatureService.getFeaturesByLocationID(location.locationID).then((features) => {
       setFeaturesList(features);
     });
   }, [location.locationID]);
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Please select a file.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    setUploading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-
-      );
-
-      console.log("Image URL from response:", response.data.imageUrl);
-
-      setImages((prevImages) => [
-        ...prevImages,
-        `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${response.data.imageUrl.replace(/^\/+/, "")}`
-      ]);
-      
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    }
-  };
-
-  console.log("Rendering with locationName:", locationName);
 
   return (
     <Marker
       ref={markerRef}
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
+      eventHandlers={{
+        click: () => setOpenPopupId(location.locationID), // Open popup on click
+      }}
     >
       <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
         <div className="popup-content">
@@ -206,6 +201,12 @@ const MarkerPopup = ({
                   value={locationName}
                   onChange={(e) => setLocationName(e.target.value)}
                   placeholder="Location Name"
+                />
+                <textarea
+                  value={accessibilityDescriptions}
+                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
+                  placeholder="Building Description"
+                  rows={2}
                 />
 
                 <h4>Features</h4>
@@ -227,22 +228,26 @@ const MarkerPopup = ({
                     <textarea
                       value={feature.notes || ""}
                       onChange={(e) => {
-                        const updatedFeatures = [...featuresList];
-                        updatedFeatures[index].Notes = e.target.value;
+                        const updatedFeatures = featuresList.map((f, i) =>
+                          i === index ? { ...f, notes: e.target.value } : f
+                        );
                         setFeaturesList(updatedFeatures);
                       }}
                       placeholder="Notes"
                       rows={2}
                     />
+                    <button
+                      type="button" // Prevent form submission
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent event propagation
+                        handleDeleteFeature(feature.id);
+                      }}
+                      className="delete-feature-button"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 ))}
-
-                <textarea
-                  value={accessibilityDescriptions}
-                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
-                  placeholder="Accessibility Description"
-                  rows={2}
-                />
 
                 <button
                   type="button"
@@ -263,25 +268,9 @@ const MarkerPopup = ({
           ) : (
             <>
               <div className="popup-header">{location.locationName}</div>
-              <p>Location ID: {location.locationID}</p>
-              <p>Features:</p>
-              <div>
-                {featuresList.map((feature) => (
-                  <div key={feature.id}>
-                    <p>
-                      <strong>Feature:</strong> {feature.locationFeature}
-                    </p>
-                    <p>
-                      <strong>Notes:</strong> {feature.notes}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <p>Description: {location.accessibilityDescriptions}</p>
-              <StarRating locationID={location.locationID} />
-              <AddFeatureButton locationID={location.locationID} />
-
-              {images &&
+              <p>{location.accessibilityDescriptions}</p>
+              <ImageScroller images={images} />
+              {/* {images &&
                 images.map((url, index) => (
                   <img
                     key={index}
@@ -289,7 +278,15 @@ const MarkerPopup = ({
                     alt="Uploaded location"
                     style={{ width: "100%", marginTop: "10px" }}
                   />
-                ))}
+              ))} */}
+              <br/>
+              <br/>
+              <Divider><Chip label="Features" size="small"></Chip></Divider>
+              <FeaturesListWithToggle featuresList={featuresList} />
+              <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
+
+              
               <button className="popup-button" onClick={handleEditLocation}>
                 Edit Location
               </button>

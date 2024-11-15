@@ -1,7 +1,54 @@
-.feature{
+.feature {
     font-weight: bold;
 }
 
-.feature-description{
+.feature-description {
     font-style: italic;
 }
+.delete-feature-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    margin-left: 8px;
+}
+
+.delete-feature-button:hover {
+    color: darkred;
+}
+
+.popup-content {
+    width: 600px; /* Adjust to desired width */
+    max-width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  
+  .popup-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .upload-section {
+    margin-top: 20px;
+  }
+  
+  .popup-button {
+    margin-top: 15px;
+    padding: 8px 16px;
+  }
+  
+  .popup-button-delete {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 8px 16px;
+    margin-top: 10px;
+  }
+  

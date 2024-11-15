@@ -81,21 +81,18 @@ namespace backend.Controllers
         }
 
 
-        [HttpGet("{id}/pictures")]
-        public async Task<IActionResult> GetPictures(int id)
-        {
-            var pictures = await _context.Pictures
-                .Where(p => p.LocationID == id)
-                .Select(p => new { p.ImageUrl })  // Only return ImageUrl
-                .ToListAsync();
+      [HttpGet("{id}/pictures")]
+public async Task<IActionResult> GetPictures(int id)
+{
+    var pictures = await _context.Pictures
+        .Where(p => p.LocationID == id)
+        .Select(p => new { p.ImageUrl })  // Only return ImageUrl
+        .ToListAsync();
 
-            if (!pictures.Any())
-            {
-                return NotFound("No pictures found for this location.");
-            }
+    // Instead of returning 404, return an empty list if no pictures found
+    return Ok(pictures);
+}
 
-            return Ok(pictures);
-        }
         // Create Location
         [HttpPost]
         public async Task<IActionResult> CreateLocation([FromBody] Location location)
@@ -120,7 +117,6 @@ namespace backend.Controllers
             return Ok(locations);
         }
 
-        // Delete Location
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(int id)
         {
@@ -130,11 +126,19 @@ namespace backend.Controllers
                 return NotFound();
             }
 
+            // Remove related entities (e.g., Ratings and Features)
+            var ratings = _context.Ratings.Where(r => r.LocationID == id);
+            _context.Ratings.RemoveRange(ratings);
+
+            var features = _context.Features.Where(f => f.LocationID == id);
+            _context.Features.RemoveRange(features);
+
             _context.Locations.Remove(location);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
         [HttpDelete("{id}/delete-image")]
         public async Task<IActionResult> DeleteImage(int id)
         {

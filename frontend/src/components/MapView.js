@@ -1,130 +1,185 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import axios from "axios";
-import SearchBar from "./SearchBar";
-import MarkerPopup from "./MarkerPopup";
-import AddMarkerOnClick from "./AddMarkerOnClick";
-import './styles/MapView.css';
+import React, {useState, useEffect} from 'react'
+import {MapContainer, TileLayer, Marker} from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import axios from 'axios'
+import {Icon} from 'leaflet'
 
+import SearchBar from './SearchBar'
+import MarkerPopup from './MarkerPopup'
+import AddMarkerOnClick from './AddMarkerOnClick'
+import './styles/MapView.css'
 
-const UCCoordinates = [39.1317, -84.515];
+const UCCoordinates = [39.1317, -84.515]
+
+// Define customMarkerIcon here
+const customMarkerIcon = new Icon({
+  iconUrl: '/Icons/Mapmarker.png',
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -40],
+})
+
+const filters = ['Ramp', 'Elevator', 'Parking', 'Accessible Bathroom']
 
 const MapView = () => {
-  const [openPopupId, setOpenPopupId] = useState(null);
-
-  const [locations, setLocations] = useState([]);
-  const [newMarker, setNewMarker] = useState(null);
-  const [locationName, setLocationName] = useState("");
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState([]);
-  const [editingLocation, setEditingLocation] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [openPopupId, setOpenPopupId] = useState(null)
+  const [locations, setLocations] = useState([])
+  const [features, setFeatures] = useState([])
+  const [newMarker, setNewMarker] = useState(null)
+  const [locationName, setLocationName] = useState('')
+  const [accessibilityFeatures, setAccessibilityFeatures] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedFilters, setSelectedFilters] = useState([])
+  const [editingLocation, setEditingLocation] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState('')
 
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}api/locations`
-        );
-        setLocations(response.data);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/locations`)
+        setLocations(response.data)
+        console.log(response.data)
       } catch (error) {
-        console.error("Error fetching location data:", error);
+        console.error('Error fetching location data:', error)
       }
-    };
-    fetchLocationData();
-  }, []);
-  
+    }
+    const fetchFeaturesData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
+        setFeatures(response.data)
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error fetching features data:', error)
+      }
+    }
+    fetchFeaturesData()
+    fetchLocationData()
+  }, [])
 
-  const handleAddMarker = (location) => {
-    setNewMarker(location);
-    setLocationName("");
-    setAccessibilityFeatures("");
-  };
-  const saveEdit = async (updatedLocation) => {
+  const filteredLocations = locations.filter(location => {
+    if (selectedFilters.length === 0) return true // Show all if no filters are selected
+
+    const locationFeatures = features
+      .filter(feature => feature.locationID === location.locationID)
+      .map(feature => feature.locationFeature)
+
+    return selectedFilters.every(filter => locationFeatures.includes(filter))
+  })
+  const handleAddMarker = async location => {
+    try {
+      const payload = {
+        locationName: locationName || 'Default Location Name',
+        latitude: location.latitude || 0,
+        longitude: location.longitude || 0,
+        accessibilityFeatures: (accessibilityFeatures || []).join(', '),
+        accessibilityDescriptions: accessibilityDescriptions || '',
+      }
+      console.log('Payload for POST request:', payload)
+
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
+      const newLocation = response.data
+
+      setLocations(prevLocations => [...prevLocations, newLocation])
+      setNewMarker(newLocation)
+      setLocationName(newLocation.locationName || '')
+      setAccessibilityFeatures(newLocation.accessibilityFeatures || '')
+      setAccessibilityDescriptions(newLocation.accessibilityDescriptions || '')
+      setOpenPopupId(newLocation.locationID)
+    } catch (error) {
+      console.error('Error creating new marker:', error)
+    }
+  }
+
+  const saveEdit = async updatedLocation => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
         updatedLocation
-      );
-      
-      setLocations((prevLocations) =>
-        prevLocations.map((location) =>
-          location.locationID === updatedLocation.locationID
-            ? updatedLocation
-            : location
+      )
+
+      setLocations(prevLocations =>
+        prevLocations.map(location =>
+          location.locationID === updatedLocation.locationID ? updatedLocation : location
         )
-      );
-  
-      setEditingLocation(null);
-      setIsEditing(false);
-      setOpenPopupId(null);
+      )
+
+      setEditingLocation(null)
+      setIsEditing(false)
+      setOpenPopupId(null)
     } catch (error) {
-      console.error("Error saving location:", error);
+      console.error('Error saving location:', error)
     }
-  };
-  
-  const deleteMarker = async (locationID) => {
+  }
+
+  const deleteMarker = async locationID => {
     try {
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}api/locations/${locationID}`
-      );
-      setLocations(
-        locations.filter((location) => location.locationID !== locationID)
-      );
+      await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
+      setLocations(locations.filter(location => location.locationID !== locationID))
     } catch (error) {
-      console.error("Error deleting location:", error);
+      console.error('Error deleting location:', error)
     }
-  };
+  }
 
   return (
     <div>
       <SearchBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        filterOptions={["Ramp", "Elevator", "Parking", "Restroom"]}
+        filterOptions={filters}
         selectedFilters={selectedFilters}
-        toggleFilter={(filter) =>
-          setSelectedFilters((prev) =>
-            prev.includes(filter)
-              ? prev.filter((f) => f !== filter)
-              : [...prev, filter]
+        toggleFilter={filter =>
+          setSelectedFilters(prev =>
+            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
           )
         }
       />
-      <MapContainer
-        center={UCCoordinates}
-        zoom={17}
-        style={{ height: "100vh", width: "100%" }}
-      >
+      <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {locations.map((location) => (
+        {filteredLocations.map(location => (
           <MarkerPopup
             key={location.locationID}
             location={location}
             isEditing={isEditing}
             editingLocation={editingLocation}
-            setEditingLocation={setEditingLocation} // Pass setEditingLocation
-            setIsEditing={setIsEditing}             // Pass setIsEditing
+            setEditingLocation={setEditingLocation}
+            setIsEditing={setIsEditing}
             locationName={locationName}
             setLocationName={setLocationName}
             accessibilityFeatures={accessibilityFeatures}
             setAccessibilityFeatures={setAccessibilityFeatures}
-            saveEdit={saveEdit}                
-
+            saveEdit={saveEdit}
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
           />
         ))}
+        {newMarker && (
+          <Marker position={[newMarker.latitude, newMarker.longitude]} icon={customMarkerIcon}>
+            <MarkerPopup
+              location={newMarker}
+              isEditing={isEditing}
+              editingLocation={editingLocation}
+              setEditingLocation={setEditingLocation}
+              setIsEditing={setIsEditing}
+              locationName={locationName}
+              setLocationName={setLocationName}
+              accessibilityFeatures={accessibilityFeatures}
+              setAccessibilityFeatures={setAccessibilityFeatures}
+              saveEdit={saveEdit}
+              deleteMarker={deleteMarker}
+              openPopupId={openPopupId}
+              setOpenPopupId={setOpenPopupId}
+            />
+          </Marker>
+        )}
         <AddMarkerOnClick onAddMarker={handleAddMarker} />
       </MapContainer>
     </div>
-  );
-};
+  )
+}
 
-export default MapView;
+export default MapView
