@@ -58,13 +58,13 @@ const MapView = () => {
   }, [])
 
   const filteredLocations = locations.filter(location => {
-    if (selectedFilters.length === 0) return true // Show all if no filters are selected
-
+    const matchesSearchTerm = location.locationName.toLowerCase().includes(searchTerm.toLowerCase())
+    if (searchTerm && !matchesSearchTerm) return false
+    if (selectedFilters.length === 0) return true
     const locationFeatures = features
       .filter(feature => feature.locationID === location.locationID)
       .map(feature => feature.locationFeature)
-
-    return selectedFilters.every(filter => locationFeatures.includes(filter))
+    return matchesSearchTerm && selectedFilters.every(filter => locationFeatures.includes(filter))
   })
   const handleAddMarker = async location => {
     try {
