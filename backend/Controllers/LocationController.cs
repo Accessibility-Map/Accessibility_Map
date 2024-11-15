@@ -41,18 +41,24 @@ namespace backend.Controllers
                     return BadRequest("No file uploaded.");
                 }
 
-                // Fallback to a relative path if WebRootPath is null
-                var uploadsFolder = _environment.WebRootPath != null
+                string uploadsFolder;
+
+                if(_environment.IsProduction()){
+                    uploadsFolder = "/uploads";
+                }
+                else{
+                    // Fallback to a relative path if WebRootPath is null
+                    uploadsFolder = _environment.WebRootPath != null
                     ? Path.Combine(_environment.WebRootPath, "uploads")
                     : Path.Combine(Directory.GetCurrentDirectory(), "uploads");
 
-                // Log uploadsFolder
-                Console.WriteLine(uploadsFolder);
-
-                if (!Directory.Exists(uploadsFolder))
-                {
+                    if (!Directory.Exists(uploadsFolder))
+                    {
                     Directory.CreateDirectory(uploadsFolder);
+                    }
                 }
+
+                
 
                 // Generate a unique filename to avoid conflicts
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
@@ -85,7 +91,7 @@ namespace backend.Controllers
 
 
       [HttpGet("{id}/pictures")]
-public async Task<IActionResult> GetPictures(int id)
+    public async Task<IActionResult> GetPictures(int id)
 {
     var pictures = await _context.Pictures
         .Where(p => p.LocationID == id)
@@ -154,8 +160,15 @@ public async Task<IActionResult> GetPictures(int id)
                     return NotFound("Image not found.");
                 }
 
-                // Construct the file path
-                var filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
+                string filePath;
+                if(_environment.IsProduction()){
+                    filePath = picture.ImageUrl;
+                }
+                else{
+                    // Construct the file path
+                    filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
+                }
+                
 
                 // Delete the file from the filesystem
                 if (System.IO.File.Exists(filePath))
