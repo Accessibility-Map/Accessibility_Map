@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Context;
 using Microsoft.Extensions.FileProviders;
-using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,14 +56,22 @@ app.Use(async (context, next) => {
     await next();
 });
 
-app.UseStaticFiles(); // Enables serving default static files (like wwwroot)
-
-app.UseStaticFiles(new StaticFileOptions
-{
+if(app.Environment.IsProduction()){
+    app.UseStaticFiles(new StaticFileOptions
+    {
+    FileProvider = new PhysicalFileProvider("/uploads"),
+    RequestPath = "/uploads"
+    }); 
+}
+else{
+    app.UseStaticFiles(new StaticFileOptions
+    {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
     RequestPath = "/uploads"
-});
+    });
+}
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
