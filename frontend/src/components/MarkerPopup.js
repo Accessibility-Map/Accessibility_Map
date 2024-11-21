@@ -190,117 +190,107 @@ const handleUpload = async () => {
         click: () => setOpenPopupId(location.locationID), // Open popup on click
       }}
     >
-      <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
-        <div className="popup-content">
-          {isEditing && editingLocation?.locationID === location.locationID ? (
-            <>
-              <div className="popup-header">Edit Location</div>
-              <form className="popup-form">
-                <input
-                  type="text"
-                  value={locationName}
-                  onChange={(e) => setLocationName(e.target.value)}
-                  placeholder="Location Name"
-                />
-                <textarea
-                  value={accessibilityDescriptions}
-                  onChange={(e) => setAccessibilityDescriptions(e.target.value)}
-                  placeholder="Building Description"
-                  rows={2}
-                />
+     <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
+  <div className="popup-content">
+    {isEditing && editingLocation?.locationID === location.locationID ? (
+      <>
+        <div className="popup-header">Edit Location</div>
+        <form className="popup-form">
+          <input
+            type="text"
+            value={locationName}
+            onChange={(e) => setLocationName(e.target.value)}
+            placeholder="Location Name"
+          />
+          <textarea
+            value={accessibilityDescriptions}
+            onChange={(e) => setAccessibilityDescriptions(e.target.value)}
+            placeholder="Building Description"
+            rows={2}
+          />
 
-                <h4>Features</h4>
-                {featuresList.map((feature, index) => (
-                  <div key={feature.id} className="feature-item">
-                    <input
-                      type="text"
-                      value={feature.locationFeature}
-                      onChange={(e) => {
-                        const updatedFeatures = featuresList.map((f, i) =>
-                          i === index
-                            ? { ...f, locationFeature: e.target.value }
-                            : f
-                        );
-                        setFeaturesList(updatedFeatures);
-                      }}
-                      placeholder="Feature"
-                    />
-                    <textarea
-                      value={feature.notes || ""}
-                      onChange={(e) => {
-                        const updatedFeatures = featuresList.map((f, i) =>
-                          i === index ? { ...f, notes: e.target.value } : f
-                        );
-                        setFeaturesList(updatedFeatures);
-                      }}
-                      placeholder="Notes"
-                      rows={2}
-                    />
-                    <button
-                      type="button" // Prevent form submission
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent event propagation
-                        handleDeleteFeature(feature.id);
-                      }}
-                      className="delete-feature-button"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  className="popup-button"
-                  onClick={handleSaveEdit}
-                >
-                  Save Changes
-                </button>
-              </form>
-              <div className="upload-section">
-                <h3>Upload Image</h3>
-                <input type="file" onChange={handleFileChange} />
-                <button onClick={handleUpload} disabled={uploading}>
-                  {uploading ? "Uploading..." : "Upload Image"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="popup-header">{location.locationName}</div>
-              <p>{location.accessibilityDescriptions}</p>
-              <ImageScroller images={images} />
-              {/* {images &&
-                images.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt="Uploaded location"
-                    style={{ width: "100%", marginTop: "10px" }}
-                  />
-              ))} */}
-              <br/>
-              <br/>
-              <Divider><Chip label="Features" size="small"></Chip></Divider>
-              <FeaturesListWithToggle featuresList={featuresList} />
-              <StarRating locationID={location.locationID} />
-              <AddFeatureButton locationID={location.locationID} />
-
-              
-              <button className="popup-button" onClick={handleEditLocation}>
-                Edit Location
-              </button>
-
+          <h4>Features</h4>
+          {featuresList.map((feature, index) => (
+            <div key={feature.id} className="feature-item">
+              <input
+                type="text"
+                value={feature.locationFeature}
+                onChange={(e) => {
+                  const updatedFeatures = featuresList.map((f, i) =>
+                    i === index
+                      ? { ...f, locationFeature: e.target.value }
+                      : f
+                  );
+                  setFeaturesList(updatedFeatures);
+                }}
+                placeholder="Feature"
+              />
+              <textarea
+                value={feature.notes || ""}
+                onChange={(e) => {
+                  const updatedFeatures = featuresList.map((f, i) =>
+                    i === index ? { ...f, notes: e.target.value } : f
+                  );
+                  setFeaturesList(updatedFeatures);
+                }}
+                placeholder="Notes"
+                rows={2}
+              />
               <button
-                className="popup-button-delete"
-                onClick={() => deleteMarker(location.locationID)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteFeature(feature.id);
+                }}
+                className="delete-feature-button"
               >
-                Delete Location
+                🗑️
               </button>
-            </>
-          )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="popup-button"
+            onClick={handleSaveEdit}
+          >
+            Save Changes
+          </button>
+        </form>
+        <div className="upload-section">
+          <h3>Upload Image</h3>
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={handleUpload} disabled={uploading}>
+            {uploading ? "Uploading..." : "Upload Image"}
+          </button>
         </div>
-      </Popup>
+      </>
+    ) : (
+      <>
+        <div className="popup-header">{location.locationName}</div>
+        <p>{location.accessibilityDescriptions}</p>
+        <ImageScroller images={images} />
+        <Divider>
+          <Chip label="Features" size="small"></Chip>
+        </Divider>
+        <FeaturesListWithToggle featuresList={featuresList} />
+        <StarRating locationID={location.locationID} />
+        <AddFeatureButton locationID={location.locationID} />
+
+        <button className="popup-button" onClick={handleEditLocation}>
+          Edit Location
+        </button>
+
+        <button
+          className="popup-button-delete"
+          onClick={() => deleteMarker(location.locationID)}
+        >
+          Delete Location
+        </button>
+      </>
+    )}
+  </div>
+</Popup>
     </Marker>
   );
 };

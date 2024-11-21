@@ -1,54 +1,120 @@
+/* General styles */
+.popup-content {
+  max-width: 90%;
+  padding: 10px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.popup-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-form input,
+.popup-form textarea {
+  width: 100%;
+  /* Full width for inputs */
+  padding: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.popup-button {
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.popup-button-delete {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+/* Shared button hover state */
+.popup-button:hover,
+.popup-button-delete:hover {
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.upload-section {
+  margin-top: 20px;
+}
+
+.upload-section input[type="file"],
+.upload-section button {
+  font-size: 14px;
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+}
+
+/* Features Section */
 .feature {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .feature-description {
-    font-style: italic;
+  font-style: italic;
 }
+
 .delete-feature-button {
-    background: none;
+  background: none;
     border: none;
-    cursor: pointer;
-    color: red;
+  color: red;
     margin-left: 8px;
+  cursor: pointer;
 }
 
 .delete-feature-button:hover {
-    color: darkred;
+  color: darkred;
 }
 
-.popup-content {
-    width: 600px; /* Adjust to desired width */
-    max-width: 100%;
-    padding: 16px;
-    box-sizing: border-box;
+/* Image Scroller */
+.image-scroller {
+  display: flex;
+  overflow-x: auto;
+  /* Horizontal scrolling for small screens */
+  gap: 10px;
+}
+.image-scroller img {
+  max-width: 100px;
+  height: auto;
+  border-radius: 4px;
+}
+/* Media Query for Mobile */
+@media (max-width: 768px) {
+  .popup-content {
+    padding: 8px;
   }
-  
-  .popup-header {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
+
+    .popup-header {
+      font-size: 14px;
   }
-  
-  .popup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+
+    .popup-form input,
+    .popup-form textarea {
+      font-size: 12px;
   }
-  
-  .upload-section {
-    margin-top: 20px;
-  }
-  
-  .popup-button {
-    margin-top: 15px;
-    padding: 8px 16px;
-  }
-  
+
+    .popup-button,
   .popup-button-delete {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 8px 16px;
-    margin-top: 10px;
+    font-size: 12px;
   }
-  
+
+    .image-scroller img {
+      max-width: 80px;
+    }
+    }
