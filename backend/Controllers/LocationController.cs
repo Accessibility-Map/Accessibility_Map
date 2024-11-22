@@ -41,18 +41,24 @@ namespace backend.Controllers
                     return BadRequest("No file uploaded.");
                 }
 
-                // Fallback to a relative path if WebRootPath is null
-                var uploadsFolder = _environment.WebRootPath != null
+                string uploadsFolder;
+
+                if(_environment.IsProduction()){
+                    uploadsFolder = "/uploads";
+                }
+                else{
+                    // Fallback to a relative path if WebRootPath is null
+                    uploadsFolder = _environment.WebRootPath != null
                     ? Path.Combine(_environment.WebRootPath, "uploads")
                     : Path.Combine(Directory.GetCurrentDirectory(), "uploads");
 
-                // Log uploadsFolder
-                Console.WriteLine(uploadsFolder);
-
-                if (!Directory.Exists(uploadsFolder))
-                {
+                    if (!Directory.Exists(uploadsFolder))
+                    {
                     Directory.CreateDirectory(uploadsFolder);
+                    }
                 }
+
+                
 
                 // Generate a unique filename to avoid conflicts
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
@@ -85,7 +91,7 @@ namespace backend.Controllers
 
 
       [HttpGet("{id}/pictures")]
-public async Task<IActionResult> GetPictures(int id)
+    public async Task<IActionResult> GetPictures(int id)
 {
     var pictures = await _context.Pictures
         .Where(p => p.LocationID == id)
@@ -123,23 +129,51 @@ public async Task<IActionResult> GetPictures(int id)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(int id)
         {
-            var location = await _context.Locations.FindAsync(id);
-            if (location == null)
+            try
             {
-                return NotFound();
+                // Find the location
+                var location = await _context.Locations.FindAsync(id);
+                if (location == null)
+                {
+                    return NotFound("Location not found.");
+                }
+
+                // Fetch all associated images
+                var pictures = await _context.Pictures.Where(p => p.LocationID == id).ToListAsync();
+
+                // Delete images from the filesystem
+                foreach (var picture in pictures)
+                {
+                    var filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+
+                // Remove image records from the database
+                _context.Pictures.RemoveRange(pictures);
+
+                // Remove related entities (e.g., Ratings, Features)
+                var ratings = _context.Ratings.Where(r => r.LocationID == id);
+                _context.Ratings.RemoveRange(ratings);
+
+                var features = _context.Features.Where(f => f.LocationID == id);
+                _context.Features.RemoveRange(features);
+
+                // Remove the location itself
+                _context.Locations.Remove(location);
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                return Ok("Location and associated images deleted successfully.");
             }
-
-            // Remove related entities (e.g., Ratings and Features)
-            var ratings = _context.Ratings.Where(r => r.LocationID == id);
-            _context.Ratings.RemoveRange(ratings);
-
-            var features = _context.Features.Where(f => f.LocationID == id);
-            _context.Features.RemoveRange(features);
-
-            _context.Locations.Remove(location);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error deleting location: " + ex.Message);
+                return StatusCode(500, "Internal server error occurred while deleting the location.");
+            }
         }
 
         [HttpDelete("{id}/delete-image")]
@@ -154,8 +188,15 @@ public async Task<IActionResult> GetPictures(int id)
                     return NotFound("Image not found.");
                 }
 
-                // Construct the file path
-                var filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
+                string filePath;
+                if(_environment.IsProduction()){
+                    filePath = picture.ImageUrl;
+                }
+                else{
+                    // Construct the file path
+                    filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
+                }
+                
 
                 // Delete the file from the filesystem
                 if (System.IO.File.Exists(filePath))
