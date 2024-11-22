@@ -37,14 +37,13 @@ const MarkerPopup = ({
   const [featuresList, setFeaturesList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState("");
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState("");
+  const [Description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (isEditing && editingLocation?.locationID === location.locationID) {
       setLocationName(location.locationName || "");
-      setAccessibilityDescriptions(location.accessibilityDescriptions || "");
+      setDescription(location.Description || "");
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
 
@@ -148,8 +147,7 @@ const handleUpload = async () => {
     const updatedLocation = {
       ...location,
       locationName,
-      accessibilityFeatures,
-      accessibilityDescriptions,
+      Description,
     };
 
     try {
@@ -203,8 +201,8 @@ const handleUpload = async () => {
             placeholder="Location Name"
           />
           <textarea
-            value={accessibilityDescriptions}
-            onChange={(e) => setAccessibilityDescriptions(e.target.value)}
+            value={Description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Building Description"
             rows={2}
           />
@@ -268,7 +266,7 @@ const handleUpload = async () => {
     ) : (
       <>
         <div className="popup-header">{location.locationName}</div>
-        <p>{location.accessibilityDescriptions}</p>
+        <p>{location.Description}</p>
         <ImageScroller images={images} />
         <Divider>
           <Chip label="Features" size="small"></Chip>

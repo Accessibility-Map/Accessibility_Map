@@ -18,8 +18,7 @@ namespace backend.Models
         [Required]
         public double Longitude { get; set; }
 
-        public string? AccessibilityFeatures { get; set; }
-        public string? AccessibilityDescriptions { get; set; }
+        public string? Description { get; set; }
 
         // Make these collections optional by using nullable collections
         public ICollection<Feature>? Features { get; set; }

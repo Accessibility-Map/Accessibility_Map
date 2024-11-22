@@ -228,8 +228,7 @@ namespace backend.Controllers
             }
 
             existingLocation.LocationName = location.LocationName;
-            existingLocation.AccessibilityFeatures = location.AccessibilityFeatures;
-            existingLocation.AccessibilityDescriptions = location.AccessibilityDescriptions;
+            existingLocation.Description = location.Description;
 
             await _context.SaveChangesAsync();
 
