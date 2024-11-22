@@ -27,12 +27,11 @@ const MapView = () => {
   const [features, setFeatures] = useState([])
   const [newMarker, setNewMarker] = useState(null)
   const [locationName, setLocationName] = useState('')
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilters, setSelectedFilters] = useState([])
   const [editingLocation, setEditingLocation] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState('')
+  const [Description, setDescription] = useState('')
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -72,8 +71,7 @@ const MapView = () => {
         locationName: locationName || 'Default Location Name',
         latitude: location.latitude || 0,
         longitude: location.longitude || 0,
-        accessibilityFeatures: (accessibilityFeatures || []).join(', '),
-        accessibilityDescriptions: accessibilityDescriptions || '',
+        Description: Description || '',
       }
       console.log('Payload for POST request:', payload)
 
@@ -83,8 +81,7 @@ const MapView = () => {
       setLocations(prevLocations => [...prevLocations, newLocation])
       setNewMarker(newLocation)
       setLocationName(newLocation.locationName || '')
-      setAccessibilityFeatures(newLocation.accessibilityFeatures || '')
-      setAccessibilityDescriptions(newLocation.accessibilityDescriptions || '')
+      setDescription(newLocation.Description || '')
       setOpenPopupId(newLocation.locationID)
     } catch (error) {
       console.error('Error creating new marker:', error)
@@ -149,8 +146,6 @@ const MapView = () => {
             setIsEditing={setIsEditing}
             locationName={locationName}
             setLocationName={setLocationName}
-            accessibilityFeatures={accessibilityFeatures}
-            setAccessibilityFeatures={setAccessibilityFeatures}
             saveEdit={saveEdit}
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
@@ -167,8 +162,6 @@ const MapView = () => {
               setIsEditing={setIsEditing}
               locationName={locationName}
               setLocationName={setLocationName}
-              accessibilityFeatures={accessibilityFeatures}
-              setAccessibilityFeatures={setAccessibilityFeatures}
               saveEdit={saveEdit}
               deleteMarker={deleteMarker}
               openPopupId={openPopupId}
