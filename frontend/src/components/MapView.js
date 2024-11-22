@@ -81,7 +81,7 @@ const MapView = () => {
       setLocations(prevLocations => [...prevLocations, newLocation])
       setNewMarker(newLocation)
       setLocationName(newLocation.locationName || '')
-      setDescription(newLocation.Description || '')
+      setDescription(newLocation.description || '')
       setOpenPopupId(newLocation.locationID)
     } catch (error) {
       console.error('Error creating new marker:', error)

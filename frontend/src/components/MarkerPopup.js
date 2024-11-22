@@ -43,7 +43,7 @@ const MarkerPopup = ({
   useEffect(() => {
     if (isEditing && editingLocation?.locationID === location.locationID) {
       setLocationName(location.locationName || "");
-      setDescription(location.Description || "");
+      setDescription(location.description || "");
     }
   }, [isEditing, editingLocation?.locationID, location.locationID]);
 
@@ -266,7 +266,7 @@ const handleUpload = async () => {
     ) : (
       <>
         <div className="popup-header">{location.locationName}</div>
-        <p>{location.Description}</p>
+        <p>{location.description}</p>
         <ImageScroller images={images} />
         <Divider>
           <Chip label="Features" size="small"></Chip>
