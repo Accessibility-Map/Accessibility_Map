@@ -1,0 +1,29 @@
+.avatar-container {
+    position: absolute;
+    pointer-events: none;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    width: 100px;
+}
+
+.avatar-button {
+    cursor: pointer;
+    z-index: 1000;
+    align-self: center;
+    pointer-events: auto;
+}
+
+.avatar-menu {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 7px;
+    z-index: 1000;
+    display: block;
+    flex-direction: column;
+    gap: 5px;
+    pointer-events: auto;
+}

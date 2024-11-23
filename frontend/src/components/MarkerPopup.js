@@ -32,12 +32,13 @@ const MarkerPopup = ({
   openPopupId,
   setOpenPopupId,
   openDefaultPopupOnStart,
+  userID
 }) => {
   const markerRef = useRef(null);
   const [featuresList, setFeaturesList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
-  const [Description, setDescription] = useState("");
+  const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -147,7 +148,7 @@ const handleUpload = async () => {
     const updatedLocation = {
       ...location,
       locationName,
-      Description,
+      description,
     };
 
     try {
@@ -201,7 +202,7 @@ const handleUpload = async () => {
             placeholder="Location Name"
           />
           <textarea
-            value={Description}
+            value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Building Description"
             rows={2}
@@ -272,7 +273,7 @@ const handleUpload = async () => {
           <Chip label="Features" size="small"></Chip>
         </Divider>
         <FeaturesListWithToggle featuresList={featuresList} />
-        <StarRating locationID={location.locationID} />
+        <StarRating locationID={location.locationID} userID={userID}/>
         <AddFeatureButton locationID={location.locationID} />
 
         <button className="popup-button" onClick={handleEditLocation}>
