@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using backend.Context;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;

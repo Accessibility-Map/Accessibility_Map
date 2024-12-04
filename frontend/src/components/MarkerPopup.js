@@ -268,7 +268,7 @@ const handleUpload = async () => {
       <>
         <div className="popup-header">{location.locationName}</div>
         <p>{location.description}</p>
-        <ImageScroller images={images} />
+        <ImageScroller images={images} heightParam="250px" />
         <Divider>
           <Chip label="Features" size="small"></Chip>
         </Divider>

@@ -33,7 +33,13 @@ const MapView = () => {
   const [editingLocation, setEditingLocation] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [description, setDescription] = useState('')
-  const [userID, setUserID] = useState(1)
+  const [user, setUser] = useState(null)
+  const [userID, setUserID] = useState(null)
+
+  const updateUserAndUserID = (newUser) => {
+    setUser(newUser);
+    setUserID(newUser.userID);
+  }
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -133,7 +139,7 @@ const MapView = () => {
           )
         }
       />
-      <AvatarButton setNewUserID={setUserID}></AvatarButton>
+      <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'

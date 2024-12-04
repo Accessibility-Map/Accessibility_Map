@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import LoginModal from "./LoginModal";
+import NewAccountModal from "./NewAccountModal";
+import User from "./models/User";
 import "./styles/AvatarButton.css"
 
 import Avatar from "@mui/material/Avatar"
@@ -6,47 +9,56 @@ import Box from "@mui/material/Box"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
-import Modal from "@mui/material/Modal"
-import Button from "@mui/material/Button"
-import TextField from "@mui/material/TextField"
-import Typography from "@mui/material/Typography"
 
-const AvatarButton = (setNewUserID: any) => {
+interface AvatarButtonProps {
+    UpdateUser: (newUser: User) => void
+}
+
+const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
     let [isActive, setIsActive] = useState(false);
-    const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-    
+    const[UserInitials, setUserInitials] = useState("");
+    const [changeModalOpen, setChangeModalOpen] = useState(false);
+    const handleChangeUserClose = () => setChangeModalOpen(false);
+    const handleChangeUserOpen = () => setChangeModalOpen(true);
+
+    const [createAccountModalOpen, setCreateAccountModalOpen] = useState(false);
+    const handleCreateAccountModalClose = () => setCreateAccountModalOpen(false);
+    const handleCreateAccountModalOpen = () => setCreateAccountModalOpen(true);
+
     const handleClick = (event: React.MouseEvent) => {
         event.stopPropagation();
         setIsActive(!isActive);
     };
 
-    const handleChangeProfile = () => {
-        setOpen(true);
-    }
-
-    const handleSubmitNewUserID = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const formData = new FormData(event.target as HTMLFormElement);
-
-        let newUserID: number = parseInt(formData.get("UserID") as string);
-
-        if (isNaN(newUserID)) {
-            console.error("Error: newUserID is NaN");
-            return;
+    const updateUserAndSetUserInitials = (newUser: User) => {
+        // Get user's initials
+        let initials = "";
+        if (newUser.username) {
+            let names = newUser.username.split(" ");
+            if (names.length > 1) {
+                initials = names[0].charAt(0) + names[1].charAt(0);
+            } else {
+                initials = names[0].charAt(0);
+            }
         }
-        setNewUserID.setNewUserID(newUserID);
+        setUserInitials(initials);
+        console.log("newUser:", newUser);
+        console.log("UserInitials:", initials);
+        console.log("SetNewUser in AvatarButton:", UpdateUser);
+        UpdateUser(newUser);
     }
 
     return (
         <div className="avatar-container">
-            <Avatar classes={{ root: "avatar-button" }} onClick={handleClick}></Avatar>
+            <Avatar classes={{ root: "avatar-button" }} onClick={handleClick}>{UserInitials}</Avatar>
             {isActive ? (
                 <Box className="avatar-menu">
                     <List sx={{ width: "100%" }}>
-                        <ListItem>
-                            <ListItemText secondary="Change Profile" onClick={handleChangeProfile}/>
+                        <ListItem className="avatar-menu-item">
+                            <ListItemText secondary="Change Profile" onClick={handleChangeUserOpen}/>
+                        </ListItem>
+                        <ListItem className="avatar-menu-item">
+                            <ListItemText secondary="Create Account" onClick={handleCreateAccountModalOpen}/>
                         </ListItem>
                     </List>
                 </Box>
@@ -54,54 +66,9 @@ const AvatarButton = (setNewUserID: any) => {
                 null
             )}
 
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="add-feature-modal-title"
-                aria-describedby="add-feature-modal-description"
-            >
-                <Box
-                sx={{
-                    width: 400,
-                    bgcolor: "background.paper",
-                    p: 4,
-                    m: "auto",
-                    mt: "10%",
-                    borderRadius: 1,
-                }}
-                >
-                <Typography id="add-feature-modal-title" variant="h6" component="h2">
-                    Change Your UserID (Soon to be a Login)
-                </Typography>
-                <br/>
-                <form onSubmit={handleSubmitNewUserID}>
-                    <label htmlFor="UserID" className="input-label">
-                    What is the new UserID?
-                    </label>
-                    <br/>
-                    <TextField
-                        name="UserID"
-                        id="UserID"
-                        type="number"
-                    ></TextField>
-                    <br />
-                    <br />
+            <LoginModal open={changeModalOpen} handleClose={handleChangeUserClose} onUpdateUser={updateUserAndSetUserInitials}></LoginModal>
 
-                    <Button type="submit" variant="contained" color="primary">
-                    Submit
-                    </Button>
-                    <Button
-                    onClick={handleClose}
-                    variant="outlined"
-                    color="secondary"
-                    sx={{ ml: 2 }}
-                    >
-                    Cancel
-                    </Button>
-                </form>
-                </Box>
-            </Modal>
+            <NewAccountModal open={createAccountModalOpen} handleClose={handleCreateAccountModalClose} onUpdateUser={updateUserAndSetUserInitials}></NewAccountModal>
         </div>
     )
 };
