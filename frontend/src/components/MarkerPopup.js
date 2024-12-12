@@ -188,8 +188,23 @@ const handleUpload = async () => {
         click: () => setOpenPopupId(location.locationID), // Open popup on click
       }}
     >
-     <Popup onClose={handleClosePopup} autoPan={false} closeOnClick={false}>
-  <div className="popup-content">
+    <Popup
+  onClose={handleClosePopup}
+  autoPan={false}
+  closeOnClick={false}
+  maxWidth={700} /* Adjust maximum width */
+  className={`leaflet-popup ${isEditing ? "edit-mode" : ""}`}
+>
+  <div
+    className="leaflet-popup-content"
+    style={{
+      width: isEditing ? "500px" : "400px", /* Adjust width dynamically */
+    }}
+  >
+
+
+
+{/* */}
     {isEditing && editingLocation?.locationID === location.locationID ? (
       <>
         <div className="popup-header">Edit Location</div>
