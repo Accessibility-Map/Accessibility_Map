@@ -1,9 +1,12 @@
 /* General styles */
 .popup-content {
-  max-width: 90%;
-  padding: 10px;
+  max-width: 600px;
+  max-height: 700px;
+  width: 100%;
+  height: auto;
+  padding: 20px;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .popup-header {
@@ -72,9 +75,9 @@
 
 .delete-feature-button {
   background: none;
-    border: none;
+  border: none;
   color: red;
-    margin-left: 8px;
+  margin-left: 8px;
   cursor: pointer;
 }
 
@@ -100,21 +103,21 @@
     padding: 8px;
   }
 
-    .popup-header {
-      font-size: 14px;
+  .popup-header {
+    font-size: 14px;
   }
 
-    .popup-form input,
-    .popup-form textarea {
-      font-size: 12px;
+  .popup-form input,
+  .popup-form textarea {
+    font-size: 12px;
   }
 
-    .popup-button,
+  .popup-button,
   .popup-button-delete {
     font-size: 12px;
   }
 
-    .image-scroller img {
-      max-width: 80px;
-    }
-    }
+  .image-scroller img {
+    max-width: 80px;
+  }
+}
