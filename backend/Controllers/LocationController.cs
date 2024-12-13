@@ -176,32 +176,67 @@ namespace backend.Controllers
             }
         }
 
-        [HttpDelete("{id}/delete-image")]
-        public async Task<IActionResult> DeleteImage(int id)
+        [HttpDelete("{locationId}/delete-image")]
+        public async Task<IActionResult> DeleteImage(int locationId, [FromBody] DeleteImageRequest request)
         {
             try
             {
-                // Find the image in the Pictures table
-                var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.LocationID == id);
+                // Validate request body
+                if (request == null || string.IsNullOrEmpty(request.ImageUrl))
+                {
+                    return BadRequest("The imageUrl field is required.");
+                }
+
+                Console.WriteLine($"Received LocationID: {locationId}");
+                Console.WriteLine($"Received ImageUrl: {request.ImageUrl}");
+
+                // Check if the location exists
+                var location = await _context.Locations.FindAsync(locationId);
+                if (location == null)
+                {
+                    Console.WriteLine("Location not found.");
+                    return NotFound("Location not found.");
+                }
+
+                // Log all images for the location
+                var pictures = await _context.Pictures
+                    .Where(p => p.LocationID == locationId)
+                    .ToListAsync();
+
+                foreach (var pic in pictures)
+                {
+                    Console.WriteLine($"Database ImageUrl: {pic.ImageUrl}");
+                }
+
+                // Normalize request URL
+                var normalizedRequestUrl = request.ImageUrl.Trim();
+                var picture = await _context.Pictures
+                    .FirstOrDefaultAsync(p => p.LocationID == locationId && p.ImageUrl.Trim() == normalizedRequestUrl);
+
                 if (picture == null)
                 {
+                    Console.WriteLine($"No match found for ImageUrl: {request.ImageUrl}");
                     return NotFound("Image not found.");
                 }
 
-                string filePath;
-                if(_environment.IsProduction()){
-                    filePath = picture.ImageUrl;
-                }
-                else{
-                    // Construct the file path
-                    filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
-                }
-                
+                // Construct the file path
+                var filePath = Path.Combine(
+                    _environment.WebRootPath ?? Directory.GetCurrentDirectory(),
+                    picture.ImageUrl.TrimStart('/')
+                );
+
+                Console.WriteLine($"Constructed file path: {filePath}");
+                Console.WriteLine($"File exists: {System.IO.File.Exists(filePath)}");
 
                 // Delete the file from the filesystem
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
+                    Console.WriteLine("File deleted successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("File does not exist.");
                 }
 
                 // Remove the entry from the database
@@ -212,10 +247,14 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error deleting image: " + ex.Message);
+                Console.WriteLine($"Error deleting image: {ex.Message}");
                 return StatusCode(500, "Internal server error occurred while deleting the image.");
             }
         }
+
+
+
+
 
         // Update Location
         [HttpPut("{id}")]

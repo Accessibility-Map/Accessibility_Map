@@ -101,6 +101,38 @@ const handleUpload = async () => {
     setUploading(false);
   }
 };
+const handleDeleteImages = async (imageUrl) => {
+  console.log("Delete button clicked for Image URL:", imageUrl);
+
+  // Ensure the URL starts with a leading slash
+  const relativePath = imageUrl
+    .replace(process.env.REACT_APP_API_URL, "")
+    .trim();
+
+  const normalizedPath = relativePath.startsWith("/")
+    ? relativePath
+    : `/${relativePath}`;
+
+  console.log("Normalized Relative Image URL being sent:", normalizedPath);
+
+  try {
+    const response = await axios.delete(
+      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`,
+      {
+        data: { imageUrl: normalizedPath },
+      }
+    );
+
+    // Update the UI
+    setImages((prevImages) => prevImages.filter((image) => image !== imageUrl));
+    console.log("Image removed from frontend.");
+  } catch (error) {
+    console.error("Error deleting image:", error.response?.data || error.message);
+  }
+};
+
+
+
 
   const handleDeleteFeature = async (featureId) => {
     try {
@@ -282,7 +314,8 @@ const handleUpload = async () => {
       <>
         <div className="popup-header">{location.locationName}</div>
         <p>{location.description}</p>
-        <ImageScroller images={images} />
+        <ImageScroller images={images} onDelete={handleDeleteImages} />
+
         <Divider>
           <Chip label="Features" size="small"></Chip>
         </Divider>
