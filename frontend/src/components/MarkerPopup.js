@@ -32,12 +32,13 @@ const MarkerPopup = ({
   openPopupId,
   setOpenPopupId,
   openDefaultPopupOnStart,
+  userID
 }) => {
   const markerRef = useRef(null);
   const [featuresList, setFeaturesList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
-  const [Description, setDescription] = useState("");
+  const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -179,7 +180,7 @@ const handleDeleteImages = async (imageUrl) => {
     const updatedLocation = {
       ...location,
       locationName,
-      Description,
+      description,
     };
 
     try {
@@ -248,7 +249,7 @@ const handleDeleteImages = async (imageUrl) => {
             placeholder="Location Name"
           />
           <textarea
-            value={Description}
+            value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Building Description"
             rows={2}
@@ -314,13 +315,13 @@ const handleDeleteImages = async (imageUrl) => {
       <>
         <div className="popup-header">{location.locationName}</div>
         <p>{location.description}</p>
-        <ImageScroller images={images} onDelete={handleDeleteImages} />
+        <ImageScroller images={images} onDelete={handleDeleteImages} heightParam="250px" />
 
         <Divider>
           <Chip label="Features" size="small"></Chip>
         </Divider>
         <FeaturesListWithToggle featuresList={featuresList} />
-        <StarRating locationID={location.locationID} />
+        <StarRating locationID={location.locationID} userID={userID}/>
         <AddFeatureButton locationID={location.locationID} />
 
         <button className="popup-button" onClick={handleEditLocation}>
