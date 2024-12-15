@@ -1,9 +1,74 @@
-/* General styles */
 .popup-content {
-  max-width: 90%;
-  padding: 10px;
+  max-width: 300px;
+    /* Default size for non-edit mode */
+    min-width: 300px;
+    /* Ensure it doesn't shrink too much */
+    max-height: 490px;
+    padding: 10px;
+    overflow: auto;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  
+  .popup-content-edit {
+    max-width: 600px;
+    /* Keep a wide enough width for readability */
+      min-width: 500px;
+      max-height: 80vh;
+      /* Limit the height to 80% of the viewport */
+      overflow-y: auto;
+      /* Enable vertical scrolling for overflowing content */
+      overflow-x: hidden;
+      /* Prevent horizontal scrolling */
+  padding: 20px;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 16px;
+  border-radius: 8px;
+    /* Optional: Add rounded corners */
+    background-color: #fff;
+    /* Ensure background is consistent */
+  }
+  
+  .popup-content-edit h4 {
+    margin-top: 20px;
+    /* Add space between sections */
+  }
+  
+  .popup-content-edit input,
+  .popup-content-edit textarea {
+    width: 100%;
+    /* Make inputs and textareas stretch to the container width */
+    margin-bottom: 10px;
+    /* Add spacing between inputs */
+    padding: 8px;
+    /* Add internal padding for better usability */
+    font-size: 14px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    /* Optional: Add rounded corners for inputs */
+  }
+  
+  .popup-content-edit .feature-item {
+    margin-bottom: 15px;
+    /* Space between feature sections */
+  }
+  
+  .popup-content-edit .delete-feature-button {
+    display: block;
+    margin-top: 5px;
+    background-color: #f44336;
+    /* Red color for delete */
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .popup-content-edit .delete-feature-button:hover {
+    background-color: #d32f2f;
+    /* Darker red on hover */
 }
 
 .popup-header {
@@ -72,9 +137,9 @@
 
 .delete-feature-button {
   background: none;
-    border: none;
+  border: none;
   color: red;
-    margin-left: 8px;
+  margin-left: 8px;
   cursor: pointer;
 }
 
@@ -100,21 +165,21 @@
     padding: 8px;
   }
 
-    .popup-header {
-      font-size: 14px;
+  .popup-header {
+    font-size: 14px;
   }
 
-    .popup-form input,
-    .popup-form textarea {
-      font-size: 12px;
+  .popup-form input,
+  .popup-form textarea {
+    font-size: 12px;
   }
 
-    .popup-button,
+  .popup-button,
   .popup-button-delete {
     font-size: 12px;
   }
 
-    .image-scroller img {
-      max-width: 80px;
-    }
-    }
+  .image-scroller img {
+    max-width: 80px;
+  }
+}
