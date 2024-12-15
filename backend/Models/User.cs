@@ -8,7 +8,7 @@ namespace backend.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserID { get; set; }
-        public string Settings { get; set; }
+        public string SessionID { get; set; }
         [Required]
         public string Password { get; set; }
         [Required]

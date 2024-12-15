@@ -6,7 +6,7 @@ namespace backend.Models
     {
         public string Password { get; set; }
         public string Username { get; set; }
-        public string Settings { get; set; } = string.Empty;
+        public string SessionID { get; set; } = string.Empty;
         public int UserID { get; set; }
     }
 }

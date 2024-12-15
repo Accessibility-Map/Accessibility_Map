@@ -38,16 +38,16 @@ namespace backend.Controllers
             User user = new User();
             user.Username = userDTO.Username;
             user.Password = userDTO.Password;
-            if(userDTO.Settings != null)
+            if(userDTO.SessionID != null)
             {
-                user.Settings = userDTO.Settings;
+                user.SessionID = userDTO.SessionID;
             }
 
             // Hash the password
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             Guid sessionID = Guid.NewGuid();
-            user.Settings = sessionID.ToString();
+            user.SessionID = sessionID.ToString();
 
             // Add the user to the database
             _context.Users.Add(user);
@@ -57,7 +57,7 @@ namespace backend.Controllers
             UserDTO userDTOResponse = new UserDTO();
             userDTOResponse.UserID = user.UserID;
             userDTOResponse.Username = user.Username;
-            userDTOResponse.Settings = user.Settings;
+            userDTOResponse.SessionID = user.SessionID;
             return Ok(userDTOResponse);
         }
 
@@ -74,14 +74,14 @@ namespace backend.Controllers
 
             if (BCrypt.Net.BCrypt.Verify(user.Password, storedUser.Password)){
                 Guid sessionID = Guid.NewGuid();
-                storedUser.Settings = sessionID.ToString();
+                storedUser.SessionID = sessionID.ToString();
                 _context.Users.Update(storedUser);
                 await _context.SaveChangesAsync();
                 // Return the user without password hash
                 UserDTO userDTOResponse = new UserDTO();
                 userDTOResponse.UserID = storedUser.UserID;
                 userDTOResponse.Username = storedUser.Username;
-                userDTOResponse.Settings = storedUser.Settings;
+                userDTOResponse.SessionID = storedUser.SessionID;
                 return Ok(userDTOResponse);
             }
 
@@ -116,10 +116,12 @@ namespace backend.Controllers
                 return NotFound("User not found.");
             }
 
-            if (storedUser.Settings == user.Settings)
+            if (storedUser.SessionID == user.SessionID)
             {
                 return Ok();
             }
+            Console.WriteLine("storedUser SessionID: " + storedUser.SessionID);
+            Console.WriteLine("user SessionID: " + user.SessionID);
 
             return Unauthorized("Invalid session.");
         }
