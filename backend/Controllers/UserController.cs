@@ -2,10 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Context;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Controllers
 {
+
     [Route("api/users")]
     [ApiController]
     public class UserController : ControllerBase
@@ -42,6 +46,9 @@ namespace backend.Controllers
             // Hash the password
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
+            Guid sessionID = Guid.NewGuid();
+            user.Settings = sessionID.ToString();
+
             // Add the user to the database
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -66,6 +73,10 @@ namespace backend.Controllers
             }
 
             if (BCrypt.Net.BCrypt.Verify(user.Password, storedUser.Password)){
+                Guid sessionID = Guid.NewGuid();
+                storedUser.Settings = sessionID.ToString();
+                _context.Users.Update(storedUser);
+                await _context.SaveChangesAsync();
                 // Return the user without password hash
                 UserDTO userDTOResponse = new UserDTO();
                 userDTOResponse.UserID = storedUser.UserID;
@@ -88,12 +99,29 @@ namespace backend.Controllers
             {
                 return NotFound("User not found.");
             }
-
+            
             storedUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _context.Users.Update(storedUser);
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpPost("verify-session")]
+        public async Task<IActionResult> VerifySession([FromBody] UserDTO user)
+        {
+            var storedUser = await _context.Users.Where(u => u.Username.ToLower() == user.Username.ToLower()).FirstOrDefaultAsync();
+            if (storedUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            if (storedUser.Settings == user.Settings)
+            {
+                return Ok();
+            }
+
+            return Unauthorized("Invalid session.");
         }
     }
 }

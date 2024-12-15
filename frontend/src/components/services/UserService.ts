@@ -47,4 +47,24 @@ export default class UserService {
 
         return new UserVerificationStatus(UserVerificationEnum.GENERIC_ERROR, new User("", ""));
     }
+
+    static async verifySession(user: User): Promise<UserVerificationStatus> {
+        // Endpoint: HttpPost("verify-session")
+        try {
+            const url = process.env.REACT_APP_API_URL + "api/users/verify-session";
+            const response = await axios.post(url, user);
+            if (response.status === 200) {
+                return new UserVerificationStatus(UserVerificationEnum.VERIFIED, response.data);
+            }
+        }
+        catch(error: any) {
+            switch(error.response.status) {
+                case 404:
+                    return new UserVerificationStatus(UserVerificationEnum.NOT_FOUND, new User("", ""));
+                case 401:
+                    return new UserVerificationStatus(UserVerificationEnum.UNAUTHORIZED, new User("", ""));
+            }
+        }
+        return new UserVerificationStatus(UserVerificationEnum.UNAUTHORIZED, new User("", ""));
+    }
 }

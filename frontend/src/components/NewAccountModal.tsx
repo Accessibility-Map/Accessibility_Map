@@ -34,6 +34,8 @@ const NewAccountModal = ({open, handleClose, onUpdateUser}: NewAccountModalProps
             if (status.status === UserVerificationEnum.VERIFIED){
                 console.log("setNewUser", onUpdateUser);
                 onUpdateUser(status.user);
+                localStorage.setItem("user", JSON.stringify(status.user));
+
                 // Clear the form
                 let form: any = document.getElementById("new-user-form");
                 form.reset();
