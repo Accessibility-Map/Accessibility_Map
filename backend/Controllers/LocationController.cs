@@ -266,11 +266,18 @@ namespace backend.Controllers
 
                 Console.WriteLine($"Replacing image for LocationID: {locationId}, OldImageUrl: {oldImageUrl}");
 
+          
                 var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
+
+                if (oldImageUrl.Contains("..") || oldImageUrl.Contains("/") || oldImageUrl.Contains("\\"))
+                {
+                    return BadRequest("Invalid old image URL.");
+                }
                 if (System.IO.File.Exists(oldImagePath))
                 {
                     System.IO.File.Delete(oldImagePath);
                 }
+
 
                 var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
