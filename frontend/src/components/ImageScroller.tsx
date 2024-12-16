@@ -48,16 +48,6 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     }
   };
 
- 
-
-    
-      const handleReplace = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const newFile = event.target.files[0];
-      onReplace(newFile, images[imageIndex]);
-    }
-  };
-    
     const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         // Open a popup with a full size version of the image
         setOpenPopup(true);
@@ -89,6 +79,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                   alignItems: "center",
                   cursor: "pointer",
                   padding: "0",
+                  right: "50px",
                 }}
               >
                 <input

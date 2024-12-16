@@ -293,7 +293,7 @@ const MarkerPopup = ({
                   placeholder="Location Name"
                 />
                 <textarea
-                  value={Description}
+                  value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Building Description"
                   rows={2}

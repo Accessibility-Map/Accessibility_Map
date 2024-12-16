@@ -269,7 +269,7 @@ namespace backend.Controllers
           
                 var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
 
-                if (oldImageUrl.Contains("..") || oldImageUrl.Contains("/") || oldImageUrl.Contains("\\"))
+                if (oldImageUrl.Contains("..") ||  oldImageUrl.Contains("\\") || !oldImageUrl.Contains("/uploads/"))
                 {
                     return BadRequest("Invalid old image URL.");
                 }
