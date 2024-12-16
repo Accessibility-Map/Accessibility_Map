@@ -253,6 +253,57 @@ namespace backend.Controllers
         }
 
 
+        [HttpPut("{locationId}/replace-image")]
+        public async Task<IActionResult> ReplaceImage(int locationId, IFormFile file, [FromForm] string oldImageUrl)
+
+        {
+            try
+            {
+                var location = await _context.Locations.FindAsync(locationId);
+                if (location == null) return NotFound("Location not found.");
+
+                // Log inputs for debugging
+                Console.WriteLine($"Replacing image for LocationID: {locationId}, OldImageUrl: {oldImageUrl}");
+
+                // Delete old image
+                var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+
+                // Save the new image
+                var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Update the database
+                var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.ImageUrl == oldImageUrl.Trim());
+                if (picture != null)
+                {
+                    picture.ImageUrl = "/uploads/" + uniqueFileName;
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    return NotFound("Old image record not found in the database.");
+                }
+
+                return Ok(new { imageUrl = "/uploads/" + uniqueFileName });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error replacing image: {ex.Message}");
+                return StatusCode(500, "Internal server error occurred while replacing the image.");
+            }
+        }
 
 
 

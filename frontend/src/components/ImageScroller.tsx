@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import axios from "axios";
 import "./styles/ImageScroller.css";
 
 interface ImageScrollerProps {
   images: string[];
-  onDelete: (imageUrl: string) => void; // Callback function for deletion
+  onDelete: (imageUrl: string) => void;
+  onReplace: (newImage: File, oldImageUrl: string) => void;
 }
 
-const ImageScroller: React.FC<ImageScrollerProps> = ({ images, onDelete }) => {
+const ImageScroller: React.FC<ImageScrollerProps> = ({
+  images,
+  onDelete,
+  onReplace,
+}) => {
   const [imageIndex, setIndex] = useState(0);
 
   const handleNext = () => {
@@ -28,9 +34,16 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ images, onDelete }) => {
     onDelete(images[imageIndex]);
   };
 
+  const handleReplace = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const newFile = event.target.files[0];
+      onReplace(newFile, images[imageIndex]);
+    }
+  };
+
   return (
     <>
-      {images.length > 0 && (
+      {images && images.length > 0 ? (
         <Box display="flex" flexDirection="row" alignItems="center">
           <Box
             width={0.1}
@@ -47,56 +60,30 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ images, onDelete }) => {
               key={imageIndex}
               src={images[imageIndex]}
               alt="Uploaded location"
-              style={{ width: "100%", maxHeight: "300px", objectFit: "contain" }}
+              style={{
+                width: "100%",
+                maxHeight: "300px",
+                objectFit: "contain",
+              }}
             />
-            <button className="bin-button" onClick={handleDelete} aria-label="delete image">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 39 7"
-                className="bin-top"
+            <div className="button-container">
+              <label className="replace-button">
+                Replace
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleReplace}
+                />
+              </label>
+              <button
+                className="bin-button"
+                onClick={handleDelete}
+                aria-label="delete image"
               >
-                <line strokeWidth="4" stroke="white" y2="5" x2="39" y1="5"></line>
-                <line
-                  strokeWidth="3"
-                  stroke="white"
-                  y2="1.5"
-                  x2="26.0357"
-                  y1="1.5"
-                  x1="12"
-                ></line>
-              </svg>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 33 39"
-                className="bin-bottom"
-              >
-                <mask fill="white" id="path-1-inside-1_8_19">
-                  <path
-                    d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-                  ></path>
-                </mask>
-                <path
-                  mask="url(#path-1-inside-1_8_19)"
-                  fill="white"
-                  d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                ></path>
-                <path strokeWidth="4" stroke="white" d="M12 6L12 29"></path>
-                <path strokeWidth="4" stroke="white" d="M21 6V29"></path>
-              </svg>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 89 80"
-                className="garbage"
-              >
-                <path
-                  fill="white"
-                  d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
-                ></path>
-              </svg>
-            </button>
+                Delete
+              </button>
+            </div>
           </Box>
           <Box
             width={0.1}
@@ -109,6 +96,8 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ images, onDelete }) => {
             <ArrowForwardIosIcon />
           </Box>
         </Box>
+      ) : (
+        <p>No images available</p>
       )}
     </>
   );
