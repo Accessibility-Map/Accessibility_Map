@@ -43,10 +43,12 @@ namespace backend.Controllers
 
                 string uploadsFolder;
 
-                if(_environment.IsProduction()){
+                if (_environment.IsProduction())
+                {
                     uploadsFolder = "/uploads";
                 }
-                else{
+                else
+                {
                     // Fallback to a relative path if WebRootPath is null
                     uploadsFolder = _environment.WebRootPath != null
                     ? Path.Combine(_environment.WebRootPath, "uploads")
@@ -54,11 +56,11 @@ namespace backend.Controllers
 
                     if (!Directory.Exists(uploadsFolder))
                     {
-                    Directory.CreateDirectory(uploadsFolder);
+                        Directory.CreateDirectory(uploadsFolder);
                     }
                 }
 
-                
+
 
                 // Generate a unique filename to avoid conflicts
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
@@ -90,17 +92,17 @@ namespace backend.Controllers
         }
 
 
-      [HttpGet("{id}/pictures")]
-    public async Task<IActionResult> GetPictures(int id)
-{
-    var pictures = await _context.Pictures
-        .Where(p => p.LocationID == id)
-        .Select(p => new { p.ImageUrl })  // Only return ImageUrl
-        .ToListAsync();
+        [HttpGet("{id}/pictures")]
+        public async Task<IActionResult> GetPictures(int id)
+        {
+            var pictures = await _context.Pictures
+                .Where(p => p.LocationID == id)
+                .Select(p => new { p.ImageUrl })  // Only return ImageUrl
+                .ToListAsync();
 
-    // Instead of returning 404, return an empty list if no pictures found
-    return Ok(pictures);
-}
+            // Instead of returning 404, return an empty list if no pictures found
+            return Ok(pictures);
+        }
 
         // Create Location
         [HttpPost]
@@ -262,17 +264,14 @@ namespace backend.Controllers
                 var location = await _context.Locations.FindAsync(locationId);
                 if (location == null) return NotFound("Location not found.");
 
-                // Log inputs for debugging
                 Console.WriteLine($"Replacing image for LocationID: {locationId}, OldImageUrl: {oldImageUrl}");
 
-                // Delete old image
                 var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
                 if (System.IO.File.Exists(oldImagePath))
                 {
                     System.IO.File.Delete(oldImagePath);
                 }
 
-                // Save the new image
                 var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
@@ -284,7 +283,6 @@ namespace backend.Controllers
                     await file.CopyToAsync(fileStream);
                 }
 
-                // Update the database
                 var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.ImageUrl == oldImageUrl.Trim());
                 if (picture != null)
                 {
