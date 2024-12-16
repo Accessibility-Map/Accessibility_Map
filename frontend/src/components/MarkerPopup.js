@@ -61,79 +61,120 @@ const MarkerPopup = ({
       setIsEditing(true);
     }, 0);
   };
-// Define handleFileChange function here
-const handleFileChange = (e) => {
-  setSelectedFile(e.target.files[0]);
-};
 
-const handleUpload = async () => {
-  if (!selectedFile) {
-    alert("Please select a file.");
-    return;
-  }
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
 
-  const formData = new FormData();
-  formData.append("file", selectedFile);
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file.");
+      return;
+    }
 
-  setUploading(true);
-  try {
-    const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setUploading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Image URL from response:", response.data.imageUrl);
+
+      setImages((prevImages) => [
+        ...prevImages,
+        `${process.env.REACT_APP_API_URL.replace(
+          /\/+$/,
+          ""
+        )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
+      ]);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+  const handleDeleteImages = async (imageUrl) => {
+    console.log("Delete button clicked for Image URL:", imageUrl);
+
+    // Ensure the URL starts with a leading slash
+    const relativePath = imageUrl
+      .replace(process.env.REACT_APP_API_URL, "")
+      .trim();
+
+    const normalizedPath = relativePath.startsWith("/")
+      ? relativePath
+      : `/${relativePath}`;
+
+    console.log("Normalized Relative Image URL being sent:", normalizedPath);
+
+    try {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`,
+        {
+          data: { imageUrl: normalizedPath },
+        }
+      );
+
+      // Update the UI
+      setImages((prevImages) =>
+        prevImages.filter((image) => image !== imageUrl)
+      );
+      console.log("Image removed from frontend.");
+    } catch (error) {
+      console.error(
+        "Error deleting image:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const handleReplaceImage = async (newFile, oldImageUrl) => {
+    const relativePath = oldImageUrl
+      .replace(`${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}`, "")
+      .replace(/^\/?/, "/");
+  
+    const formData = new FormData();
+    formData.append("file", newFile);
+    formData.append("oldImageUrl", relativePath);
+    console.log("Sending oldImageUrl:", relativePath);
+  
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/replace-image`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        const newImageUrl = response.data.imageUrl;
+  
+        // Update the images array to reflect the new image immediately
+        setImages((prevImages) =>
+          prevImages.map((img) =>
+            img === oldImageUrl ? `${process.env.REACT_APP_API_URL}${newImageUrl.replace(/^\/+/, "")}` : img
+          )
+        );
+  
+        console.log("Image replaced successfully:", newImageUrl);
       }
-    );
-
-    console.log("Image URL from response:", response.data.imageUrl);
-
-    setImages((prevImages) => [
-      ...prevImages,
-      `${process.env.REACT_APP_API_URL.replace(
-        /\/+$/,
-        ""
-      )}/${response.data.imageUrl.replace(/^\/+/, "")}`,
-    ]);
-  } catch (error) {
-    console.error("Error uploading file:", error);
-  } finally {
-    setUploading(false);
-  }
-};
-const handleDeleteImages = async (imageUrl) => {
-  console.log("Delete button clicked for Image URL:", imageUrl);
-
-  // Ensure the URL starts with a leading slash
-  const relativePath = imageUrl
-    .replace(process.env.REACT_APP_API_URL, "")
-    .trim();
-
-  const normalizedPath = relativePath.startsWith("/")
-    ? relativePath
-    : `/${relativePath}`;
-
-  console.log("Normalized Relative Image URL being sent:", normalizedPath);
-
-  try {
-    const response = await axios.delete(
-      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`,
-      {
-        data: { imageUrl: normalizedPath },
-      }
-    );
-
-    // Update the UI
-    setImages((prevImages) => prevImages.filter((image) => image !== imageUrl));
-    console.log("Image removed from frontend.");
-  } catch (error) {
-    console.error("Error deleting image:", error.response?.data || error.message);
-  }
-};
-
-
-
+    } catch (error) {
+      console.error("Error replacing the image:", error);
+    }
+  };
+  
 
   const handleDeleteFeature = async (featureId) => {
     try {
@@ -155,23 +196,28 @@ const handleDeleteImages = async (imageUrl) => {
         `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`
       );
       if (response.status === 200 && response.data.length > 0) {
-        const imageUrls = response.data
-          .filter((picture) => picture.imageUrl)
-          .map((picture) =>
-            `${process.env.REACT_APP_API_URL}${picture.imageUrl.replace(/^\/+/, "")}`
-          );
+        const imageUrls = response.data.map(
+          (picture) =>
+            `${process.env.REACT_APP_API_URL.replace(
+              /\/+$/,
+              ""
+            )}/${picture.imageUrl.replace(/^\/+/, "")}`
+        );
         setImages(imageUrls);
       } else {
         setImages([]);
       }
     } catch (error) {
       console.error("Error fetching images:", error);
-      setImages([]);
+      setImages([]); // Handle errors by clearing images
     }
   };
 
+  // Call fetchImages whenever the location changes
   useEffect(() => {
-    fetchImages();
+    if (location?.locationID) {
+      fetchImages();
+    }
   }, [location.locationID]);
 
   const apiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
@@ -207,9 +253,11 @@ const handleDeleteImages = async (imageUrl) => {
   };
 
   useEffect(() => {
-    FeatureService.getFeaturesByLocationID(location.locationID).then((features) => {
-      setFeaturesList(features);
-    });
+    FeatureService.getFeaturesByLocationID(location.locationID).then(
+      (features) => {
+        setFeaturesList(features);
+      }
+    );
   }, [location.locationID]);
 
   return (
@@ -218,128 +266,130 @@ const handleDeleteImages = async (imageUrl) => {
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
       eventHandlers={{
-        click: () => setOpenPopupId(location.locationID), // Open popup on click
+        click: () => setOpenPopupId(location.locationID),
       }}
     >
-    <Popup
-  onClose={handleClosePopup}
-  autoPan={false}
-  closeOnClick={false}
-  maxWidth={700} /* Adjust maximum width */
-  className={`leaflet-popup ${isEditing ? "edit-mode" : ""}`}
->
-  <div
-    className="leaflet-popup-content"
-    style={{
-      width: isEditing ? "500px" : "400px", /* Adjust width dynamically */
-    }}
-  >
-
-
-
-{/* */}
-    {isEditing && editingLocation?.locationID === location.locationID ? (
-      <>
-        <div className="popup-header">Edit Location</div>
-        <form className="popup-form">
-          <input
-            type="text"
-            value={locationName}
-            onChange={(e) => setLocationName(e.target.value)}
-            placeholder="Location Name"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Building Description"
-            rows={2}
-          />
-
-          <h4>Features</h4>
-          {featuresList.map((feature, index) => (
-            <div key={feature.id} className="feature-item">
-              <input
-                type="text"
-                value={feature.locationFeature}
-                onChange={(e) => {
-                  const updatedFeatures = featuresList.map((f, i) =>
-                    i === index
-                      ? { ...f, locationFeature: e.target.value }
-                      : f
-                  );
-                  setFeaturesList(updatedFeatures);
-                }}
-                placeholder="Feature"
-              />
-              <textarea
-                value={feature.notes || ""}
-                onChange={(e) => {
-                  const updatedFeatures = featuresList.map((f, i) =>
-                    i === index ? { ...f, notes: e.target.value } : f
-                  );
-                  setFeaturesList(updatedFeatures);
-                }}
-                placeholder="Notes"
-                rows={2}
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteFeature(feature.id);
-                }}
-                className="delete-feature-button"
-              >
-                🗑️
-              </button>
-            </div>
-          ))}
-
-          <button
-            type="button"
-            className="popup-button"
-            onClick={handleSaveEdit}
-          >
-            Save Changes
-          </button>
-        </form>
-        <div className="upload-section">
-          <h3>Upload Image</h3>
-          <input type="file" onChange={handleFileChange} />
-          <button onClick={handleUpload} disabled={uploading}>
-            {uploading ? "Uploading..." : "Upload Image"}
-          </button>
-        </div>
-      </>
-    ) : (
-      <>
-        <div className="popup-header">{location.locationName}</div>
-        <p>{location.description}</p>
-        <ImageScroller images={images} onDelete={handleDeleteImages} heightParam="250px" />
-
-        <Divider>
-          <Chip label="Features" size="small"></Chip>
-        </Divider>
-        <FeaturesListWithToggle featuresList={featuresList} />
-        <StarRating locationID={location.locationID} userID={userID}/>
-        <AddFeatureButton locationID={location.locationID} />
-
-        <button className="popup-button" onClick={handleEditLocation}>
-          Edit Location
-        </button>
-
-        <button
-          className="popup-button-delete"
-          onClick={() => deleteMarker(location.locationID)}
+      <Popup
+        onClose={handleClosePopup}
+        autoPan={false}
+        closeOnClick={false}
+        maxWidth={700}
+        className={`leaflet-popup ${isEditing ? "edit-mode" : ""}`}
+      >
+        <div
+          className="leaflet-popup-content"
+          style={{
+            width: isEditing ? "500px" : "400px",
+          }}
         >
-          Delete Location
-        </button>
-      </>
-    )}
-  </div>
-</Popup>
+          {isEditing && editingLocation?.locationID === location.locationID ? (
+            <>
+              <div className="popup-header">Edit Location</div>
+              <form className="popup-form">
+                <input
+                  type="text"
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder="Location Name"
+                />
+                <textarea
+                  value={Description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Building Description"
+                  rows={2}
+                />
+
+                <h4>Features</h4>
+                {featuresList.map((feature, index) => (
+                  <div key={feature.id} className="feature-item">
+                    <input
+                      type="text"
+                      value={feature.locationFeature}
+                      onChange={(e) => {
+                        const updatedFeatures = featuresList.map((f, i) =>
+                          i === index
+                            ? { ...f, locationFeature: e.target.value }
+                            : f
+                        );
+                        setFeaturesList(updatedFeatures);
+                      }}
+                      placeholder="Feature"
+                    />
+                    <textarea
+                      value={feature.notes || ""}
+                      onChange={(e) => {
+                        const updatedFeatures = featuresList.map((f, i) =>
+                          i === index ? { ...f, notes: e.target.value } : f
+                        );
+                        setFeaturesList(updatedFeatures);
+                      }}
+                      placeholder="Notes"
+                      rows={2}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFeature(feature.id);
+                      }}
+                      className="delete-feature-button"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="popup-button"
+                  onClick={handleSaveEdit}
+                >
+                  Save Changes
+                </button>
+              </form>
+              <div className="upload-section">
+                <h3>Upload Image</h3>
+                <input type="file" onChange={handleFileChange} />
+                <button onClick={handleUpload} disabled={uploading}>
+                  {uploading ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="popup-header">{location.locationName}</div>
+              <p>{location.description}</p>
+              <ImageScroller
+                images={images} // Use the `images` state
+                onDelete={handleDeleteImages} // Use the defined `handleDeleteImages`
+                onReplace={handleReplaceImage} // Callback to handle image replacement
+                heightParam="250px"
+              />
+
+              <Divider>
+                <Chip label="Features" size="small"></Chip>
+              </Divider>
+              <FeaturesListWithToggle featuresList={featuresList} />
+              <StarRating locationID={location.locationID} />
+              <AddFeatureButton locationID={location.locationID} />
+
+              <button className="popup-button" onClick={handleEditLocation}>
+                Edit Location
+              </button>
+
+              <button
+                className="popup-button-delete"
+                onClick={() => deleteMarker(location.locationID)}
+              >
+                Delete Location
+              </button>
+            </>
+          )}
+        </div>
+      </Popup>
     </Marker>
   );
 };
 
 export default MarkerPopup;
+
