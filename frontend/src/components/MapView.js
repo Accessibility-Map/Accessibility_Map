@@ -8,6 +8,7 @@ import SearchBar from './SearchBar'
 import MarkerPopup from './MarkerPopup'
 import AddMarkerOnClick from './AddMarkerOnClick'
 import './styles/MapView.css'
+import AvatarButton from './AvatarButton'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -31,7 +32,14 @@ const MapView = () => {
   const [selectedFilters, setSelectedFilters] = useState([])
   const [editingLocation, setEditingLocation] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [Description, setDescription] = useState('')
+  const [description, setDescription] = useState('')
+  const [user, setUser] = useState(null)
+  const [userID, setUserID] = useState(null)
+
+  const updateUserAndUserID = (newUser) => {
+    setUser(newUser);
+    setUserID(newUser.userID);
+  }
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -71,7 +79,7 @@ const MapView = () => {
         locationName: locationName || 'Default Location Name',
         latitude: location.latitude || 0,
         longitude: location.longitude || 0,
-        Description: Description || '',
+        description: description || '',
       }
       console.log('Payload for POST request:', payload)
 
@@ -131,6 +139,7 @@ const MapView = () => {
           )
         }
       />
+      <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -150,6 +159,7 @@ const MapView = () => {
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
+            userID={userID}
           />
         ))}
         {newMarker && (
@@ -166,6 +176,7 @@ const MapView = () => {
               deleteMarker={deleteMarker}
               openPopupId={openPopupId}
               setOpenPopupId={setOpenPopupId}
+              userID={userID}
             />
           </Marker>
         )}

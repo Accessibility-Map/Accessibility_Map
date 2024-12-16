@@ -55,16 +55,17 @@ function IconContainer(props: IconContainerProps) {
 
 interface StarRatingProps {
   locationID: number;
+  userID: number;
 }
 
-const StarRating = ({ locationID }: StarRatingProps) => {
+const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
 
   // Fetch the initial rating from the backend
   useEffect(() => {
-    RatingService.getRating(1, locationID).then((rating) => {
+    RatingService.getRating(userID, locationID).then((rating) => {
       if (rating && rating.getRating() !== 0) {
         setCurrentRating(rating.getRating());
       } else {
@@ -78,10 +79,10 @@ const StarRating = ({ locationID }: StarRatingProps) => {
     if (!newRating || newRating < 1 || newRating > 5) return;
 
     if (unset) {
-      RatingService.createRating(1, locationID, newRating);
+      RatingService.createRating(userID, locationID, newRating);
       setUnset(false);
     } else {
-      RatingService.setRating(1, locationID, newRating);
+      RatingService.setRating(userID, locationID, newRating);
     }
     setCurrentRating(newRating);
   };

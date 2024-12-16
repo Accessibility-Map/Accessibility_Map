@@ -23,7 +23,9 @@
     cursor: pointer;
     border: 2px solid rgb(255, 201, 201);
     transition-duration: 0.3s;
-    position: relative;
+    position: absolute;
+    top: 5px;
+    right: 5px;
     overflow: hidden;
 }
   .bin-bottom {

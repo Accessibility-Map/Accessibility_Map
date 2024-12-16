@@ -32,12 +32,13 @@ const MarkerPopup = ({
   openPopupId,
   setOpenPopupId,
   openDefaultPopupOnStart,
+  userID
 }) => {
   const markerRef = useRef(null);
   const [featuresList, setFeaturesList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [images, setImages] = useState([]);
-  const [Description, setDescription] = useState("");
+  const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -225,7 +226,7 @@ const MarkerPopup = ({
     const updatedLocation = {
       ...location,
       locationName,
-      Description,
+      description,
     };
 
     try {
@@ -362,6 +363,7 @@ const MarkerPopup = ({
                 images={images} // Use the `images` state
                 onDelete={handleDeleteImages} // Use the defined `handleDeleteImages`
                 onReplace={handleReplaceImage} // Callback to handle image replacement
+                heightParam="250px"
               />
 
               <Divider>
@@ -390,3 +392,4 @@ const MarkerPopup = ({
 };
 
 export default MarkerPopup;
+
