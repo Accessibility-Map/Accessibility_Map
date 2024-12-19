@@ -58,9 +58,6 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
             }
         }
         setUserInitials(initials);
-        console.log("newUser:", newUser);
-        console.log("UserInitials:", initials);
-        console.log("SetNewUser in AvatarButton:", UpdateUser);
         UpdateUser(newUser);
     }
 

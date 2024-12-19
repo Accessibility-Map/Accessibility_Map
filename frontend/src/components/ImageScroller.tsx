@@ -10,7 +10,6 @@ import "./styles/ImageScroller.css";
 import './styles/MarkerPopup.css'
 
 interface ImageScrollerProps {
-
     images: any;
     widthParam: string;
     heightParam: string;
@@ -56,7 +55,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     return (
         <>
             {images.length > 0 ?
-            (<Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam}}>
+            (<Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
                 <Grid2 sx={{width: "100%", height: "75%", backgroundColor: "rgba(0, 0, 0, 0.6)", display: "flex", position: "relative"}}>
                     <img
                         key={imageIndex}
@@ -176,12 +175,12 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                 </Grid2>
             </Grid2>)
             : (
-            <Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: "100%", height: "100%"}}>
+            <Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
                 <Grid2 sx={{marginTop: "auto", marginBottom: "auto", width: "100%", height: "95%"}}>
                     <img
                         src={"./imgs/no-images-uploaded.jpg"}
                         alt="Uploaded location"
-                        style={{ width: "100%" }}
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
                     />
                 </Grid2>
                 <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
