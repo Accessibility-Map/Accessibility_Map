@@ -17,11 +17,11 @@ namespace backend.Services
             var predictionEngine = context.Model.CreatePredictionEngine<RatingData, RatingPrediction>(model);
 
             // Prepare the input data
-        var input = new RatingData
-{
-    UserID = (float)userID,
-    LocationID = (float)locationID
-};
+            var input = new RatingData
+            {
+                UserID = (float)userID,
+                LocationID = (float)locationID
+            };
 
             // Make the prediction
             var prediction = predictionEngine.Predict(input);
