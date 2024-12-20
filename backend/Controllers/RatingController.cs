@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Context;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using backend.Services;
 
 namespace backend.Controllers
 {
@@ -15,6 +16,35 @@ namespace backend.Controllers
         {
             _context = context;
         }
+          [HttpPost("train")]
+        public IActionResult TrainModel()
+        {
+            var ratings = _context.Ratings.ToList();
+            if (!ratings.Any())
+            {
+                return BadRequest("No data available to train the model.");
+            }
+
+            MLModel.TrainAndSaveModel(ratings);
+            return Ok("Model trained and saved successfully.");
+        }
+
+ [HttpGet("predict/{userID}/{locationID}")]
+public IActionResult PredictRating(int userID, int locationID)
+{
+    // Log the input values for debugging
+    Console.WriteLine($"Received prediction request for UserID: {userID}, LocationID: {locationID}");
+
+    // Perform the prediction
+    var predictedRating = Predictor.PredictRating(userID, locationID);
+
+    // Log the output prediction value
+    Console.WriteLine($"Predicted Rating: {predictedRating}");
+
+    // Return the prediction result
+    return Ok(new { PredictedRating = predictedRating });
+}
+
 
         [HttpPost]
         public async Task<IActionResult> CreateRating([FromBody] Rating rating)
