@@ -370,8 +370,9 @@ const MarkerPopup = ({
                 <Chip label="Features" size="small"></Chip>
               </Divider>
               <FeaturesListWithToggle featuresList={featuresList} />
-              <StarRating locationID={location.locationID} />
-              <AddFeatureButton locationID={location.locationID} />
+              <StarRating locationID={location.locationID} userID={userID} />
+
+              <AddFeatureButton locationID={location.locationID}/>
 
               <button className="popup-button" onClick={handleEditLocation}>
                 Edit Location

@@ -80,5 +80,21 @@ namespace backend.Controllers
             // Return a response with the created location      
             return Ok(rating);
         }
+        
+        [HttpGet("average/{LocationID}")]
+        public async Task<IActionResult> GetAverageRating(int LocationID)
+        {
+            var ratings = await _context.Ratings
+                .Where(r => r.LocationID == LocationID)
+                .ToListAsync();
+
+            if (!ratings.Any())
+            {
+                return Ok(new { AverageRating = 0 });
+            }
+
+            var averageRating = ratings.Average(r => r.UserRating);
+            return Ok(new { AverageRating = averageRating });
+        }
     }
 }

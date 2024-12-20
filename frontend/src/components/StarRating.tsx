@@ -62,31 +62,34 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
-
+  
+  
   // Fetch the initial rating from the backend
-  useEffect(() => {
-    RatingService.getRating(userID, locationID).then((rating) => {
-      if (rating && rating.getRating() !== 0) {
-        setCurrentRating(rating.getRating());
+
+
+    useEffect(() => {
+      RatingService.getRating(userID, locationID).then((rating) => {
+
+        if (rating && rating.getRating() !== 0) {
+          setCurrentRating(rating.getRating());
+        } else {
+          setUnset(true);
+        }
+      });
+    }, [locationID]);
+  
+    // Function to update rating in the state and backend
+    const updateRating = (newRating: number | null) => {
+      if (!newRating || newRating < 1 || newRating > 5) return;
+  
+      if (unset) {
+        RatingService.createRating(userID, locationID, newRating);
+        setUnset(false);
       } else {
-        setUnset(true);
+        RatingService.setRating(userID, locationID, newRating);
       }
-    });
-  }, [locationID]);
-
-  // Function to update rating in the state and backend
-  const updateRating = (newRating: number | null) => {
-    if (!newRating || newRating < 1 || newRating > 5) return;
-
-    if (unset) {
-      RatingService.createRating(userID, locationID, newRating);
-      setUnset(false);
-    } else {
-      RatingService.setRating(userID, locationID, newRating);
-    }
-    setCurrentRating(newRating);
-  };
-
+      setCurrentRating(newRating);
+    };
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <StyledRating
