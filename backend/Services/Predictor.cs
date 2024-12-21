@@ -28,7 +28,6 @@ namespace backend.Services
 
             // Debug logs for inputs and predictions
             Console.WriteLine($"UserID: {input.UserID}, LocationID: {input.LocationID}");
-            Console.WriteLine($"Predicted Score: {prediction.PredictedRating}");
 
             // Return the predicted score
             return prediction.PredictedRating;
