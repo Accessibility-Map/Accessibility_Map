@@ -1,7 +1,8 @@
-namespace backend.Models
+using Microsoft.ML.Data;
+
+
+public class RatingPrediction
 {
-    public class RatingPrediction
-    {
-        public float PredictedRating { get; set; }
-    }
+    [ColumnName("Score")]
+    public float PredictedRating { get; set; }
 }

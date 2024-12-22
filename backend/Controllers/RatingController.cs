@@ -29,21 +29,22 @@ namespace backend.Controllers
             return Ok("Model trained and saved successfully.");
         }
 
- [HttpGet("predict/{userID}/{locationID}")]
+[HttpGet("predict/{userID}/{locationID}")]
 public IActionResult PredictRating(int userID, int locationID)
 {
     // Log the input values for debugging
     Console.WriteLine($"Received prediction request for UserID: {userID}, LocationID: {locationID}");
 
-    // Perform the prediction
+    // Perform the prediction using the URL parameters
     var predictedRating = Predictor.PredictRating(userID, locationID);
 
-    // Log the output prediction value
+    // Log the predicted value for debugging
     Console.WriteLine($"Predicted Rating: {predictedRating}");
 
     // Return the prediction result
     return Ok(new { PredictedRating = predictedRating });
 }
+
 
 
         [HttpPost]
