@@ -12,10 +12,6 @@ namespace backend.Services
         {
             var context = new MLContext();
 
-            ratings.Add(new Rating { UserID = 100, LocationID = 200, UserRating = 5 });
-            ratings.Add(new Rating { UserID = 100, LocationID = 250, UserRating = 2 });
-
-
             var ratingData = ratings.Select(r => new RatingData
             {
                 UserID = r.UserID,
