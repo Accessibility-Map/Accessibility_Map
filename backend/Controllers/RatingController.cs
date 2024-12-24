@@ -16,7 +16,8 @@ namespace backend.Controllers
         {
             _context = context;
         }
-          [HttpPost("train")]
+
+        [HttpPost("train")]
         public IActionResult TrainModel()
         {
             var ratings = _context.Ratings.ToList();
@@ -29,23 +30,41 @@ namespace backend.Controllers
             return Ok("Model trained and saved successfully.");
         }
 
-[HttpGet("predict/{userID}/{locationID}")]
-public IActionResult PredictRating(int userID, int locationID)
-{
-    // Log the input values for debugging
-    Console.WriteLine($"Received prediction request for UserID: {userID}, LocationID: {locationID}");
+        [HttpGet("predict/{userID}/{locationID}")]
+        public IActionResult PredictRating(int userID, int locationID)
+        {
+            try
+            {
+                Console.WriteLine($"Received prediction request for UserID: {userID}, LocationID: {locationID}");
 
-    // Perform the prediction using the URL parameters
-    var predictedRating = Predictor.PredictRating(userID, locationID);
+                var predictedRating = Predictor.PredictRating(userID, locationID);
 
-    // Log the predicted value for debugging
-    Console.WriteLine($"Predicted Rating: {predictedRating}");
+                Console.WriteLine($"Predicted Rating: {predictedRating}");
 
-    // Return the prediction result
-    return Ok(new { PredictedRating = predictedRating });
-}
+                return Ok(new { UserID = userID, LocationID = locationID, PredictedRating = predictedRating });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during prediction: {ex.Message}");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
 
+        [HttpGet("inspect-model")]
+        public IActionResult InspectModel()
+        {
+            try
+            {
+                string modelPath = Path.Combine(Directory.GetCurrentDirectory(), "RatingModel.zip");
 
+                ModelInspector.InspectModel(modelPath);
+                return Ok("Model inspection completed. Check logs for details.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error inspecting model: {ex.Message}");
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreateRating([FromBody] Rating rating)
@@ -55,11 +74,9 @@ public IActionResult PredictRating(int userID, int locationID)
                 return BadRequest("Invalid location data.");
             }
 
-            // Add the location to the database
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
-            // Return a response with the created location
             return Ok(rating);
         }
 
@@ -86,12 +103,10 @@ public IActionResult PredictRating(int userID, int locationID)
                 return BadRequest("Rating must be between 1 and 5.");
             }
 
-            // Add the location to the database
             Rating rating = new Rating(UserID, LocationID, Rating);
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
-            // Return a response with the created location      
             return Ok(rating);
         }
 
@@ -103,15 +118,13 @@ public IActionResult PredictRating(int userID, int locationID)
                 return BadRequest("Rating must be between 1 and 5.");
             }
 
-            // Add the location to the database
             Rating rating = new Rating(UserID, LocationID, Rating);
             _context.Ratings.Update(rating);
             await _context.SaveChangesAsync();
 
-            // Return a response with the created location      
             return Ok(rating);
         }
-        
+
         [HttpGet("average/{LocationID}")]
         public async Task<IActionResult> GetAverageRating(int LocationID)
         {
