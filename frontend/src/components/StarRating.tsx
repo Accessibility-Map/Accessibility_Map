@@ -8,6 +8,8 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import PredictionService from "./services/PredictionService";
+import Typography from "@mui/material/Typography";
 
 type CustomIconType = {
   [index: number]: {
@@ -36,14 +38,12 @@ const customIcons: CustomIconType = {
   },
 };
 
-// Styled rating component to use custom icons
 const StyledRating = styled(Rating)(({ theme }) => ({
   "& .MuiRating-iconEmpty .MuiSvgIcon-root": {
     color: theme.palette.action.disabled,
   },
 }));
 
-// Define types for IconContainer props
 interface IconContainerProps {
   value: number;
 }
@@ -62,10 +62,14 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
-  
-  
-  // Fetch the initial rating from the backend
+  const [predictedRating, setPredictedRating] = useState<number | null>(null);
 
+  
+  useEffect(() => {
+    PredictionService.predictRating(userID, locationID).then((rating) => {
+      setPredictedRating(rating);
+    });
+  }, [locationID, userID]);
 
     useEffect(() => {
       RatingService.getRating(userID, locationID).then((rating) => {
@@ -78,7 +82,6 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
       });
     }, [locationID]);
   
-    // Function to update rating in the state and backend
     const updateRating = (newRating: number | null) => {
       if (!newRating || newRating < 1 || newRating > 5) return;
   
@@ -90,23 +93,30 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
       }
       setCurrentRating(newRating);
     };
-  return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <StyledRating
-        name="customized-icons"
-        value={currentRating}
-        IconContainerComponent={IconContainer}
-        getLabelText={(value: number) => customIcons[value].label}
-        highlightSelectedOnly
-        precision={1}
-        onChange={(event, newValue) => updateRating(newValue)}
-        onChangeActive={(event, newHover) => setHover(newHover)}
-        emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-      />
-      {currentRating !== null && (
-        <Box sx={{ ml: 2 }}>{hover !== -1 ? hover : currentRating} Stars</Box>
-      )}
-    </Box>
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+        <StyledRating
+          name="customized-icons"
+          value={currentRating}
+          IconContainerComponent={IconContainer}
+          getLabelText={(value: number) => customIcons[value].label}
+          highlightSelectedOnly
+          precision={1}
+          onChange={(event, newValue) => updateRating(newValue)}
+          onChangeActive={(event, newHover) => setHover(newHover)}
+          emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+        />
+        {currentRating !== null && (
+          <Typography variant="body2" color="textSecondary">
+            {hover !== -1 ? hover : currentRating} Stars
+          </Typography>
+        )}
+        {predictedRating !== null && (
+          <Typography variant="body2" color="textSecondary">
+            Predicted Rating: {predictedRating} Stars
+          </Typography>
+        )}
+      </Box>
   );
 };
 
