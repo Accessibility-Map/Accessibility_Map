@@ -111,12 +111,12 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
             {hover !== -1 ? hover : currentRating} Stars
           </Typography>
         )}
-        {predictedRating !== null && (
-          <Typography variant="body2" color="textSecondary">
-            Predicted Rating: {predictedRating} Stars
-          </Typography>
-        )}
-      </Box>
+            {predictedRating !== null && (
+        <Typography variant="body2" color="textSecondary">
+          Predicted Rating: {predictedRating.toFixed(2)} Stars
+        </Typography>
+      )}
+    </Box>
   );
 };
 
