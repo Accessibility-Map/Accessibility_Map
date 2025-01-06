@@ -63,7 +63,7 @@ namespace backend.Controllers
             var features = await _context.Features.Where(entry => entry.LocationID == locationID).ToListAsync();
             return Ok(features);
         }
-        // DELETE: api/features/{id}
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFeature(int id)
         {
@@ -93,7 +93,6 @@ namespace backend.Controllers
 
             try
             {
-                // Check if the feature exists
                 var feature = await _context.Features.FindAsync(id);
                 if (feature == null)
                 {
@@ -107,7 +106,6 @@ namespace backend.Controllers
                     return BadRequest("No file uploaded.");
                 }
 
-                // Define upload directory
                 string uploadsFolder = _environment.IsProduction()
                     ? "/uploads/features"
                     : Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads", "features");
@@ -118,19 +116,16 @@ namespace backend.Controllers
                     Console.WriteLine("[INFO] Created uploads folder.");
                 }
 
-                // Generate a unique filename
                 var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 Console.WriteLine($"[INFO] File path: {filePath}");
 
-                // Save the file
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
                 Console.WriteLine("[INFO] File saved successfully.");
 
-                // Update the feature's ImagePath
                 feature.ImagePath = "/uploads/features/" + uniqueFileName;
                 await _context.SaveChangesAsync();
                 Console.WriteLine($"[INFO] Feature with ID {id} updated with ImagePath: {feature.ImagePath}");
@@ -164,7 +159,7 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(feature); // Return updated feature
+            return Ok(feature); 
         }
 
     }

@@ -16,49 +16,49 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       )
     );
   };
-  
+
   const handleSave = async () => {
     try {
       console.log("Saving main image...");
       console.log("Current main image:", mainImage);
-  
+
       let updatedImages = [...images];
-  
+
       if (mainImage) {
         const formData = new FormData();
         formData.append("file", mainImage);
-  
+
         console.log("Uploading main image to backend...");
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/upload`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-  
+
         console.log("Backend response for main image upload:", response.data);
-  
+
         const newMainImageUrl = response.data.imageUrl.startsWith("http")
           ? response.data.imageUrl
           : `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${response.data.imageUrl.replace(/^\/+/, "")}`;
-        
+
         console.log("Processed main image URL:", newMainImageUrl);
-  
+
         updatedImages = [newMainImageUrl, ...images.filter((img) => img !== newMainImageUrl)];
         setImages(updatedImages);
-  
+
         console.log("Updated images array after saving:", updatedImages);
       }
-  
-      onSave(updatedFeatures, updatedImages); 
+
+      onSave(updatedFeatures, updatedImages);
       onClose();
     } catch (error) {
       console.error("Error saving changes:", error);
     }
   };
-  
-  
-  
-  
+
+
+
+
   return (
     <div>
       <h3>Edit Location</h3>
@@ -106,7 +106,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
             />
           </div>
         ))}
-  <div>
+        <div>
           <h4>Main Image</h4>
           {images.length > 0 ? (
             <img

@@ -152,10 +152,8 @@ namespace backend.Controllers
                     return NotFound("Location not found.");
                 }
 
-                // Fetch all associated images
                 var pictures = await _context.Pictures.Where(p => p.LocationID == id).ToListAsync();
 
-                // Delete images from the filesystem
                 foreach (var picture in pictures)
                 {
                     var filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
@@ -165,20 +163,16 @@ namespace backend.Controllers
                     }
                 }
 
-                // Remove image records from the database
                 _context.Pictures.RemoveRange(pictures);
 
-                // Remove related entities (e.g., Ratings, Features)
                 var ratings = _context.Ratings.Where(r => r.LocationID == id);
                 _context.Ratings.RemoveRange(ratings);
 
                 var features = _context.Features.Where(f => f.LocationID == id);
                 _context.Features.RemoveRange(features);
 
-                // Remove the location itself
                 _context.Locations.Remove(location);
 
-                // Save changes to the database
                 await _context.SaveChangesAsync();
 
                 return Ok("Location and associated images deleted successfully.");
@@ -204,7 +198,6 @@ namespace backend.Controllers
                 Console.WriteLine($"Received LocationID: {locationId}");
                 Console.WriteLine($"Received ImageUrl: {request.ImageUrl}");
 
-                // Check if the location exists
                 var location = await _context.Locations.FindAsync(locationId);
                 if (location == null)
                 {
@@ -212,7 +205,6 @@ namespace backend.Controllers
                     return NotFound("Location not found.");
                 }
 
-                // Log all images for the location
                 var pictures = await _context.Pictures
                     .Where(p => p.LocationID == locationId)
                     .ToListAsync();
@@ -222,7 +214,6 @@ namespace backend.Controllers
                     Console.WriteLine($"Database ImageUrl: {pic.ImageUrl}");
                 }
 
-                // Normalize request URL
                 var normalizedRequestUrl = request.ImageUrl.Trim();
                 var picture = await _context.Pictures
                     .FirstOrDefaultAsync(p => p.LocationID == locationId && p.ImageUrl.Trim() == normalizedRequestUrl);
@@ -233,7 +224,6 @@ namespace backend.Controllers
                     return NotFound("Image not found.");
                 }
 
-                // Construct the file path
                 var filePath = Path.Combine(
                     _environment.WebRootPath ?? Directory.GetCurrentDirectory(),
                     picture.ImageUrl.TrimStart('/')
@@ -242,7 +232,6 @@ namespace backend.Controllers
                 Console.WriteLine($"Constructed file path: {filePath}");
                 Console.WriteLine($"File exists: {System.IO.File.Exists(filePath)}");
 
-                // Delete the file from the filesystem
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
@@ -253,7 +242,6 @@ namespace backend.Controllers
                     Console.WriteLine("File does not exist.");
                 }
 
-                // Remove the entry from the database
                 _context.Pictures.Remove(picture);
                 await _context.SaveChangesAsync();
 
