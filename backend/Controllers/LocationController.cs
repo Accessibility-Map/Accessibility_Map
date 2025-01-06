@@ -30,48 +30,40 @@ namespace backend.Controllers
         {
             try
             {
+                Console.WriteLine($"[UPLOAD] LocationID: {id}, File: {file?.FileName}");
+
                 var location = await _context.Locations.FindAsync(id);
                 if (location == null)
                 {
+                    Console.WriteLine("[UPLOAD] Location not found.");
                     return NotFound("Location not found.");
                 }
 
                 if (file == null || file.Length == 0)
                 {
+                    Console.WriteLine("[UPLOAD] No file uploaded or file is empty.");
                     return BadRequest("No file uploaded.");
                 }
 
-                string uploadsFolder;
+                string uploadsFolder = _environment.WebRootPath ?? Directory.GetCurrentDirectory();
+                uploadsFolder = Path.Combine(uploadsFolder, "uploads");
 
-                if (_environment.IsProduction())
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    uploadsFolder = "/uploads";
-                }
-                else
-                {
-                    // Fallback to a relative path if WebRootPath is null
-                    uploadsFolder = _environment.WebRootPath != null
-                    ? Path.Combine(_environment.WebRootPath, "uploads")
-                    : Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
+                    Console.WriteLine("[UPLOAD] Upload folder not found. Creating...");
+                    Directory.CreateDirectory(uploadsFolder);
                 }
 
-
-
-                // Generate a unique filename to avoid conflicts
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                Console.WriteLine($"[UPLOAD] Saving file to: {filePath}");
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
 
-                // Save image details in the Pictures table
                 var picture = new Picture
                 {
                     LocationID = id,
@@ -79,30 +71,51 @@ namespace backend.Controllers
                     UploadedAt = DateTime.UtcNow
                 };
 
+                Console.WriteLine($"[UPLOAD] Creating Picture: LocationID={picture.LocationID}, ImageUrl={picture.ImageUrl}");
+
                 _context.Pictures.Add(picture);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { picture.ImageUrl });
+                Console.WriteLine($"[UPLOAD] Picture saved in database. PictureID={picture.PictureID}, LocationID={picture.LocationID}, ImageUrl={picture.ImageUrl}");
+
+                return Ok(new { ImageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{uniqueFileName}" });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error during file upload: " + ex.Message);
+                Console.WriteLine("[UPLOAD] Error: " + ex.Message);
                 return StatusCode(500, "Internal server error occurred while uploading the file.");
             }
         }
 
 
+
         [HttpGet("{id}/pictures")]
         public async Task<IActionResult> GetPictures(int id)
         {
-            var pictures = await _context.Pictures
-                .Where(p => p.LocationID == id)
-                .Select(p => new { p.ImageUrl })  // Only return ImageUrl
-                .ToListAsync();
+            try
+            {
+                Console.WriteLine($"[GET PICTURES] Fetching pictures for LocationID: {id}");
 
-            // Instead of returning 404, return an empty list if no pictures found
-            return Ok(pictures);
+                var pictures = await _context.Pictures.Where(p => p.LocationID == id).ToListAsync();
+
+                Console.WriteLine($"[GET PICTURES] Found {pictures.Count} pictures for LocationID: {id}");
+                foreach (var picture in pictures)
+                {
+                    Console.WriteLine($"[GET PICTURES] PictureID: {picture.PictureID}, LocationID: {picture.LocationID}, ImageUrl: {picture.ImageUrl}");
+                }
+
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var response = pictures.Select(p => new { ImageUrl = $"{baseUrl}{p.ImageUrl}" }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GET PICTURES] Error: {ex.Message}");
+                return StatusCode(500, "Internal server error occurred while fetching pictures.");
+            }
         }
+
 
         // Create Location
         [HttpPost]
@@ -113,7 +126,6 @@ namespace backend.Controllers
                 return BadRequest("Invalid location data.");
             }
 
-            // Add location to the database
             _context.Locations.Add(location);
             await _context.SaveChangesAsync();
 
@@ -266,10 +278,10 @@ namespace backend.Controllers
 
                 Console.WriteLine($"Replacing image for LocationID: {locationId}, OldImageUrl: {oldImageUrl}");
 
-          
+
                 var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
 
-                if (oldImageUrl.Contains("..") ||  oldImageUrl.Contains("\\") || !oldImageUrl.Contains("/uploads/"))
+                if (oldImageUrl.Contains("..") || oldImageUrl.Contains("\\") || !oldImageUrl.Contains("/uploads/"))
                 {
                     return BadRequest("Invalid old image URL.");
                 }
@@ -309,6 +321,8 @@ namespace backend.Controllers
                 return StatusCode(500, "Internal server error occurred while replacing the image.");
             }
         }
+
+
 
 
 

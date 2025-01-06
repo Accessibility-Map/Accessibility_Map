@@ -4,6 +4,10 @@ using backend.Context;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using System;
+
 
 namespace backend.Controllers
 {
@@ -16,16 +20,17 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAllFeatures()
         {
             var features = await _context.Features.ToListAsync();
-            return Ok(features);
+            return Ok(new { features });
         }
         private readonly ApplicationDbContext _context;
         private readonly ILogger<FeatureController> _logger;
+        private readonly IWebHostEnvironment _environment;
 
-        public FeatureController(ApplicationDbContext context, ILogger<FeatureController> logger)
+        public FeatureController(ApplicationDbContext context, ILogger<FeatureController> logger, IWebHostEnvironment environment)
         {
             _context = context;
             _logger = logger;
-
+            _environment = environment;
         }
 
         [HttpPost]
@@ -81,7 +86,65 @@ namespace backend.Controllers
             return Ok(entries);
         }
 
-        // PUT: api/features/{id}
+        [HttpPut("{id}/upload-image")]
+        public async Task<IActionResult> UploadFeatureImage(int id, IFormFile file)
+        {
+            Console.WriteLine($"[INFO] UploadFeatureImage called for FeatureId: {id}");
+
+            try
+            {
+                // Check if the feature exists
+                var feature = await _context.Features.FindAsync(id);
+                if (feature == null)
+                {
+                    Console.WriteLine($"[ERROR] Feature with ID {id} not found.");
+                    return NotFound("Feature not found.");
+                }
+
+                if (file == null || file.Length == 0)
+                {
+                    Console.WriteLine("[ERROR] No file uploaded.");
+                    return BadRequest("No file uploaded.");
+                }
+
+                // Define upload directory
+                string uploadsFolder = _environment.IsProduction()
+                    ? "/uploads/features"
+                    : Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads", "features");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                    Console.WriteLine("[INFO] Created uploads folder.");
+                }
+
+                // Generate a unique filename
+                var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                Console.WriteLine($"[INFO] File path: {filePath}");
+
+                // Save the file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+                Console.WriteLine("[INFO] File saved successfully.");
+
+                // Update the feature's ImagePath
+                feature.ImagePath = "/uploads/features/" + uniqueFileName;
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"[INFO] Feature with ID {id} updated with ImagePath: {feature.ImagePath}");
+
+                return Ok(new { imageUrl = feature.ImagePath });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Exception occurred: {ex.Message}");
+                return StatusCode(500, "Internal server error occurred while uploading the image.");
+            }
+        }
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFeature(int id, [FromBody] Feature updatedFeature)
         {
@@ -101,7 +164,8 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(feature); // Return updated feature
         }
+
     }
 }
