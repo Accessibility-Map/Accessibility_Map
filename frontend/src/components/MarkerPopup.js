@@ -49,7 +49,6 @@ const MarkerPopup = ({
       })
       .catch((error) => console.error("Error fetching features:", error));
 
-    // Fetch images
     axios
       .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
       .then((response) => {
@@ -93,7 +92,6 @@ const MarkerPopup = ({
     setFeaturesList(updatedFeatures);
     setImages(updatedImages);
 
-    // Log the updated state after the state setter functions are called
     setTimeout(() => {
       console.log("Updated state in MarkerPopup after save:");
       console.log("Features list:", featuresList);
@@ -145,11 +143,11 @@ const MarkerPopup = ({
                 images={images}
                 heightParam="250px"
                 onDelete={(imageUrl) => {
-                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); // Remove trailing slashes
+                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); 
                   const relativeImageUrl = imageUrl
-                    .replace(baseApiUrl, "") // Remove base API URL
-                    .trim() // Remove spaces
-                    .replace(/\\/g, "/"); // Normalize slashes
+                    .replace(baseApiUrl, "") 
+                    .trim() 
+                    .replace(/\\/g, "/"); 
                 
                   console.log("Normalized image URL for deletion:", relativeImageUrl);
                 
@@ -182,7 +180,6 @@ const MarkerPopup = ({
                     return;
                   }
                 
-                  // Remove metadata or query parameters from the URL
                   const sanitizedOldImageUrl = oldImageUrl.split("?")[0].trim();
                 
                   const formData = new FormData();
