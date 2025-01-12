@@ -143,29 +143,36 @@ const MarkerPopup = ({
                 images={images}
                 heightParam="250px"
                 onDelete={(imageUrl) => {
-                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); 
-                  const relativeImageUrl = imageUrl
-                    .replace(baseApiUrl, "") 
-                    .trim() 
-                    .replace(/\\/g, "/"); 
-                
-                  console.log("Normalized image URL for deletion:", relativeImageUrl);
-                
+                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
+                  const relativeImageUrl = imageUrl.replace(baseApiUrl, "").trim().replace(/\\/g, "/");
+              
+                  console.log("Deleting image:", relativeImageUrl);
+              
+                  // Optimistically update the UI
+                  const updatedImages = images.filter((img) => img !== imageUrl);
+                  setImages(updatedImages);
+                  console.log("Optimistic images after deletion:", updatedImages);
+              
                   axios
                     .delete(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`, {
                       data: { imageUrl: relativeImageUrl },
                       headers: { "Content-Type": "application/json" },
                     })
-                    .then((response) => {
-                      console.log("Delete response:", response.data);
-                      setImages((prev) => prev.filter((img) => img !== imageUrl));
+                    .then(() => {
+                      console.log("Image successfully deleted from backend.");
+                      // Refetch updated images to ensure synchronization
+                      return axios.get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`);
+                    })
+                    .then((res) => {
+                      const refreshedImages = res.data.map((picture) => picture.imageUrl);
+                      console.log("Refetched images from backend:", refreshedImages);
+                      setImages(refreshedImages); // Ensure the UI reflects the latest state
                     })
                     .catch((err) => {
-                      console.error("Error deleting image:", err.response?.data || err.message);
-                      alert("Failed to delete the image. Please try again.");
+                      console.error("Error during deletion or re-fetch:", err.response?.data || err.message);
+                      alert("Failed to delete the image or synchronize with the backend.");
                     });
                 }}
-                
               
                 
                 
