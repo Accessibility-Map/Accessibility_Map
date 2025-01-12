@@ -148,7 +148,6 @@ const MarkerPopup = ({
               
                   console.log("Deleting image:", relativeImageUrl);
               
-                  // Optimistically update the UI
                   const updatedImages = images.filter((img) => img !== imageUrl);
                   setImages(updatedImages);
                   console.log("Optimistic images after deletion:", updatedImages);
@@ -160,13 +159,12 @@ const MarkerPopup = ({
                     })
                     .then(() => {
                       console.log("Image successfully deleted from backend.");
-                      // Refetch updated images to ensure synchronization
                       return axios.get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`);
                     })
                     .then((res) => {
                       const refreshedImages = res.data.map((picture) => picture.imageUrl);
                       console.log("Refetched images from backend:", refreshedImages);
-                      setImages(refreshedImages); // Ensure the UI reflects the latest state
+                      setImages(refreshedImages); 
                     })
                     .catch((err) => {
                       console.error("Error during deletion or re-fetch:", err.response?.data || err.message);

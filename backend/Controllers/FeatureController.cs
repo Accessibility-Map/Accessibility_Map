@@ -63,7 +63,7 @@ namespace backend.Controllers
             var features = await _context.Features.Where(entry => entry.LocationID == locationID).ToListAsync();
             return Ok(features);
         }
-        
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFeature(int id)
         {
@@ -159,7 +159,7 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(feature); 
+            return Ok(feature);
         }
 
     }
