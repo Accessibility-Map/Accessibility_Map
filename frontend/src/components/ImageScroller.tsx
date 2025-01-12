@@ -14,7 +14,6 @@ interface ImageScrollerProps {
     images: any;
     widthParam: string;
     heightParam: string;
-    // Callback function for deletion
     onDelete: (imageUrl: string) => void;
     onReplace: (newImage: File, oldImageUrl: string) => void;
 }
@@ -35,10 +34,18 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
       setIndex(imageIndex - 1);
     }
   };
-
   const handleDelete = () => {
-    onDelete(images[imageIndex]);
-  };
+    const normalizedImageUrl = normalizeUrl(images[imageIndex]);
+    onDelete(normalizedImageUrl);
+    setIndex((prevIndex) => (images.length > 1 ? Math.max(prevIndex - 1, 0) : 0));
+};
+
+const normalizeUrl = (url: string): string => {
+  return url.trim().replace(/\\/g, "/").replace(process.env.REACT_APP_API_URL || "", "").replace(/^\/+/, "");
+};
+
+
+
 
 
   const handleReplace = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +56,6 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
   };
 
     const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        // Open a popup with a full size version of the image
         setOpenPopup(true);
     }
 

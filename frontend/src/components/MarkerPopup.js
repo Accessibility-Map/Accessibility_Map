@@ -145,31 +145,65 @@ const MarkerPopup = ({
                 images={images}
                 heightParam="250px"
                 onDelete={(imageUrl) => {
-                  console.log("Deleting image:", imageUrl);
-                  setImages((prev) => prev.filter((img) => img !== imageUrl));
+                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, ""); // Remove trailing slashes
+                  const relativeImageUrl = imageUrl
+                    .replace(baseApiUrl, "") // Remove base API URL
+                    .trim() // Remove spaces
+                    .replace(/\\/g, "/"); // Normalize slashes
+                
+                  console.log("Normalized image URL for deletion:", relativeImageUrl);
+                
                   axios
-                    .delete(
-                      `${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`,
-                      { data: { imageUrl } }
-                    )
-                    .catch((err) => console.error("Error deleting image:", err));
-                }}
-                onReplace={(newImage, oldImageUrl) => {
-                  const formData = new FormData();
-                  formData.append("file", newImage);
-
-                  axios
-                    .put(`${process.env.REACT_APP_API_URL}api/features/upload-image`, formData, {
-                      headers: { "Content-Type": "multipart/form-data" },
+                    .delete(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`, {
+                      data: { imageUrl: relativeImageUrl },
+                      headers: { "Content-Type": "application/json" },
                     })
                     .then((response) => {
-                      const newImageUrl = response.data.imageUrl;
-                      setImages((prev) =>
-                        prev.map((img) => (img === oldImageUrl ? newImageUrl : img))
-                      );
+                      console.log("Delete response:", response.data);
+                      setImages((prev) => prev.filter((img) => img !== imageUrl));
                     })
-                    .catch((err) => console.error("Error replacing image:", err));
+                    .catch((err) => {
+                      console.error("Error deleting image:", err.response?.data || err.message);
+                      alert("Failed to delete the image. Please try again.");
+                    });
                 }}
+                
+              
+                
+                
+                
+                
+                onReplace={(newImage, oldImageUrl) => {
+                  console.log("Replacing image:", oldImageUrl, "with new image:", newImage);
+                
+                  if (!newImage) {
+                    console.error("No new image provided.");
+                    alert("Please select a new image to upload.");
+                    return;
+                  }
+                
+                  // Remove metadata or query parameters from the URL
+                  const sanitizedOldImageUrl = oldImageUrl.split("?")[0].trim();
+                
+                  const formData = new FormData();
+                  formData.append("file", newImage);
+                  formData.append("oldImageUrl", sanitizedOldImageUrl);
+                
+                  axios
+                    .put(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/replace-image`, formData)
+                    .then((response) => {
+                      console.log("Image replaced successfully:", response.data);
+                      const newImageUrl = response.data.imageUrl;
+                      setImages((prev) => prev.map((img) => (img === oldImageUrl ? newImageUrl : img)));
+                    })
+                    .catch((err) => {
+                      console.error("Error replacing image:", err.response ? err.response.data : err.message);
+                      alert("Failed to replace the image. Please try again.");
+                    });
+                }}
+                
+                
+                
               />
 
               {featuresList.map((feature) => (
