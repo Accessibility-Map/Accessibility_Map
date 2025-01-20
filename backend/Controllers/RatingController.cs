@@ -77,7 +77,7 @@ namespace backend.Controllers
             var rating = new Rating
             {
                 UserID = ratingDto.UserID,
-                LocationID = ratingDto.LocationID, // Set only the foreign key
+                LocationID = ratingDto.LocationID,
                 UserRating = ratingDto.Rating
             };
 
