@@ -67,18 +67,27 @@ namespace backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRating([FromBody] Rating rating)
+        public async Task<IActionResult> CreateRating([FromBody] RatingDto ratingDto)
         {
-            if (rating == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid location data.");
+                return BadRequest(ModelState);
             }
+
+            var rating = new Rating
+            {
+                UserID = ratingDto.UserID,
+                LocationID = ratingDto.LocationID, // Set only the foreign key
+                UserRating = ratingDto.Rating
+            };
 
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
             return Ok(rating);
         }
+
+
 
         [HttpGet("{UserID}/{LocationID}")]
         public async Task<IActionResult> GetRating(int UserID, int LocationID)
