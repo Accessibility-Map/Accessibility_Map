@@ -28,9 +28,12 @@ namespace backend.Services
                 };
 
                 Console.WriteLine($"Input UserID: {input.UserID}, Input LocationID: {input.LocationID}");
+
                 var prediction = predictionEngine.Predict(input);
 
-                Console.WriteLine($"Predicted Rating: {prediction.PredictedRating}");
+                prediction.PredictedRating = Math.Clamp(prediction.PredictedRating, 1.0f, 5.0f);
+
+                Console.WriteLine($"Predicted Rating (clamped): {prediction.PredictedRating}");
                 return prediction.PredictedRating;
             }
             catch (Exception ex)
@@ -41,3 +44,4 @@ namespace backend.Services
         }
     }
 }
+

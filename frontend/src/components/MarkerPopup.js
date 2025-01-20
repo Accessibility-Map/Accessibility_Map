@@ -20,19 +20,15 @@ const MarkerPopup = ({
   deleteMarker,
   userID,
   openPopupId,
-  setOpenPopupId
+  setOpenPopupId,
 }) => {
   const markerRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [featuresList, setFeaturesList] = useState([]);
   const [images, setImages] = useState([]);
 
-
   useEffect(() => {
     // Fetch features
-    console.log("Fetching images for location:", location.locationID);
-
-
     axios
       .get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`)
       .then((response) => {
@@ -49,25 +45,17 @@ const MarkerPopup = ({
       })
       .catch((error) => console.error("Error fetching features:", error));
 
+    // Fetch images
     axios
       .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
       .then((response) => {
-        console.log("API response for images:", response.data);
-
         const imageUrls = response.data.map((picture) => picture.imageUrl);
-        console.log("Processed image URLs:", imageUrls);
-
         setImages(imageUrls);
-
-        setTimeout(() => {
-          console.log("Updated images state:", images);
-        }, 0);
       })
       .catch((error) => {
         console.error("Error fetching images:", error);
       });
   }, [location.locationID]);
-
 
   useEffect(() => {
     if (openPopupId === location.locationID && markerRef.current) {
@@ -80,27 +68,11 @@ const MarkerPopup = ({
     setIsEditing(true);
   };
 
-  const handleCloseEdit = (e) => {
-    e.stopPropagation();
-    setIsEditing(false);
-  };
-
   const handleSaveEdit = (updatedFeatures, updatedImages) => {
-    console.log("Received updated features:", updatedFeatures);
-    console.log("Received updated images:", updatedImages);
-
     setFeaturesList(updatedFeatures);
     setImages(updatedImages);
-
-    setTimeout(() => {
-      console.log("Updated state in MarkerPopup after save:");
-      console.log("Features list:", featuresList);
-      console.log("Images:", images);
-    }, 0);
-
     setIsEditing(false);
   };
-
 
   const handleClosePopup = () => {
     setOpenPopupId(null);
@@ -133,8 +105,6 @@ const MarkerPopup = ({
               onSave={handleSaveEdit}
               onClose={() => setIsEditing(false)}
             />
-
-
           ) : (
             <>
               <div className="popup-header">{location.locationName}</div>
@@ -145,67 +115,50 @@ const MarkerPopup = ({
                 onDelete={(imageUrl) => {
                   const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
                   const relativeImageUrl = imageUrl.replace(baseApiUrl, "").trim().replace(/\\/g, "/");
-              
-                  console.log("Deleting image:", relativeImageUrl);
-              
+
                   const updatedImages = images.filter((img) => img !== imageUrl);
                   setImages(updatedImages);
-                  console.log("Optimistic images after deletion:", updatedImages);
-              
+
                   axios
                     .delete(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`, {
                       data: { imageUrl: relativeImageUrl },
                       headers: { "Content-Type": "application/json" },
                     })
                     .then(() => {
-                      console.log("Image successfully deleted from backend.");
                       return axios.get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`);
                     })
                     .then((res) => {
                       const refreshedImages = res.data.map((picture) => picture.imageUrl);
-                      console.log("Refetched images from backend:", refreshedImages);
-                      setImages(refreshedImages); 
+                      setImages(refreshedImages);
                     })
                     .catch((err) => {
                       console.error("Error during deletion or re-fetch:", err.response?.data || err.message);
                       alert("Failed to delete the image or synchronize with the backend.");
                     });
                 }}
-              
-                
-                
-                
-                
                 onReplace={(newImage, oldImageUrl) => {
-                  console.log("Replacing image:", oldImageUrl, "with new image:", newImage);
-                
                   if (!newImage) {
-                    console.error("No new image provided.");
                     alert("Please select a new image to upload.");
                     return;
                   }
-                
+
                   const sanitizedOldImageUrl = oldImageUrl.split("?")[0].trim();
-                
+
                   const formData = new FormData();
                   formData.append("file", newImage);
                   formData.append("oldImageUrl", sanitizedOldImageUrl);
-                
+
                   axios
                     .put(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/replace-image`, formData)
                     .then((response) => {
-                      console.log("Image replaced successfully:", response.data);
                       const newImageUrl = response.data.imageUrl;
                       setImages((prev) => prev.map((img) => (img === oldImageUrl ? newImageUrl : img)));
                     })
                     .catch((err) => {
-                      console.error("Error replacing image:", err.response ? err.response.data : err.message);
+                      console.error("Error replacing image:", err.response?.data || err.message);
                       alert("Failed to replace the image. Please try again.");
                     });
                 }}
-                
-                
-                
               />
 
               {featuresList.map((feature) => (
@@ -223,7 +176,6 @@ const MarkerPopup = ({
                   <p>{feature.notes}</p>
                 </div>
               ))}
-
 
               <StarRating locationID={location.locationID} userID={userID} />
               <AddFeatureButton locationID={location.locationID} />
@@ -246,6 +198,5 @@ const MarkerPopup = ({
     </Marker>
   );
 };
-
 
 export default MarkerPopup;
