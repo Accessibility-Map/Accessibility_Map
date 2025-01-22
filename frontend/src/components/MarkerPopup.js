@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
+import { Marker, Popup, useMap } from "react-leaflet";
 import { Icon } from "leaflet";
 import axios from "axios";
 import FeatureService from "./services/FeatureService.ts";
@@ -40,6 +40,7 @@ const MarkerPopup = ({
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
+  const map = useMap();
 
   useEffect(() => {
     if (isEditing && editingLocation?.locationID === location.locationID) {
@@ -260,13 +261,23 @@ const MarkerPopup = ({
     );
   }, [location.locationID]);
 
+  const handleMarkerClick = (locationID) => {
+    const bounds = map.getBounds();
+    const bottom = bounds.getNorth();
+    const center = bounds.getCenter();
+    const difference = bottom - center.lat;
+    console.log("Difference:", difference);
+    map.setView([(location.latitude + (difference * .9)), location.longitude], 17);
+    setOpenPopupId(locationID);
+  };
+
   return (
     <Marker
       ref={markerRef}
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
       eventHandlers={{
-        click: () => setOpenPopupId(location.locationID),
+        click: () => handleMarkerClick(location.locationID),
       }}
     >
       <Popup

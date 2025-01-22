@@ -25,11 +25,9 @@ const LoginModal = ({open, handleClose, onUpdateUser}: LoginModalProps) => {
 
         UserService.verifyUser(user).then((status: UserVerificationStatus) => {
             if (status.status === UserVerificationEnum.VERIFIED) {
-                console.log("Logged in user:", status);
                 onUpdateUser(status.user);
-                console.log("Logged in");
-
-                localStorage.setItem("user", JSON.stringify(status.user));
+                
+                localStorage.setItem("user", status.user.sessionID as string);
 
                 handleClose();
             }
