@@ -1,9 +1,14 @@
 import axios from 'axios';
 
 export default class PredictionService {
-  public static async predictRating(userID: number, locationID: number): Promise<number | null> {
+  public static async predictRating(
+    userID: number,
+    locationID: number,
+    featureCount: number
+  ): Promise<number | null> {
     try {
-      const url = `${process.env.REACT_APP_API_URL}api/ratings/predict/${userID}/${locationID}`;
+
+      const url = `${process.env.REACT_APP_API_URL}api/ratings/predict/${userID}/${locationID}/${featureCount}`;
       const response = await axios.get(url);
       return response.data.predictedRating;
     } catch (error) {

@@ -30,18 +30,13 @@ namespace backend.Controllers
             return Ok("Model trained and saved successfully.");
         }
 
-        [HttpGet("predict/{userID}/{locationID}")]
-        public IActionResult PredictRating(int userID, int locationID)
+        [HttpGet("predict/{userID}/{locationID}/{featureCount}")]
+        public IActionResult PredictRating(int userID, int locationID, float featureCount)
         {
             try
             {
-                Console.WriteLine($"Received prediction request for UserID: {userID}, LocationID: {locationID}");
-
-                var predictedRating = Predictor.PredictRating(userID, locationID);
-
-                Console.WriteLine($"Predicted Rating: {predictedRating}");
-
-                return Ok(new { UserID = userID, LocationID = locationID, PredictedRating = predictedRating });
+                var predictedRating = Predictor.PredictRating(userID, locationID, featureCount);
+                return Ok(new { UserID = userID, LocationID = locationID, FeatureCount = featureCount, PredictedRating = predictedRating });
             }
             catch (Exception ex)
             {
@@ -49,6 +44,8 @@ namespace backend.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
+
+
 
         [HttpGet("inspect-model")]
         public IActionResult InspectModel()
@@ -118,49 +115,50 @@ namespace backend.Controllers
 
             return Ok(rating);
         }
-private void RetrainModel()
-{
-    var ratings = _context.Ratings.ToList();
-    if (ratings.Any())
-    {
-        MLModel.TrainAndSaveModel(ratings); 
-        Console.WriteLine("Model retrained successfully.");
-    }
-    else
-    {
-        Console.WriteLine("No ratings available to retrain the model.");
-    }
-}
+        private void RetrainModel()
+        {
+            var ratings = _context.Ratings.ToList();
+            if (ratings.Any())
+            {
+                MLModel.TrainAndSaveModel(ratings);
+                Console.WriteLine("Model retrained successfully.");
+            }
+            else
+            {
+                Console.WriteLine("No ratings available to retrain the model.");
+            }
+        }
 
-    [HttpPut("{UserID}/{LocationID}/{Rating}")]
-public async Task<IActionResult> UpdateRating(int UserID, int LocationID, int Rating)
-{
-    if (Rating < 1 || Rating > 5)
-    {
-        return BadRequest("Rating must be between 1 and 5.");
-    }
+        [HttpPut("{UserID}/{LocationID}/{Rating}")]
+        public async Task<IActionResult> UpdateRating(int UserID, int LocationID, int Rating, [FromQuery] float featureCount)
+        {
+            if (Rating < 1 || Rating > 5)
+            {
+                return BadRequest("Rating must be between 1 and 5.");
+            }
 
-    var existingRating = await _context.Ratings
-        .FirstOrDefaultAsync(r => r.UserID == UserID && r.LocationID == LocationID);
+            var existingRating = await _context.Ratings
+                .FirstOrDefaultAsync(r => r.UserID == UserID && r.LocationID == LocationID);
 
-    if (existingRating == null)
-    {
-        return NotFound("Rating not found.");
-    }
+            if (existingRating == null)
+            {
+                return NotFound("Rating not found.");
+            }
 
-    // Update the rating value
-    existingRating.UserRating = Rating;
-    _context.Ratings.Update(existingRating);
-    await _context.SaveChangesAsync();
+            // Update the rating value
+            existingRating.UserRating = Rating;
+            _context.Ratings.Update(existingRating);
+            await _context.SaveChangesAsync();
 
-    // Retrain the model
-    RetrainModel();
+            // Retrain the model
+            RetrainModel();
 
-    // Fetch the updated predicted rating
-    var predictedRating = Predictor.PredictRating(UserID, LocationID);
+            // Fetch the updated predicted rating
+            var predictedRating = Predictor.PredictRating(UserID, LocationID, featureCount);
 
-    return Ok(new { UpdatedRating = existingRating, PredictedRating = predictedRating });
-}
+            return Ok(new { UpdatedRating = existingRating, PredictedRating = predictedRating });
+        }
+
 
         [HttpGet("average/{LocationID}")]
         public async Task<IActionResult> GetAverageRating(int LocationID)

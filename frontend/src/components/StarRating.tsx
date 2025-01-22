@@ -10,6 +10,7 @@ import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import PredictionService from "./services/PredictionService";
 import Typography from "@mui/material/Typography";
+import FeatureService from "./services/FeatureService";
 
 type CustomIconType = {
   [index: number]: {
@@ -63,13 +64,24 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
   const [predictedRating, setPredictedRating] = useState<number | null>(null);
+  const [featureCount, setFeatureCount] = useState<number | null>(null);
+ // Fetch feature count
+ useEffect(() => {
+  FeatureService.getFeatureCount(locationID).then((count) => {
+    console.log("Feature Count from API:", count); // Debug log
+    setFeatureCount(count);
+  });
+}, [locationID]);
 
   
-  useEffect(() => {
-    PredictionService.predictRating(userID, locationID).then((rating) => {
+useEffect(() => {
+  if (featureCount !== null) {
+    PredictionService.predictRating(userID, locationID, featureCount).then((rating) => {
       setPredictedRating(rating);
     });
-  }, [locationID, userID]);
+  }
+}, [locationID, userID, featureCount]); // Added featureCount
+
 
     useEffect(() => {
       RatingService.getRating(userID, locationID).then((rating) => {
@@ -116,6 +128,11 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
           Predicted Rating: {predictedRating.toFixed(2)} Stars
         </Typography>
       )}
+      {featureCount !== null && (
+  <Typography variant="body2" color="textSecondary">
+    Feature Count: {featureCount}
+  </Typography>
+)}
     </Box>
   );
 };

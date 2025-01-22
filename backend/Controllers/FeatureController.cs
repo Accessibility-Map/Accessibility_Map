@@ -138,7 +138,21 @@ namespace backend.Controllers
                 return StatusCode(500, "Internal server error occurred while uploading the image.");
             }
         }
-
+// Endpoint to get the feature count for a specific location
+        [HttpGet("count/{locationID}")]
+        public IActionResult GetFeatureCount(int locationID)
+        {
+            try
+            {
+                var featureCount = _context.Features.Count(f => f.LocationID == locationID);
+                return Ok(new { featureCount });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching feature count for locationID {locationID}: {ex.Message}");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFeature(int id, [FromBody] Feature updatedFeature)

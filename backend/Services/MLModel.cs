@@ -12,12 +12,14 @@ namespace backend.Services
         {
             var context = new MLContext();
 
-            var ratingData = ratings.Select(r => new RatingData
-            {
-                UserID = r.UserID,
-                LocationID = r.LocationID,
-                Rating = r.UserRating
-            }).ToList();
+           var ratingData = ratings.Select(r => new RatingData
+{
+    UserID = r.UserID,
+    LocationID = r.LocationID,
+    Rating = r.UserRating,
+    FeatureCount = r.Location?.Features?.Count ?? 0 // Handle null cases safely
+}).ToList();
+
 
             var data = context.Data.LoadFromEnumerable(ratingData);
             Console.WriteLine("Schema:");
@@ -26,15 +28,17 @@ namespace backend.Services
                 Console.WriteLine($"Column Name: {column.Name}, Type: {column.Type}");
             }
 
-            var pipeline = context.Transforms.Conversion.ConvertType(
-                        outputColumnName: "UserIDFloat", inputColumnName: "UserID", outputKind: DataKind.Single)
-                    .Append(context.Transforms.Conversion.ConvertType(
-                        outputColumnName: "LocationIDFloat", inputColumnName: "LocationID", outputKind: DataKind.Single))
-                    .Append(context.Transforms.NormalizeMinMax("UserIDFloat", "UserIDFloat"))
-                    .Append(context.Transforms.NormalizeMinMax("LocationIDFloat", "LocationIDFloat"))
-                    .Append(context.Transforms.Concatenate("Features", "UserIDFloat", "LocationIDFloat"))
-                    .Append(context.Transforms.CopyColumns(outputColumnName: "Label", inputColumnName: "Rating"))
-                    .Append(context.Regression.Trainers.Sdca());
+           var pipeline = context.Transforms.Conversion.ConvertType(
+                   outputColumnName: "UserIDFloat", inputColumnName: "UserID", outputKind: DataKind.Single)
+               .Append(context.Transforms.Conversion.ConvertType(
+                   outputColumnName: "LocationIDFloat", inputColumnName: "LocationID", outputKind: DataKind.Single))
+               .Append(context.Transforms.NormalizeMinMax("UserIDFloat", "UserIDFloat"))
+               .Append(context.Transforms.NormalizeMinMax("LocationIDFloat", "LocationIDFloat"))
+               .Append(context.Transforms.NormalizeMinMax("FeatureCount", "FeatureCount"))
+               .Append(context.Transforms.Concatenate("Features", "UserIDFloat", "LocationIDFloat", "FeatureCount"))
+               .Append(context.Transforms.CopyColumns(outputColumnName: "Label", inputColumnName: "Rating"))
+               .Append(context.Regression.Trainers.Sdca());
+
 
             var trainTestSplit = context.Data.TrainTestSplit(data, testFraction: 0.1);
 
