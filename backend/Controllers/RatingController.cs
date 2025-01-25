@@ -20,7 +20,11 @@ namespace backend.Controllers
         [HttpPost("train")]
         public IActionResult TrainModel()
         {
-            var ratings = _context.Ratings.ToList();
+            var ratings = _context.Ratings
+                .Include(r => r.Location)
+                .ThenInclude(l => l.Features)
+                .ToList();
+
             if (!ratings.Any())
             {
                 return BadRequest("No data available to train the model.");
@@ -30,21 +34,49 @@ namespace backend.Controllers
             return Ok("Model trained and saved successfully.");
         }
 
-        [HttpGet("predict/{userID}/{locationID}/{featureCount}")]
-        public IActionResult PredictRating(int userID, int locationID, float featureCount)
+      [HttpGet("predict/{userID}/{locationID}")]
+public async Task<IActionResult> PredictRating(int userID, int locationID)
+{
+    try
+    {
+        // Fetch the location and its features from the database
+        var location = await _context.Locations
+            .Include(l => l.Features)
+            .FirstOrDefaultAsync(l => l.LocationID == locationID);
+
+        if (location == null)
         {
-            try
-            {
-                var predictedRating = Predictor.PredictRating(userID, locationID, featureCount);
-                return Ok(new { UserID = userID, LocationID = locationID, FeatureCount = featureCount, PredictedRating = predictedRating });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during prediction: {ex.Message}");
-                return StatusCode(500, "Internal server error.");
-            }
+            return NotFound("Location not found.");
         }
 
+        // Extract feature flags
+        bool hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp");
+        bool hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator");
+        bool hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom");
+        bool hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking");
+
+        float featureCount = (hasRamp ? 1 : 0) * 0.4f +
+                             (hasElevator ? 1 : 0) * 0.3f +
+                             (hasAccessibleBathroom ? 1 : 0) * 0.2f +
+                             (hasAccessibleParking ? 1 : 0) * 0.1f;
+
+        // Predict the rating
+        var predictedRating = Predictor.PredictRating(userID, locationID, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking);
+
+        return Ok(new
+        {
+            UserID = userID,
+            LocationID = locationID,
+            FeatureCount = featureCount,
+            PredictedRating = predictedRating
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during prediction: {ex.Message}");
+        return StatusCode(500, "Internal server error.");
+    }
+}
 
 
         [HttpGet("inspect-model")]
@@ -84,19 +116,20 @@ namespace backend.Controllers
             return Ok(rating);
         }
 
-
-
         [HttpGet("{UserID}/{LocationID}")]
         public async Task<IActionResult> GetRating(int UserID, int LocationID)
         {
-            var rating = await _context.Ratings.Where(entry => entry.UserID == UserID && entry.LocationID == LocationID).FirstOrDefaultAsync();
+            var rating = await _context.Ratings
+                .FirstOrDefaultAsync(entry => entry.UserID == UserID && entry.LocationID == LocationID);
 
             if (rating == null)
             {
-                rating = new Rating();
-                rating.UserID = UserID;
-                rating.LocationID = LocationID;
-                rating.UserRating = 0;
+                rating = new Rating
+                {
+                    UserID = UserID,
+                    LocationID = LocationID,
+                    UserRating = 0
+                };
             }
             return Ok(rating);
         }
@@ -109,15 +142,20 @@ namespace backend.Controllers
                 return BadRequest("Rating must be between 1 and 5.");
             }
 
-            Rating rating = new Rating(UserID, LocationID, Rating);
+            var rating = new Rating(UserID, LocationID, Rating);
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
             return Ok(rating);
         }
+
         private void RetrainModel()
         {
-            var ratings = _context.Ratings.ToList();
+            var ratings = _context.Ratings
+                .Include(r => r.Location)
+                .ThenInclude(l => l.Features)
+                .ToList();
+
             if (ratings.Any())
             {
                 MLModel.TrainAndSaveModel(ratings);
@@ -130,7 +168,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("{UserID}/{LocationID}/{Rating}")]
-        public async Task<IActionResult> UpdateRating(int UserID, int LocationID, int Rating, [FromQuery] float featureCount)
+        public async Task<IActionResult> UpdateRating(int UserID, int LocationID, int Rating)
         {
             if (Rating < 1 || Rating > 5)
             {
@@ -153,12 +191,28 @@ namespace backend.Controllers
             // Retrain the model
             RetrainModel();
 
-            // Fetch the updated predicted rating
-            var predictedRating = Predictor.PredictRating(UserID, LocationID, featureCount);
+            // Fetch the location and its features
+            var location = await _context.Locations
+                .Include(l => l.Features)
+                .FirstOrDefaultAsync(l => l.LocationID == LocationID);
+
+            if (location == null)
+            {
+                return NotFound("Location not found.");
+            }
+
+            // Extract feature flags
+         bool hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp");
+bool hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator");
+bool hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom");
+bool hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking");
+
+
+            // Predict the updated rating
+            var predictedRating = Predictor.PredictRating(UserID, LocationID, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking);
 
             return Ok(new { UpdatedRating = existingRating, PredictedRating = predictedRating });
         }
-
 
         [HttpGet("average/{LocationID}")]
         public async Task<IActionResult> GetAverageRating(int LocationID)

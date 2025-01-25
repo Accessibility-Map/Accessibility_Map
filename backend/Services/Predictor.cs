@@ -5,27 +5,26 @@ namespace backend.Services
 {
     public class Predictor
     {
-        public static float PredictRating(int userID, int locationID, float featureCount)
+        public static float PredictRating(int userID, int locationID, bool hasRamp, bool hasElevator, bool hasAccessibleBathroom, bool hasAccessibleParking)
         {
             try
             {
                 var context = new MLContext();
 
-                // Load the trained model
                 ITransformer model = context.Model.Load("RatingModel.zip", out var schema);
 
-                // Create a prediction engine
                 var predictionEngine = context.Model.CreatePredictionEngine<RatingData, RatingPrediction>(model);
 
-                // Prepare the input data
                 var input = new RatingData
                 {
                     UserID = userID,
                     LocationID = locationID,
-                    FeatureCount = featureCount 
+                    HasRamp = hasRamp,
+                    HasElevator = hasElevator,
+                    HasAccessibleBathroom = hasAccessibleBathroom,
+                    HasAccessibleParking = hasAccessibleParking
                 };
 
-                // Predict the rating
                 var prediction = predictionEngine.Predict(input);
 
                 return Math.Clamp(prediction.PredictedRating, 1.0f, 5.0f);
