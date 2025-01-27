@@ -53,10 +53,10 @@ namespace backend.Controllers
                 bool hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom");
                 bool hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking");
 
-                float featureCount = (hasRamp ? 1 : 0) * 0.4f +
-                                     (hasElevator ? 1 : 0) * 0.3f +
-                                     (hasAccessibleBathroom ? 1 : 0) * 0.2f +
-                                     (hasAccessibleParking ? 1 : 0) * 0.1f;
+             float featureCount = (hasRamp ? 1 : 0) * 0.25f +
+                     (hasElevator ? 1 : 0) * 0.25f +
+                     (hasAccessibleBathroom ? 1 : 0) * 0.25f +
+                     (hasAccessibleParking ? 1 : 0) * 0.25f;
 
                 var predictedRating = Predictor.PredictRating(userID, locationID, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking);
 
