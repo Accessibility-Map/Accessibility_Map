@@ -67,7 +67,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   // Fetch predicted rating
   useEffect(() => {
     PredictionService.predictRating(userID, locationID).then((rating) => {
-      console.log("Predicted Rating from API:", rating); // Debug log
+      console.log("Predicted Rating from API:", rating); 
       setPredictedRating(rating);
     });
   }, [locationID, userID]);

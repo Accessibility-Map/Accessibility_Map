@@ -17,7 +17,9 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
     );
   };
 
-  const handleSave = async () => {
+
+  const handleSave = async (e) => {
+    e.stopPropagation();
     try {
       console.log("Saving main image...");
       console.log("Current main image:", mainImage);
@@ -49,7 +51,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
         console.log("Updated images array after saving:", updatedImages);
       }
 
-      onSave(updatedFeatures, updatedImages);
+      onSave(updatedFeatures, updatedImages); 
       onClose();
     } catch (error) {
       console.error("Error saving changes:", error);
