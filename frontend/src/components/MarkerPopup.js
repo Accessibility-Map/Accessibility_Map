@@ -86,12 +86,40 @@ const MarkerPopup = ({
   };
 
   useEffect(() => {
-    FeatureService.getFeaturesByLocationID(location.locationID).then(
-      (features) => {
-        setFeaturesList(features);
+    const fetchFeatures = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
+        console.log("Before processing:", response.data);
+
+        const updatedFeatures = response.data.map((feature) => {
+          let fixedImagePath = feature.imagePath;
+
+          if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
+            fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
+            fixedImagePath = `http://localhost:5232${fixedImagePath}`;
+          } else {
+            fixedImagePath = null;
+          }
+
+          console.log("Final fixed image path:", fixedImagePath);
+
+          return {
+            ...feature,
+            imagePath: fixedImagePath,
+          };
+        });
+
+
+
+        setFeaturesList(updatedFeatures);
+      } catch (error) {
+        console.error("Error fetching features:", error);
       }
-    );
-  }, [location.locationID]);
+    };
+
+    fetchFeatures();
+  }, [location.locationID, images]);
+
 
   const handleMarkerClick = (locationID) => {
     const bounds = map.getBounds();
@@ -189,18 +217,21 @@ const MarkerPopup = ({
               {featuresList.map((feature) => (
                 <div key={feature.id} style={{ marginBottom: "20px" }}>
                   <h5>{feature.locationFeature}</h5>
-                  {feature.imagePath ? (
+                  {feature.imagePath && feature.imagePath !== "null" ? (
                     <img
                       src={feature.imagePath}
                       alt={feature.locationFeature}
                       style={{ width: "100px", height: "auto", marginBottom: "10px" }}
+                      onError={(e) => (e.target.style.display = "none")}
                     />
                   ) : (
                     <p>No image uploaded</p>
                   )}
+
                   <p>{feature.notes}</p>
                 </div>
               ))}
+
 
               <StarRating locationID={location.locationID} userID={userID} />
               <AddFeatureButton locationID={location.locationID} />

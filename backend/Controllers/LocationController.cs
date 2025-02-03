@@ -47,6 +47,10 @@ namespace backend.Controllers
 
                 string uploadsFolder = _environment.WebRootPath ?? Directory.GetCurrentDirectory();
                 uploadsFolder = Path.Combine(uploadsFolder, "uploads");
+                if (_environment.IsProduction())
+                {
+                    uploadsFolder = "/uploads";
+                }
 
                 if (!Directory.Exists(uploadsFolder))
                 {

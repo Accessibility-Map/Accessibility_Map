@@ -110,6 +110,14 @@ namespace backend.Controllers
                     ? "/uploads/features"
                     : Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads", "features");
 
+                if (_environment.IsProduction())
+                {
+                    uploadsFolder = "/uploads/features";
+                }
+                else
+                {
+                    uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads", "features");
+                }
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
@@ -138,7 +146,7 @@ namespace backend.Controllers
                 return StatusCode(500, "Internal server error occurred while uploading the image.");
             }
         }
-// Endpoint to get the feature count for a specific location
+        // Endpoint to get the feature count for a specific location
         [HttpGet("count/{locationID}")]
         public IActionResult GetFeatureCount(int locationID)
         {
