@@ -53,11 +53,12 @@ const MapView = () => {
     }
     const fetchFeaturesData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
-        setFeatures(response.data)
-        console.log(response.data)
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
+        console.log('Fetched features:', response.data); 
+        setFeatures(Array.isArray(response.data.features) ? response.data.features : []);
       } catch (error) {
-        console.error('Error fetching features data:', error)
+        console.error('Error fetching features data:', error);
+        setFeatures([]);
       }
     }
     fetchFeaturesData()

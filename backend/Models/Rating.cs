@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace backend.Models
 {
@@ -15,6 +16,8 @@ namespace backend.Models
         public int UserRating { get; set; }
 
         // Navigation property to Location
+
+        [JsonIgnore] 
         public Location Location { get; set; }
 
         public Rating() { }

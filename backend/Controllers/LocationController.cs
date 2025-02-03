@@ -30,48 +30,40 @@ namespace backend.Controllers
         {
             try
             {
+                Console.WriteLine($"[UPLOAD] LocationID: {id}, File: {file?.FileName}");
+
                 var location = await _context.Locations.FindAsync(id);
                 if (location == null)
                 {
+                    Console.WriteLine("[UPLOAD] Location not found.");
                     return NotFound("Location not found.");
                 }
 
                 if (file == null || file.Length == 0)
                 {
+                    Console.WriteLine("[UPLOAD] No file uploaded or file is empty.");
                     return BadRequest("No file uploaded.");
                 }
 
-                string uploadsFolder;
+                string uploadsFolder = _environment.WebRootPath ?? Directory.GetCurrentDirectory();
+                uploadsFolder = Path.Combine(uploadsFolder, "uploads");
 
-                if (_environment.IsProduction())
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    uploadsFolder = "/uploads";
-                }
-                else
-                {
-                    // Fallback to a relative path if WebRootPath is null
-                    uploadsFolder = _environment.WebRootPath != null
-                    ? Path.Combine(_environment.WebRootPath, "uploads")
-                    : Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
+                    Console.WriteLine("[UPLOAD] Upload folder not found. Creating...");
+                    Directory.CreateDirectory(uploadsFolder);
                 }
 
-
-
-                // Generate a unique filename to avoid conflicts
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                Console.WriteLine($"[UPLOAD] Saving file to: {filePath}");
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
 
-                // Save image details in the Pictures table
                 var picture = new Picture
                 {
                     LocationID = id,
@@ -79,30 +71,51 @@ namespace backend.Controllers
                     UploadedAt = DateTime.UtcNow
                 };
 
+                Console.WriteLine($"[UPLOAD] Creating Picture: LocationID={picture.LocationID}, ImageUrl={picture.ImageUrl}");
+
                 _context.Pictures.Add(picture);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { picture.ImageUrl });
+                Console.WriteLine($"[UPLOAD] Picture saved in database. PictureID={picture.PictureID}, LocationID={picture.LocationID}, ImageUrl={picture.ImageUrl}");
+
+                return Ok(new { ImageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{uniqueFileName}" });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error during file upload: " + ex.Message);
+                Console.WriteLine("[UPLOAD] Error: " + ex.Message);
                 return StatusCode(500, "Internal server error occurred while uploading the file.");
             }
         }
 
 
+
         [HttpGet("{id}/pictures")]
         public async Task<IActionResult> GetPictures(int id)
         {
-            var pictures = await _context.Pictures
-                .Where(p => p.LocationID == id)
-                .Select(p => new { p.ImageUrl })  // Only return ImageUrl
-                .ToListAsync();
+            try
+            {
+                Console.WriteLine($"[GET PICTURES] Fetching pictures for LocationID: {id}");
 
-            // Instead of returning 404, return an empty list if no pictures found
-            return Ok(pictures);
+                var pictures = await _context.Pictures.Where(p => p.LocationID == id).ToListAsync();
+
+                Console.WriteLine($"[GET PICTURES] Found {pictures.Count} pictures for LocationID: {id}");
+                foreach (var picture in pictures)
+                {
+                    Console.WriteLine($"[GET PICTURES] PictureID: {picture.PictureID}, LocationID: {picture.LocationID}, ImageUrl: {picture.ImageUrl}");
+                }
+
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var response = pictures.Select(p => new { ImageUrl = $"{baseUrl}{p.ImageUrl}" }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GET PICTURES] Error: {ex.Message}");
+                return StatusCode(500, "Internal server error occurred while fetching pictures.");
+            }
         }
+
 
         // Create Location
         [HttpPost]
@@ -113,7 +126,6 @@ namespace backend.Controllers
                 return BadRequest("Invalid location data.");
             }
 
-            // Add location to the database
             _context.Locations.Add(location);
             await _context.SaveChangesAsync();
 
@@ -140,10 +152,8 @@ namespace backend.Controllers
                     return NotFound("Location not found.");
                 }
 
-                // Fetch all associated images
                 var pictures = await _context.Pictures.Where(p => p.LocationID == id).ToListAsync();
 
-                // Delete images from the filesystem
                 foreach (var picture in pictures)
                 {
                     var filePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), picture.ImageUrl.TrimStart('/'));
@@ -153,20 +163,16 @@ namespace backend.Controllers
                     }
                 }
 
-                // Remove image records from the database
                 _context.Pictures.RemoveRange(pictures);
 
-                // Remove related entities (e.g., Ratings, Features)
                 var ratings = _context.Ratings.Where(r => r.LocationID == id);
                 _context.Ratings.RemoveRange(ratings);
 
                 var features = _context.Features.Where(f => f.LocationID == id);
                 _context.Features.RemoveRange(features);
 
-                // Remove the location itself
                 _context.Locations.Remove(location);
 
-                // Save changes to the database
                 await _context.SaveChangesAsync();
 
                 return Ok("Location and associated images deleted successfully.");
@@ -179,56 +185,45 @@ namespace backend.Controllers
         }
 
         [HttpDelete("{locationId}/delete-image")]
+        [Consumes("application/json")]
         public async Task<IActionResult> DeleteImage(int locationId, [FromBody] DeleteImageRequest request)
         {
             try
             {
-                // Validate request body
-                if (request == null || string.IsNullOrEmpty(request.ImageUrl))
+                if (request == null || string.IsNullOrWhiteSpace(request.ImageUrl))
                 {
                     return BadRequest("The imageUrl field is required.");
+                }
+
+                if (locationId <= 0)
+                {
+                    return BadRequest("Invalid LocationID.");
                 }
 
                 Console.WriteLine($"Received LocationID: {locationId}");
                 Console.WriteLine($"Received ImageUrl: {request.ImageUrl}");
 
-                // Check if the location exists
-                var location = await _context.Locations.FindAsync(locationId);
-                if (location == null)
-                {
-                    Console.WriteLine("Location not found.");
-                    return NotFound("Location not found.");
-                }
+                var normalizedRequestUrl = request.ImageUrl.Trim().Replace("\\", "/").TrimStart('/');
 
-                // Log all images for the location
-                var pictures = await _context.Pictures
-                    .Where(p => p.LocationID == locationId)
-                    .ToListAsync();
-
-                foreach (var pic in pictures)
-                {
-                    Console.WriteLine($"Database ImageUrl: {pic.ImageUrl}");
-                }
-
-                // Normalize request URL
-                var normalizedRequestUrl = request.ImageUrl.Trim();
-                var picture = await _context.Pictures
-                    .FirstOrDefaultAsync(p => p.LocationID == locationId && p.ImageUrl.Trim() == normalizedRequestUrl);
+                // Fetch picture from the database
+                var picture = await _context.Pictures.FirstOrDefaultAsync(
+                    p => p.LocationID == locationId &&
+                         p.ImageUrl.Trim().Replace("\\", "/").TrimStart('/') == normalizedRequestUrl
+                );
 
                 if (picture == null)
                 {
-                    Console.WriteLine($"No match found for ImageUrl: {request.ImageUrl}");
+                    Console.WriteLine($"No match found for ImageUrl: {normalizedRequestUrl}");
                     return NotFound("Image not found.");
                 }
 
                 // Construct the file path
                 var filePath = Path.Combine(
                     _environment.WebRootPath ?? Directory.GetCurrentDirectory(),
-                    picture.ImageUrl.TrimStart('/')
+                    picture.ImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
                 );
 
                 Console.WriteLine($"Constructed file path: {filePath}");
-                Console.WriteLine($"File exists: {System.IO.File.Exists(filePath)}");
 
                 // Delete the file from the filesystem
                 if (System.IO.File.Exists(filePath))
@@ -238,10 +233,9 @@ namespace backend.Controllers
                 }
                 else
                 {
-                    Console.WriteLine("File does not exist.");
+                    Console.WriteLine("File does not exist on the filesystem.");
                 }
 
-                // Remove the entry from the database
                 _context.Pictures.Remove(picture);
                 await _context.SaveChangesAsync();
 
@@ -249,7 +243,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting image: {ex.Message}");
+                Console.WriteLine($"Error deleting image: {ex.Message}\nStack Trace: {ex.StackTrace}");
                 return StatusCode(500, "Internal server error occurred while deleting the image.");
             }
         }
@@ -257,57 +251,71 @@ namespace backend.Controllers
 
         [HttpPut("{locationId}/replace-image")]
         public async Task<IActionResult> ReplaceImage(int locationId, IFormFile file, [FromForm] string oldImageUrl)
-
         {
-            try
+            Console.WriteLine("ReplaceImage endpoint hit");
+            Console.WriteLine($"Received LocationID: {locationId}");
+            Console.WriteLine($"Received OldImageUrl: {oldImageUrl}");
+            Console.WriteLine($"Received File: {file?.FileName}");
+
+            if (file == null) return BadRequest("File is missing.");
+            if (string.IsNullOrWhiteSpace(oldImageUrl)) return BadRequest("OldImageUrl is missing.");
+
+            oldImageUrl = oldImageUrl.Split('?')[0].Trim();
+            Console.WriteLine($"Sanitized OldImageUrl: {oldImageUrl}");
+
+            // Adjust for `uploads` directory
+            var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads");
+            if (!Directory.Exists(uploadsFolder))
             {
-                var location = await _context.Locations.FindAsync(locationId);
-                if (location == null) return NotFound("Location not found.");
-
-                Console.WriteLine($"Replacing image for LocationID: {locationId}, OldImageUrl: {oldImageUrl}");
-
-          
-                var oldImagePath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), oldImageUrl.TrimStart('/'));
-
-                if (oldImageUrl.Contains("..") ||  oldImageUrl.Contains("\\") || !oldImageUrl.Contains("/uploads/"))
-                {
-                    return BadRequest("Invalid old image URL.");
-                }
-                if (System.IO.File.Exists(oldImagePath))
-                {
-                    System.IO.File.Delete(oldImagePath);
-                }
-
-
-                var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), "uploads");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(fileStream);
-                }
-
-                var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.ImageUrl == oldImageUrl.Trim());
-                if (picture != null)
-                {
-                    picture.ImageUrl = "/uploads/" + uniqueFileName;
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    return NotFound("Old image record not found in the database.");
-                }
-
-                return Ok(new { imageUrl = "/uploads/" + uniqueFileName });
+                Console.WriteLine($"Uploads folder not found: {uploadsFolder}");
+                return NotFound("Uploads folder not found.");
             }
-            catch (Exception ex)
+
+            var relativeOldImageUrl = oldImageUrl.Replace("http://localhost:5232", "").Trim();
+
+
+
+
+            var oldImagePath = Path.Combine(uploadsFolder, relativeOldImageUrl);
+            Console.WriteLine($"Computed path for old image: {oldImagePath}");
+
+            // Delete old image if it exists
+            if (System.IO.File.Exists(oldImagePath))
             {
-                Console.WriteLine($"Error replacing image: {ex.Message}");
-                return StatusCode(500, "Internal server error occurred while replacing the image.");
+                System.IO.File.Delete(oldImagePath);
+                Console.WriteLine("Old image deleted successfully.");
             }
+            else
+            {
+                Console.WriteLine("Old image file not found in the file system. Proceeding to save the new image.");
+            }
+
+            // Save the new image
+            var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
+            var newFilePath = Path.Combine(uploadsFolder, uniqueFileName);
+            Console.WriteLine($"Saving new file to path: {newFilePath}");
+
+            using (var fileStream = new FileStream(newFilePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            // Update the database with the new image URL
+            var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.ImageUrl.Replace("\\", "/").Trim() == relativeOldImageUrl);
+            if (picture != null)
+            {
+                picture.ImageUrl = "/uploads/" + uniqueFileName;
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Picture record updated successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Picture record not found in database.");
+                return NotFound("Picture record not found.");
+            }
+
+            Console.WriteLine("Image replaced successfully.");
+            return Ok(new { imageUrl = "/uploads/" + uniqueFileName });
         }
 
 

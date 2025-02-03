@@ -10,17 +10,16 @@ import "./styles/ImageScroller.css";
 import './styles/MarkerPopup.css'
 
 interface ImageScrollerProps {
-    images: any;
-    widthParam: string;
-    heightParam: string;
-    // Callback function for deletion
-    onDelete: (imageUrl: string) => void;
-    onReplace: (newImage: File, oldImageUrl: string) => void;
+  images: any;
+  widthParam: string;
+  heightParam: string;
+  onDelete: (imageUrl: string) => void;
+  onReplace: (newImage: File, oldImageUrl: string) => void;
 }
 
 const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete }: ImageScrollerProps) => {
-    const [imageIndex, setIndex] = useState(0);
-    const [openPopup, setOpenPopup] = useState(false);
+  const [imageIndex, setIndex] = useState(0);
+  const [openPopup, setOpenPopup] = useState(false);
 
 
   const handleNext = () => {
@@ -34,10 +33,18 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
       setIndex(imageIndex - 1);
     }
   };
-
   const handleDelete = () => {
-    onDelete(images[imageIndex]);
+    const normalizedImageUrl = normalizeUrl(images[imageIndex]);
+    onDelete(normalizedImageUrl);
+    setIndex((prevIndex) => (images.length > 1 ? Math.max(prevIndex - 1, 0) : 0));
   };
+
+  const normalizeUrl = (url: string): string => {
+    return url.trim().replace(/\\/g, "/").replace(process.env.REACT_APP_API_URL || "", "").replace(/^\/+/, "");
+  };
+
+
+
 
 
   const handleReplace = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,11 +54,9 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     }
   };
 
-    const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        // Open a popup with a full size version of the image
-        setOpenPopup(true);
-    }
-
+  const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
+    setOpenPopup(true);
+  }
     return (
         <>
             {images.length > 0 ?
@@ -187,27 +192,27 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                     <span>No images uploaded</span>
                 </Grid2>
             </Grid2>
-            )
-            }
+        )
+      }
 
-            <Modal
-                open={openPopup}
-                onClose={() => setOpenPopup(false)}
-                sx={{
-                    display: "flex", justifyContent: "center", alignItems: "center"
-                }}
-            >
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
-                    <img
-                        key={imageIndex}
-                        src={images[imageIndex]}
-                        alt="Uploaded location"
-                        style={{ margin: "auto", position: "absolute", maxWidth: "75vw", maxHeight: "75vh" }}
-                    />
-                </Box>
-            </Modal>
-        </>
-    );
+      <Modal
+        open={openPopup}
+        onClose={() => setOpenPopup(false)}
+        sx={{
+          display: "flex", justifyContent: "center", alignItems: "center"
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img
+            key={imageIndex}
+            src={images[imageIndex]}
+            alt="Uploaded location"
+            style={{ margin: "auto", position: "absolute", maxWidth: "75vw", maxHeight: "75vh" }}
+          />
+        </Box>
+      </Modal>
+    </>
+  );
 }
 
 export default ImageScroller;
