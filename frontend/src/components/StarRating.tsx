@@ -7,6 +7,7 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import { Dialog, DialogContent, DialogContentText, DialogActions, Button, DialogTitle } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import RatingService from "./services/RatingService";
 import PredictionService from "./services/PredictionService";
@@ -62,8 +63,9 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const [predictedRating, setPredictedRating] = useState<number | null>(null);
-
+  
   // Fetch predicted rating
   useEffect(() => {
     PredictionService.predictRating(userID, locationID).then((rating) => {
@@ -72,7 +74,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
     });
   }, [locationID, userID]);
 
-  // Fetch current rating
+  // Fetch the initial rating from the backend
   useEffect(() => {
     RatingService.getRating(userID, locationID).then((rating) => {
       if (rating && rating.getRating() !== 0) {
@@ -81,8 +83,9 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
         setUnset(true);
       }
     });
-  }, [locationID]);
+  }, [locationID, userID]);
 
+  // Function to update rating in the state and backend
   const updateRating = (newRating: number | null) => {
     if (!newRating || newRating < 1 || newRating > 5) return;
 
@@ -95,30 +98,72 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
     setCurrentRating(newRating);
   };
 
+  const promptLogin = () => {
+    setLoginPromptOpen(true);
+  }
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-      <StyledRating
-        name="customized-icons"
-        value={currentRating}
-        IconContainerComponent={IconContainer}
-        getLabelText={(value: number) => customIcons[value].label}
-        highlightSelectedOnly
-        precision={1}
-        onChange={(event, newValue) => updateRating(newValue)}
-        onChangeActive={(event, newHover) => setHover(newHover)}
-        emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-      />
-      {currentRating !== null && (
-        <Typography variant="body2" color="textSecondary">
-          Current Rating: {hover !== -1 ? hover : currentRating} Stars
-        </Typography>
-      )}
-      {predictedRating !== null && (
-        <Typography variant="body2" color="textSecondary">
-          Predicted Rating: {predictedRating.toFixed(2)} Stars
-        </Typography>
-      )}
-    </Box>
+    <>
+    {!!userID ? 
+      (
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <StyledRating
+            name="customized-icons"
+            value={currentRating}
+            IconContainerComponent={IconContainer}
+            getLabelText={(value: number) => customIcons[value].label}
+            highlightSelectedOnly
+            precision={1}
+            onChange={(event, newValue) => updateRating(newValue)}
+            onChangeActive={(event, newHover) => setHover(newHover)}
+            emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+          />
+          {currentRating !== null && (
+			<Typography variant="body2" color="textSecondary">
+			  Current Rating: {hover !== -1 ? hover : currentRating} Stars
+			</Typography>
+			)}
+		  {predictedRating !== null && (
+			<Typography variant="body2" color="textSecondary">
+			  Predicted Rating: {predictedRating.toFixed(2)} Stars
+			</Typography>
+			)}
+        </Box> 
+      )
+      : 
+      (
+        <>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <StyledRating
+              name="customized-icons"
+              value={0}
+              IconContainerComponent={IconContainer}
+              getLabelText={(value: number) => customIcons[value].label}
+              highlightSelectedOnly
+              precision={1}
+              onChange={(event, newValue) => promptLogin()}
+              onChangeActive={(event, newHover) => setHover(newHover)}
+              emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+            />
+          </Box>
+          <Dialog
+            open={loginPromptOpen}
+            onClose={() => setLoginPromptOpen(false)}
+            >
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  You must be logged in to rate a location's accessibility.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>Close</Button>
+              </DialogActions>
+          </Dialog>
+        </>
+      )
+      }
+    </>
   );
 };
 

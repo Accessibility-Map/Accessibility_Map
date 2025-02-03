@@ -11,6 +11,7 @@ import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
 import UserService from "./services/UserService";
+import { stat } from "fs";
 
 interface AvatarButtonProps {
     UpdateUser: (newUser: User) => void
@@ -28,14 +29,12 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
     const handleCreateAccountModalOpen = () => setCreateAccountModalOpen(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            const user: User = JSON.parse(storedUser);
-            user.password = "";
-            UserService.verifySession(user).then((status: any) => {
+        const userToken = localStorage.getItem("user");
+        
+        if (userToken) {
+            UserService.verifyJwt(userToken).then((status: any) => {
                 if (status.status === UserVerificationEnum.VERIFIED) {
-                    console.log("Logged in user:", user);
-                    updateUserAndSetUserInitials(user);
+                    updateUserAndSetUserInitials(status.user);
                 }
             })
         }
@@ -58,10 +57,13 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
             }
         }
         setUserInitials(initials);
-        console.log("newUser:", newUser);
-        console.log("UserInitials:", initials);
-        console.log("SetNewUser in AvatarButton:", UpdateUser);
         UpdateUser(newUser);
+    }
+
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        updateUserAndSetUserInitials(new User("", "", "", 0));
+        window.location.reload();
     }
 
     return (
@@ -75,6 +77,9 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
                         </ListItem>
                         <ListItem className="avatar-menu-item">
                             <ListItemText secondary="Create Account" onClick={handleCreateAccountModalOpen}/>
+                        </ListItem>
+                        <ListItem className="avatar-menu-item">
+                            <ListItemText secondary="Logout" onClick={handleLogout}/>
                         </ListItem>
                     </List>
                 </Box>

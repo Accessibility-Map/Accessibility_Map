@@ -6,6 +6,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
@@ -15,10 +16,12 @@ namespace backend.Controllers
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public UserController(ApplicationDbContext context)
+        public UserController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -46,8 +49,10 @@ namespace backend.Controllers
             // Hash the password
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            Guid sessionID = Guid.NewGuid();
-            user.SessionID = sessionID.ToString();
+            // Generate a jwt token
+            String jwtToken = GenerateJwtToken(user);
+
+            user.SessionID = jwtToken;
 
             // Add the user to the database
             _context.Users.Add(user);
@@ -57,7 +62,7 @@ namespace backend.Controllers
             UserDTO userDTOResponse = new UserDTO();
             userDTOResponse.UserID = user.UserID;
             userDTOResponse.Username = user.Username;
-            userDTOResponse.SessionID = user.SessionID;
+            userDTOResponse.SessionID = jwtToken;
             return Ok(userDTOResponse);
         }
 
@@ -73,15 +78,11 @@ namespace backend.Controllers
             }
 
             if (BCrypt.Net.BCrypt.Verify(user.Password, storedUser.Password)){
-                Guid sessionID = Guid.NewGuid();
-                storedUser.SessionID = sessionID.ToString();
-                _context.Users.Update(storedUser);
-                await _context.SaveChangesAsync();
                 // Return the user without password hash
                 UserDTO userDTOResponse = new UserDTO();
                 userDTOResponse.UserID = storedUser.UserID;
                 userDTOResponse.Username = storedUser.Username;
-                userDTOResponse.SessionID = storedUser.SessionID;
+                userDTOResponse.SessionID = GenerateJwtToken(storedUser);
                 return Ok(userDTOResponse);
             }
 
@@ -107,6 +108,24 @@ namespace backend.Controllers
             return Ok();
         }
 
+        [HttpPost("verify-jwt")]
+        [Authorize]
+        public async Task<IActionResult> VerifyJwt()
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            var storedUser = await _context.Users.Where(u => u.Username.ToLower() == username.ToLower()).FirstOrDefaultAsync();
+
+            if (storedUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            UserDTO userDTOResponse = new UserDTO();
+            userDTOResponse.UserID = storedUser.UserID;
+            userDTOResponse.Username = storedUser.Username;
+            return Ok(userDTOResponse);
+        }
+
         [HttpPost("verify-session")]
         public async Task<IActionResult> VerifySession([FromBody] UserDTO user)
         {
@@ -124,6 +143,27 @@ namespace backend.Controllers
             Console.WriteLine("user SessionID: " + user.SessionID);
 
             return Unauthorized("Invalid session.");
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "AccessibilityMapService",
+                audience: "AccessibilityMapService",
+                claims: claims,
+                expires: DateTime.Now.AddMonths(1),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

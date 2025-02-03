@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
+import React, { useRef, useEffect, useState } from "react";
+import { Marker, Popup, useMap } from "react-leaflet";
 import { Icon } from "leaflet";
 import StarRating from "./StarRating";
 import ImageScroller from "./ImageScroller";
@@ -26,6 +26,10 @@ const MarkerPopup = ({
   const [isEditing, setIsEditing] = useState(false);
   const [featuresList, setFeaturesList] = useState([]);
   const [images, setImages] = useState([]);
+  const [description, setDescription] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const map = useMap();
+
 
   useEffect(() => {
     // Fetch features
@@ -78,13 +82,30 @@ const MarkerPopup = ({
     setOpenPopupId(null);
   };
 
+  useEffect(() => {
+    FeatureService.getFeaturesByLocationID(location.locationID).then(
+      (features) => {
+        setFeaturesList(features);
+      }
+    );
+  }, [location.locationID]);
+
+  const handleMarkerClick = (locationID) => {
+    const bounds = map.getBounds();
+    const bottom = bounds.getNorth();
+    const center = bounds.getCenter();
+    const difference = bottom - center.lat;
+    console.log("Difference:", difference);
+    map.setView([(location.latitude + (difference * .9)), location.longitude], 17);
+    setOpenPopupId(locationID);
+  };
   return (
     <Marker
       ref={markerRef}
       position={[location.latitude, location.longitude]}
       icon={customMarkerIcon}
       eventHandlers={{
-        click: () => setOpenPopupId(location.locationID),
+        click: () => handleMarkerClick(location.locationID),
       }}
     >
       <Popup

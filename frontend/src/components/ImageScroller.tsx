@@ -10,7 +10,6 @@ import "./styles/ImageScroller.css";
 import './styles/MarkerPopup.css'
 
 interface ImageScrollerProps {
-
   images: any;
   widthParam: string;
   heightParam: string;
@@ -58,20 +57,19 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
   const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     setOpenPopup(true);
   }
-
-  return (
-    <>
-      {images.length > 0 ?
-        (<Grid2 container rowSpacing={0} direction={"column"} sx={{ justifyContent: "center", width: widthParam, height: heightParam }}>
-          <Grid2 sx={{ width: "100%", height: "75%", backgroundColor: "rgba(0, 0, 0, 0.6)", display: "flex", position: "relative" }}>
-            <img
-              key={imageIndex}
-              src={images[imageIndex]}
-              alt="Uploaded location"
-              style={{ width: "100%", maxHeight: "100%", cursor: "pointer", objectFit: "contain" }}
-              onClick={handleImageClick}
-            />
-            <div className="button-container">
+    return (
+        <>
+            {images.length > 0 ?
+            (<Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
+                <Grid2 sx={{width: "100%", height: "75%", backgroundColor: "rgba(0, 0, 0, 0.6)", display: "flex", position: "relative"}}>
+                    <img
+                        key={imageIndex}
+                        src={images[imageIndex]}
+                        alt="Uploaded location"
+                        style={{ width: "100%", maxHeight: "100%", cursor: "pointer", objectFit: "contain" }}
+                        onClick={handleImageClick}
+                    />
+                  <div className="button-container">
               <label
                 className="replace-button"
                 style={{
@@ -144,56 +142,56 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                 </svg>
               </button>
             </div>
-          </Grid2>
-          <Grid2 sx={{ display: "flex", justifyContent: "center", width: "100%", height: "5%" }}>
-            {imageIndex + 1 + "/" + images.length}
-          </Grid2>
-          <Grid2 container sx={{ width: "100%", maxHeight: "20%" }}>
-            <Grid2 size="grow" sx={{ display: "flex", justifyContent: "center" }}>
-              <Box width={.10} onClick={handlePrevious}
-                sx={{
-                  display: "flex",
-                  cursor: "pointer",
-                  flexBasis: "50%",
-                  justifyContent: "center",
-                  marginTop: "10px",
-                  backgroundColor: "rgba(0, 0, 0, 0.1)",
-                  flexGrow: 0.75,
-                  borderRadius: "3px"
-                }}>
-                <ArrowBackIosIcon></ArrowBackIosIcon>
-              </Box>
+                </Grid2>
+                <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
+                    {imageIndex + 1 + "/" + images.length}
+                </Grid2>
+                <Grid2 container sx={{width: "100%", maxHeight: "20%"}}>
+                    <Grid2 size="grow" sx={{display: "flex", justifyContent: "center"}}>
+                        <Box width={.10} onClick={handlePrevious} 
+                        sx={{
+                            display: "flex", 
+                            cursor: "pointer", 
+                            flexBasis: "50%", 
+                            justifyContent: "center", 
+                            marginTop: "10px", 
+                            backgroundColor: "rgba(0, 0, 0, 0.1)",
+                            flexGrow: 0.75,
+                            borderRadius: "3px"
+                            }}>
+                            <ArrowBackIosIcon></ArrowBackIosIcon>
+                        </Box>
+                    </Grid2>
+                    <Grid2 size="grow" sx={{display: "flex", justifyContent: "center"}}>
+                        <Box width={.10} onClick={handleNext} 
+                        sx={{
+                            display: "flex",
+                            cursor: "pointer", 
+                            flexBasis: "50%", 
+                            justifyContent: "center", 
+                            marginTop: "10px", 
+                            backgroundColor: "rgba(0, 0, 0, 0.1)",
+                            flexGrow: 0.75,
+                            borderRadius: "3px"
+                            }}>
+                            <ArrowForwardIosIcon></ArrowForwardIosIcon>
+                        </Box>
+                    </Grid2>
+                </Grid2>
+            </Grid2>)
+            : (
+            <Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
+                <Grid2 sx={{marginTop: "auto", marginBottom: "auto", width: "100%", height: "95%"}}>
+                    <img
+                        src={"./imgs/no-images-uploaded.jpg"}
+                        alt="Uploaded location"
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    />
+                </Grid2>
+                <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
+                    <span>No images uploaded</span>
+                </Grid2>
             </Grid2>
-            <Grid2 size="grow" sx={{ display: "flex", justifyContent: "center" }}>
-              <Box width={.10} onClick={handleNext}
-                sx={{
-                  display: "flex",
-                  cursor: "pointer",
-                  flexBasis: "50%",
-                  justifyContent: "center",
-                  marginTop: "10px",
-                  backgroundColor: "rgba(0, 0, 0, 0.1)",
-                  flexGrow: 0.75,
-                  borderRadius: "3px"
-                }}>
-                <ArrowForwardIosIcon></ArrowForwardIosIcon>
-              </Box>
-            </Grid2>
-          </Grid2>
-        </Grid2>)
-        : (
-          <Grid2 container rowSpacing={0} direction={"column"} sx={{ justifyContent: "center", width: "100%", height: "100%" }}>
-            <Grid2 sx={{ marginTop: "auto", marginBottom: "auto", width: "100%", height: "95%" }}>
-              <img
-                src={"./imgs/no-images-uploaded.jpg"}
-                alt="Uploaded location"
-                style={{ width: "100%" }}
-              />
-            </Grid2>
-            <Grid2 sx={{ display: "flex", justifyContent: "center", width: "100%", height: "5%" }}>
-              <span>No images uploaded</span>
-            </Grid2>
-          </Grid2>
         )
       }
 
