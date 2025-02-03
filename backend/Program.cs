@@ -36,7 +36,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+}    
 
 if (!app.Environment.IsDevelopment())
 {
@@ -56,21 +56,27 @@ app.Use(async (context, next) => {
     await next();
 });
 
-if(app.Environment.IsProduction()){
+if (app.Environment.IsProduction())
+{
+    var productionUploadPath = Path.Combine("/var/www/myapp", "uploads"); 
     app.UseStaticFiles(new StaticFileOptions
     {
-    FileProvider = new PhysicalFileProvider("/uploads"),
-    RequestPath = "/uploads"
-    }); 
-}
-else{
-    app.UseStaticFiles(new StaticFileOptions
-    {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
-    RequestPath = "/uploads"
+        FileProvider = new PhysicalFileProvider(productionUploadPath),
+        RequestPath = "/uploads"
     });
 }
+else
+{
+    // Use the project directory in development
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(
+            Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+        RequestPath = "/uploads"
+    });
+}
+
+
 
 app.UseAuthorization();
 app.MapControllers();

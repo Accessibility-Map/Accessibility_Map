@@ -23,5 +23,9 @@ namespace backend.Models
         // Navigation property to Location
         [JsonIgnore]
         public Location? Location { get; set; }
+
+            public string? ImagePath { get; set; } // Allow null values
+
+
     }
 }

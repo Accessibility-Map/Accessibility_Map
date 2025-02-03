@@ -8,9 +8,10 @@ export default class FeatureService {
             const response = await axios.get<Feature[]>(url.replace(/([^:]\/)\/+/g, "$1"));
             const data = response.data;
 
-            const features: Feature[] = data.map(element => 
-                new Feature(element.locationID ?? element.locationID, element.locationFeature ?? element.locationFeature, element.notes, element?.id)
+            const features: Feature[] = data.map(element =>
+                new Feature(element.locationID, element.locationFeature, element.notes, element.id)
             );
+            
             
             return features;
         } catch (error) {
@@ -45,6 +46,18 @@ export default class FeatureService {
             }
             throw error;
         }
+
+
     }
-    
+             // Add the getFeatureCount method
+  public static async getFeatureCount(locationID: number): Promise<number> {
+    try {
+      const url = `${process.env.REACT_APP_API_URL}api/features/count/${locationID}`;
+      const response = await axios.get<{ featureCount: number }>(url.replace(/([^:]\/)\/+/g, "$1"));
+      return response.data.featureCount; // Assuming the API response includes a field "featureCount"
+    } catch (error) {
+      console.error(`Error fetching feature count for locationID ${locationID}:`, error);
+      return 0; 
+    }
+}
 }

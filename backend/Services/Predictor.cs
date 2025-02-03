@@ -5,7 +5,7 @@ namespace backend.Services
 {
     public class Predictor
     {
-        public static float PredictRating(int userID, int locationID)
+        public static float PredictRating(int userID, int locationID, bool hasRamp, bool hasElevator, bool hasAccessibleBathroom, bool hasAccessibleParking)
         {
             try
             {
@@ -13,25 +13,21 @@ namespace backend.Services
 
                 ITransformer model = context.Model.Load("RatingModel.zip", out var schema);
 
-                Console.WriteLine("Loaded model schema:");
-                foreach (var column in schema)
-                {
-                    Console.WriteLine($"Column: {column.Name}, Type: {column.Type}");
-                }
-
                 var predictionEngine = context.Model.CreatePredictionEngine<RatingData, RatingPrediction>(model);
 
                 var input = new RatingData
                 {
                     UserID = userID,
-                    LocationID = locationID
+                    LocationID = locationID,
+                    HasRamp = hasRamp,
+                    HasElevator = hasElevator,
+                    HasAccessibleBathroom = hasAccessibleBathroom,
+                    HasAccessibleParking = hasAccessibleParking
                 };
 
-                Console.WriteLine($"Input UserID: {input.UserID}, Input LocationID: {input.LocationID}");
                 var prediction = predictionEngine.Predict(input);
 
-                Console.WriteLine($"Predicted Rating: {prediction.PredictedRating}");
-                return prediction.PredictedRating;
+                return Math.Clamp(prediction.PredictedRating, 1.0f, 5.0f);
             }
             catch (Exception ex)
             {
@@ -39,5 +35,7 @@ namespace backend.Services
                 throw;
             }
         }
+
     }
 }
+

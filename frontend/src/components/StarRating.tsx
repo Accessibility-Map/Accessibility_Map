@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
-import RatingService from "./services/RatingService";
 import { styled } from "@mui/material/styles";
 import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied";
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import Typography from "@mui/material/Typography";
+import RatingService from "./services/RatingService";
+import PredictionService from "./services/PredictionService";
 
 type CustomIconType = {
   [index: number]: {
@@ -36,14 +38,12 @@ const customIcons: CustomIconType = {
   },
 };
 
-// Styled rating component to use custom icons
 const StyledRating = styled(Rating)(({ theme }) => ({
   "& .MuiRating-iconEmpty .MuiSvgIcon-root": {
     color: theme.palette.action.disabled,
   },
 }));
 
-// Define types for IconContainer props
 interface IconContainerProps {
   value: number;
 }
@@ -62,36 +62,41 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
-  
-  
-  // Fetch the initial rating from the backend
+  const [predictedRating, setPredictedRating] = useState<number | null>(null);
 
+  // Fetch predicted rating
+  useEffect(() => {
+    PredictionService.predictRating(userID, locationID).then((rating) => {
+      console.log("Predicted Rating from API:", rating); 
+      setPredictedRating(rating);
+    });
+  }, [locationID, userID]);
 
-    useEffect(() => {
-      RatingService.getRating(userID, locationID).then((rating) => {
-
-        if (rating && rating.getRating() !== 0) {
-          setCurrentRating(rating.getRating());
-        } else {
-          setUnset(true);
-        }
-      });
-    }, [locationID]);
-  
-    // Function to update rating in the state and backend
-    const updateRating = (newRating: number | null) => {
-      if (!newRating || newRating < 1 || newRating > 5) return;
-  
-      if (unset) {
-        RatingService.createRating(userID, locationID, newRating);
-        setUnset(false);
+  // Fetch current rating
+  useEffect(() => {
+    RatingService.getRating(userID, locationID).then((rating) => {
+      if (rating && rating.getRating() !== 0) {
+        setCurrentRating(rating.getRating());
       } else {
-        RatingService.setRating(userID, locationID, newRating);
+        setUnset(true);
       }
-      setCurrentRating(newRating);
-    };
+    });
+  }, [locationID]);
+
+  const updateRating = (newRating: number | null) => {
+    if (!newRating || newRating < 1 || newRating > 5) return;
+
+    if (unset) {
+      RatingService.createRating(userID, locationID, newRating);
+      setUnset(false);
+    } else {
+      RatingService.setRating(userID, locationID, newRating);
+    }
+    setCurrentRating(newRating);
+  };
+
   return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
       <StyledRating
         name="customized-icons"
         value={currentRating}
@@ -104,7 +109,14 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
         emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
       />
       {currentRating !== null && (
-        <Box sx={{ ml: 2 }}>{hover !== -1 ? hover : currentRating} Stars</Box>
+        <Typography variant="body2" color="textSecondary">
+          Current Rating: {hover !== -1 ? hover : currentRating} Stars
+        </Typography>
+      )}
+      {predictedRating !== null && (
+        <Typography variant="body2" color="textSecondary">
+          Predicted Rating: {predictedRating.toFixed(2)} Stars
+        </Typography>
       )}
     </Box>
   );
