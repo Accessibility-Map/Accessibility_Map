@@ -7,6 +7,7 @@ import AddFeatureButton from "./AddFeatureButton";
 import EditLocationPopup from "./EditLocationPopup";
 import "./styles/MarkerPopup.css";
 import axios from "axios";
+import FeatureService from "./services/FeatureService";
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -21,12 +22,14 @@ const MarkerPopup = ({
   userID,
   openPopupId,
   setOpenPopupId,
+  saveEdit
 }) => {
   const markerRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [featuresList, setFeaturesList] = useState([]);
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
+  const [locationName, setLocationName] = useState("");
   const [uploading, setUploading] = useState(false);
   const map = useMap();
 
@@ -125,6 +128,7 @@ const MarkerPopup = ({
               setImages={setImages}
               onSave={handleSaveEdit}
               onClose={() => setIsEditing(false)}
+              saveEdit={saveEdit}
             />
           ) : (
             <>
