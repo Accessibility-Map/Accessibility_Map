@@ -23,11 +23,20 @@ export default class RatingService {
     }
   }
   
+  public static async getAverageRating(locationID: number): Promise<number | null> {
+    try {
+      const url = `${process.env.REACT_APP_API_URL}api/ratings/average/${locationID}`;
+      const response = await axios.get(url);
+      return response.data.averageRating; 
+    } catch (error) {
+      console.error("Error fetching average rating:", error);
+      return null;
+    }
+  }
+  
   public static async setRating(userID: number, locationID: number, rating: number) {
     try {
-      const url =
-        process.env.REACT_APP_API_URL +
-        `api/ratings/${userID}/${locationID}/${rating}`;
+      const url = `${process.env.REACT_APP_API_URL}api/ratings/${userID}/${locationID}/${rating}`;
       await axios.put(url);
     } catch (error) {
       console.error("Error setting rating:", error);

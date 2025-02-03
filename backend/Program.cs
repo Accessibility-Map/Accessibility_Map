@@ -1,8 +1,30 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Context;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -12,7 +34,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000", "https://salmon-bush-*.azurestaticapps.net/")  // Allow requests from React app
+            builder.WithOrigins("http://localhost:3000","http://localhost:3002", "https://salmon-bush-*.azurestaticapps.net/")  // Allow requests from React app
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -36,7 +58,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+}    
 
 if (!app.Environment.IsDevelopment())
 {
@@ -56,22 +78,29 @@ app.Use(async (context, next) => {
     await next();
 });
 
-if(app.Environment.IsProduction()){
+if (app.Environment.IsProduction())
+{
+    var productionUploadPath = Path.Combine("/var/www/myapp", "uploads"); 
     app.UseStaticFiles(new StaticFileOptions
     {
-    FileProvider = new PhysicalFileProvider("/uploads"),
-    RequestPath = "/uploads"
-    }); 
+        FileProvider = new PhysicalFileProvider(productionUploadPath),
+        RequestPath = "/uploads"
+    });
 }
-else{
+else
+{
+    // Use the project directory in development
     app.UseStaticFiles(new StaticFileOptions
     {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
-    RequestPath = "/uploads"
+        FileProvider = new PhysicalFileProvider(
+            Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+        RequestPath = "/uploads"
     });
 }
 
+
+
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -29,3 +29,5 @@ obj/
 .vs
 Accessibility_Map.sln
 .env*.local
+
+/backend/RatingModel.zip

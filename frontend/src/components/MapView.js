@@ -8,6 +8,7 @@ import SearchBar from './SearchBar'
 import MarkerPopup from './MarkerPopup'
 import AddMarkerOnClick from './AddMarkerOnClick'
 import './styles/MapView.css'
+import AvatarButton from './AvatarButton'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -27,12 +28,18 @@ const MapView = () => {
   const [features, setFeatures] = useState([])
   const [newMarker, setNewMarker] = useState(null)
   const [locationName, setLocationName] = useState('')
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilters, setSelectedFilters] = useState([])
   const [editingLocation, setEditingLocation] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [accessibilityDescriptions, setAccessibilityDescriptions] = useState('')
+  const [description, setDescription] = useState('')
+  const [user, setUser] = useState(null)
+  const [userID, setUserID] = useState(null)
+
+  const updateUserAndUserID = (newUser) => {
+    setUser(newUser);
+    setUserID(newUser.userID);
+  }
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -46,11 +53,12 @@ const MapView = () => {
     }
     const fetchFeaturesData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
-        setFeatures(response.data)
-        console.log(response.data)
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
+        console.log('Fetched features:', response.data); 
+        setFeatures(Array.isArray(response.data.features) ? response.data.features : []);
       } catch (error) {
-        console.error('Error fetching features data:', error)
+        console.error('Error fetching features data:', error);
+        setFeatures([]);
       }
     }
     fetchFeaturesData()
@@ -72,8 +80,7 @@ const MapView = () => {
         locationName: locationName || 'Default Location Name',
         latitude: location.latitude || 0,
         longitude: location.longitude || 0,
-        accessibilityFeatures: (accessibilityFeatures || []).join(', '),
-        accessibilityDescriptions: accessibilityDescriptions || '',
+        description: description || '',
       }
       console.log('Payload for POST request:', payload)
 
@@ -83,8 +90,7 @@ const MapView = () => {
       setLocations(prevLocations => [...prevLocations, newLocation])
       setNewMarker(newLocation)
       setLocationName(newLocation.locationName || '')
-      setAccessibilityFeatures(newLocation.accessibilityFeatures || '')
-      setAccessibilityDescriptions(newLocation.accessibilityDescriptions || '')
+      setDescription(newLocation.description || '')
       setOpenPopupId(newLocation.locationID)
     } catch (error) {
       console.error('Error creating new marker:', error)
@@ -134,6 +140,7 @@ const MapView = () => {
           )
         }
       />
+      <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -149,12 +156,11 @@ const MapView = () => {
             setIsEditing={setIsEditing}
             locationName={locationName}
             setLocationName={setLocationName}
-            accessibilityFeatures={accessibilityFeatures}
-            setAccessibilityFeatures={setAccessibilityFeatures}
             saveEdit={saveEdit}
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
+            userID={userID}
           />
         ))}
         {newMarker && (
@@ -167,12 +173,11 @@ const MapView = () => {
               setIsEditing={setIsEditing}
               locationName={locationName}
               setLocationName={setLocationName}
-              accessibilityFeatures={accessibilityFeatures}
-              setAccessibilityFeatures={setAccessibilityFeatures}
               saveEdit={saveEdit}
               deleteMarker={deleteMarker}
               openPopupId={openPopupId}
               setOpenPopupId={setOpenPopupId}
+              userID={userID}
             />
           </Marker>
         )}

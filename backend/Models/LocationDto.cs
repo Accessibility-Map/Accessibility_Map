@@ -16,10 +16,8 @@ namespace backend.Models
 
         public double Longitude { get; set; }  // Include for backend input
 
-        public string? AccessibilityFeatures { get; set; }
-
         public string? Pictures { get; set; }
 
-        public string? AccessibilityDescriptions { get; set; }
+        public string? Description { get; set; }
     }
 }

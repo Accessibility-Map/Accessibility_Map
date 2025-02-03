@@ -1,16 +1,16 @@
 class Rating {
-  public UserID: number;
-  public LocationID: number;
-  public UserRating: number;
+  public userID: number;
+  public locationID: number;
+  public userRating: number;
 
   constructor(userID: number, locationID: number, userRating: number) {
-    this.UserID = userID;
-    this.LocationID = locationID;
-    this.UserRating = userRating;
+    this.userID = userID;
+    this.locationID = locationID;
+    this.userRating = userRating;
   }
 
   getRating(): number {
-    return this.UserRating;
+    return this.userRating;
   }
 }
 

@@ -1,54 +1,185 @@
+.popup-content {
+  max-width: 300px;
+    /* Default size for non-edit mode */
+    min-width: 300px;
+    /* Ensure it doesn't shrink too much */
+    max-height: 490px;
+    padding: 10px;
+    overflow: auto;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  
+  .popup-content-edit {
+    max-width: 600px;
+    /* Keep a wide enough width for readability */
+      min-width: 500px;
+      max-height: 80vh;
+      /* Limit the height to 80% of the viewport */
+      overflow-y: auto;
+      /* Enable vertical scrolling for overflowing content */
+      overflow-x: hidden;
+      /* Prevent horizontal scrolling */
+  padding: 20px;
+  box-sizing: border-box;
+  font-size: 16px;
+  border-radius: 8px;
+    /* Optional: Add rounded corners */
+    background-color: #fff;
+    /* Ensure background is consistent */
+  }
+  
+  .popup-content-edit h4 {
+    margin-top: 20px;
+    /* Add space between sections */
+  }
+  
+  .popup-content-edit input,
+  .popup-content-edit textarea {
+    width: 100%;
+    /* Make inputs and textareas stretch to the container width */
+    margin-bottom: 10px;
+    /* Add spacing between inputs */
+    padding: 8px;
+    /* Add internal padding for better usability */
+    font-size: 14px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    /* Optional: Add rounded corners for inputs */
+  }
+  
+  .popup-content-edit .feature-item {
+    margin-bottom: 15px;
+    /* Space between feature sections */
+  }
+  
+  .popup-content-edit .delete-feature-button {
+    display: block;
+    margin-top: 5px;
+    background-color: #f44336;
+    /* Red color for delete */
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .popup-content-edit .delete-feature-button:hover {
+    background-color: #d32f2f;
+    /* Darker red on hover */
+}
+
+.popup-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-form input,
+.popup-form textarea {
+  width: 100%;
+  /* Full width for inputs */
+  padding: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.popup-button {
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.popup-button-delete {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+/* Shared button hover state */
+.popup-button:hover,
+.popup-button-delete:hover {
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.upload-section {
+  margin-top: 20px;
+}
+
+.upload-section input[type="file"],
+.upload-section button {
+  font-size: 14px;
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+}
+
+/* Features Section */
 .feature {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .feature-description {
-    font-style: italic;
+  font-style: italic;
 }
+
 .delete-feature-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: red;
-    margin-left: 8px;
+  background: none;
+  border: none;
+  color: red;
+  margin-left: 8px;
+  cursor: pointer;
 }
 
 .delete-feature-button:hover {
-    color: darkred;
+  color: darkred;
 }
 
-.popup-content {
-    width: 600px; /* Adjust to desired width */
-    max-width: 100%;
-    padding: 16px;
-    box-sizing: border-box;
+/* Image Scroller */
+.image-scroller {
+  display: flex;
+  overflow-x: auto;
+  /* Horizontal scrolling for small screens */
+  gap: 10px;
+}
+.image-scroller img {
+  max-width: 100px;
+  height: auto;
+  border-radius: 4px;
+}
+/* Media Query for Mobile */
+@media (max-width: 768px) {
+  .popup-content {
+    padding: 8px;
   }
-  
+
   .popup-header {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 14px;
   }
-  
-  .popup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+
+  .popup-form input,
+  .popup-form textarea {
+    font-size: 12px;
   }
-  
-  .upload-section {
-    margin-top: 20px;
-  }
-  
-  .popup-button {
-    margin-top: 15px;
-    padding: 8px 16px;
-  }
-  
+
+  .popup-button,
   .popup-button-delete {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 8px 16px;
-    margin-top: 10px;
+    font-size: 12px;
   }
-  
+
+  .image-scroller img {
+    max-width: 80px;
+  }
+}
