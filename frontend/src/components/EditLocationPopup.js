@@ -2,7 +2,7 @@ import { useState } from "react";
 import FeatureImageUploader from "./FeatureImageUploader";
 import axios from "axios";
 
-const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose }) => {
+const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, saveEdit }) => {
   const [locationName, setLocationName] = useState(location.locationName || "");
   const [description, setDescription] = useState(location.description || "");
   const [updatedFeatures, setUpdatedFeatures] = useState(featuresList);
@@ -50,6 +50,13 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
 
         console.log("Updated images array after saving:", updatedImages);
       }
+
+      const updatedLocation = {
+        ...location,
+        locationName,
+        description,
+      };
+      saveEdit(updatedLocation);
 
       onSave(updatedFeatures, updatedImages); 
       onClose();
