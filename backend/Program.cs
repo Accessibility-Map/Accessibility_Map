@@ -80,7 +80,7 @@ app.Use(async (context, next) => {
 
 if (app.Environment.IsProduction())
 {
-    var productionUploadPath = Path.Combine("/var/www/myapp", "uploads"); 
+    var productionUploadPath = Path.Combine("uploads"); 
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new PhysicalFileProvider(productionUploadPath),
