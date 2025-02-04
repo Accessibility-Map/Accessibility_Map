@@ -58,7 +58,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       };
       saveEdit(updatedLocation);
 
-      onSave(updatedFeatures, updatedImages); 
+      onSave(updatedFeatures, updatedImages);
       onClose();
     } catch (error) {
       console.error("Error saving changes:", error);
@@ -137,9 +137,10 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
         <button type="button" onClick={handleSave}>
           Save Changes
         </button>
-        <button type="button" onClick={onClose}>
+        <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }}>
           Cancel
         </button>
+
       </form>
     </div>
   );

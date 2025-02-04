@@ -106,7 +106,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
     <>
     {!!userID ? 
       (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           <StyledRating
             name="customized-icons"
             value={currentRating}
@@ -125,7 +125,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
 			)}
 		  {predictedRating !== null && (
 			<Typography variant="body2" color="textSecondary">
-			  Predicted Rating: {predictedRating.toFixed(2)} Stars
+			  Predicted: {predictedRating.toFixed(2)} Stars
 			</Typography>
 			)}
         </Box> 
