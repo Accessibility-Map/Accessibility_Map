@@ -47,7 +47,7 @@ namespace backend.Services
               .Append(context.Transforms.Concatenate("Features",
                   "UserIDFloat", "LocationIDFloat", "HasRampFloat", "HasElevatorFloat", "HasAccessibleBathroomFloat", "HasAccessibleParkingFloat"))
               .Append(context.Transforms.CopyColumns(outputColumnName: "Label", inputColumnName: "Rating"))
-              .Append(context.Regression.Trainers.Sdca());
+              .Append(context.Regression.Trainers.FastTree());
 
 
             var trainTestSplit = context.Data.TrainTestSplit(data, testFraction: 0.1);
