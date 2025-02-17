@@ -8,6 +8,11 @@ import EditLocationPopup from "./EditLocationPopup";
 import "./styles/MarkerPopup.css";
 import axios from "axios";
 import FeatureService from "./services/FeatureService";
+import CommentList from "./CommentList";
+
+import Divider from "@mui/material/Divider";
+import Chip from "@mui/material/Chip";
+
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -22,7 +27,8 @@ const MarkerPopup = ({
   userID,
   openPopupId,
   setOpenPopupId,
-  saveEdit
+  saveEdit,
+  user
 }) => {
   const markerRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -31,38 +37,8 @@ const MarkerPopup = ({
   const [description, setDescription] = useState("");
   const [locationName, setLocationName] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [clicked, setClicked] = useState(false);
   const map = useMap();
-
-
-  useEffect(() => {
-    // Fetch features
-    axios
-      .get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`)
-      .then((response) => {
-        const updatedFeatures = response.data.map((feature) => ({
-          ...feature,
-          imagePath:
-            feature.imagePath && typeof feature.imagePath === "string"
-              ? feature.imagePath.startsWith("http")
-                ? feature.imagePath
-                : `${process.env.REACT_APP_API_URL.replace(/\/+$/, "")}/${feature.imagePath.replace(/^\/+/, "")}`
-              : null,
-        }));
-        setFeaturesList(updatedFeatures);
-      })
-      .catch((error) => console.error("Error fetching features:", error));
-
-    // Fetch images
-    axios
-      .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
-      .then((response) => {
-        const imageUrls = response.data.map((picture) => picture.imageUrl);
-        setImages(imageUrls);
-      })
-      .catch((error) => {
-        console.error("Error fetching images:", error);
-      });
-  }, [location.locationID]);
 
   useEffect(() => {
     if (openPopupId === location.locationID && markerRef.current) {
@@ -86,39 +62,53 @@ const MarkerPopup = ({
   };
 
   useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
-        console.log("Before processing:", response.data);
+    if (clicked) {
+      const fetchFeaturesAndImages = async () => {
+        try {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
+          console.log("Before processing:", response.data);
 
-        const updatedFeatures = response.data.map((feature) => {
-          let fixedImagePath = feature.imagePath;
+          const updatedFeatures = response.data.map((feature) => {
+            let fixedImagePath = feature.imagePath;
 
-          if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
-            fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
-            fixedImagePath = `http://localhost:5232${fixedImagePath}`;
-          } else {
-            fixedImagePath = null;
-          }
+            if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
+              fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
+              fixedImagePath = `http://localhost:5232${fixedImagePath}`;
+            } else {
+              fixedImagePath = null;
+            }
 
-          console.log("Final fixed image path:", fixedImagePath);
+            console.log("Final fixed image path:", fixedImagePath);
 
-          return {
-            ...feature,
-            imagePath: fixedImagePath,
-          };
-        });
+            return {
+              ...feature,
+              imagePath: fixedImagePath,
+            };
+          });
 
 
 
-        setFeaturesList(updatedFeatures);
-      } catch (error) {
-        console.error("Error fetching features:", error);
-      }
-    };
+          setFeaturesList(updatedFeatures);
 
-    fetchFeatures();
-  }, [location.locationID, images]);
+          // Fetch images
+          axios
+          .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
+          .then((response) => {
+            const imageUrls = response.data.map((picture) => picture.imageUrl);
+            setImages(imageUrls);
+          })
+          .catch((error) => {
+            console.error("Error fetching images:", error);
+          });
+
+        } catch (error) {
+          console.error("Error fetching features:", error);
+        }
+      };
+
+      fetchFeaturesAndImages();
+    }
+  }, [location.locationID, clicked]);
 
 
   const handleMarkerClick = (locationID) => {
@@ -128,6 +118,7 @@ const MarkerPopup = ({
     const difference = bottom - center.lat;
     console.log("Difference:", difference);
     map.setView([(location.latitude + (difference * .9)), location.longitude], 17);
+    setClicked(true);
     setOpenPopupId(locationID);
   };
   return (
@@ -235,10 +226,11 @@ const MarkerPopup = ({
 
               <StarRating locationID={location.locationID} userID={userID} />
               <AddFeatureButton locationID={location.locationID} />
-              <button
-                className="popup-button"
-                onClick={handleEditLocation}
-              >
+
+
+              <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
+
+              <button className="popup-button" onClick={handleEditLocation}>
                 Edit Location
               </button>
               <button
@@ -247,6 +239,7 @@ const MarkerPopup = ({
               >
                 Delete Location
               </button>
+              <AddFeatureButton locationID={location.locationID}/>
             </>
           )}
         </div>

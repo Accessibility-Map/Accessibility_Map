@@ -161,6 +161,7 @@ const MapView = () => {
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
             userID={userID}
+            user={user}
           />
         ))}
         {newMarker && (
