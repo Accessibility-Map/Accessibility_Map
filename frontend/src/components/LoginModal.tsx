@@ -30,6 +30,9 @@ const LoginModal = ({open, handleClose, onUpdateUser}: LoginModalProps) => {
                 localStorage.setItem("user", status.user.sessionID as string);
 
                 handleClose();
+
+                // Refresh the page
+                window.location.reload();
             }
             else if (status.status === UserVerificationEnum.NOT_FOUND) {
                 setError("Username", { message: "Username not found" });
