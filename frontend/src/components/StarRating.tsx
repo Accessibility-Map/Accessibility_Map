@@ -7,7 +7,7 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
-import { Dialog, DialogContent, DialogContentText, DialogActions, Button, DialogTitle } from "@mui/material";
+import { Dialog, DialogContent, DialogContentText, DialogActions, Button, DialogTitle, Grid2 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import RatingService from "./services/RatingService";
 import PredictionService from "./services/PredictionService";
@@ -69,7 +69,6 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   // Fetch predicted rating
   useEffect(() => {
     PredictionService.predictRating(userID, locationID).then((rating) => {
-      console.log("Predicted Rating from API:", rating); 
       setPredictedRating(rating);
     });
   }, [locationID, userID]);
@@ -103,67 +102,77 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   }
 
   return (
-    <>
-    {!!userID ? 
-      (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <StyledRating
-            name="customized-icons"
-            value={currentRating}
-            IconContainerComponent={IconContainer}
-            getLabelText={(value: number) => customIcons[value].label}
-            highlightSelectedOnly
-            precision={1}
-            onChange={(event, newValue) => updateRating(newValue)}
-            onChangeActive={(event, newHover) => setHover(newHover)}
-            emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-          />
-          {currentRating !== null && (
-			<Typography variant="body2" color="textSecondary">
-			  Current Rating: {hover !== -1 ? hover : currentRating} Stars
-			</Typography>
-			)}
-		  {predictedRating !== null && (
-			<Typography variant="body2" color="textSecondary">
-			  Predicted Rating: {predictedRating.toFixed(2)} Stars
-			</Typography>
-			)}
-        </Box> 
-      )
-      : 
-      (
-        <>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <StyledRating
-              name="customized-icons"
-              value={0}
-              IconContainerComponent={IconContainer}
-              getLabelText={(value: number) => customIcons[value].label}
-              highlightSelectedOnly
-              precision={1}
-              onChange={(event, newValue) => promptLogin()}
-              onChangeActive={(event, newHover) => setHover(newHover)}
-              emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-            />
-          </Box>
-          <Dialog
-            open={loginPromptOpen}
-            onClose={() => setLoginPromptOpen(false)}
-            >
-              <DialogTitle>Login Required</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  You must be logged in to rate a location's accessibility.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>Close</Button>
-              </DialogActions>
-          </Dialog>
-        </>
-      )
-      }
-    </>
+    <Box sx={{ width: "100%", height: "100%"}}>
+      {!!userID ? 
+        (
+          <Box sx={{ height: "100%"}}>
+            <Grid2 container sx={{ height: "100%"}}>
+              <Grid2 size={6} sx={{ height: "100%", textAlign: "center"}}>
+                <Typography variant="subtitle1">
+                  Rate This Location's Accessibility
+                </Typography>
+                <StyledRating
+                  name="customized-icons"
+                  value={currentRating}
+                  IconContainerComponent={IconContainer}
+                  getLabelText={(value: number) => customIcons[value].label}
+                  highlightSelectedOnly
+                  precision={1}
+                  onChange={(event, newValue) => updateRating(newValue)}
+                  onChangeActive={(event, newHover) => setHover(newHover)}
+                  emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+
+                />
+              </Grid2>
+              <Grid2 size={6} sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "end"}}>
+                {currentRating !== null && (
+                <Typography variant="body2" color="textSecondary" sx={{ margin: "0 !important"}}>
+                  Your Rating: {hover !== -1 ? hover : currentRating} Stars
+                </Typography>
+                )}
+                {predictedRating !== null && (
+                  <Typography variant="body2" color="textSecondary" sx={{ marginTop: "5px !important"}}>
+                    Predicted Rating: {predictedRating.toFixed(2)} Stars
+                  </Typography>
+                )}
+              </Grid2>
+            </Grid2>
+          </Box> 
+        )
+        : 
+        (
+          <>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <StyledRating
+                name="customized-icons"
+                value={0}
+                IconContainerComponent={IconContainer}
+                getLabelText={(value: number) => customIcons[value].label}
+                highlightSelectedOnly
+                precision={1}
+                onChange={(event, newValue) => promptLogin()}
+                onChangeActive={(event, newHover) => setHover(newHover)}
+                emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+              />
+            </Box>
+            <Dialog
+              open={loginPromptOpen}
+              onClose={() => setLoginPromptOpen(false)}
+              >
+                <DialogTitle>Login Required</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    You must be logged in to rate a location's accessibility.
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+          </>
+        )
+        }
+    </Box>
   );
 };
 

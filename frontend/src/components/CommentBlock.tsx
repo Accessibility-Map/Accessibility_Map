@@ -1,11 +1,9 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Box, Grid2, Avatar, List, ListItem, ListItemText, Collapse, Button, Typography, TextField, Divider } from "@mui/material";
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Grid } from "semantic-ui-react";
-import CommentDTO from "./models/Comment";
+import CommentDTO from "./models/Comment.ts";
 import "./styles/Comments.css"
-import CommentService from "./services/CommentService";
+import CommentService from "./services/CommentService.ts";
 
 interface CommentProps {
     comment: CommentDTO,
@@ -99,10 +97,10 @@ const CommentBlock = ({comment, userID, locationID, fetchComments}: CommentProps
                                 <Collapse in={open} timeout="auto" unmountOnExit>
                                     <Divider variant="middle" sx={{ marginTop: "10px", marginBottom: "10px"}}></Divider>
                                     <List component="div" disablePadding>
-                                        {comment?.replies?.map((reply, index) => (<>
-                                            <CommentBlock userID={userID} locationID={locationID} fetchComments={fetchComments} key={index} comment={reply} />
+                                        {comment?.replies?.map((reply, index) => (<Box key={index}>
+                                            <CommentBlock userID={userID} locationID={locationID} fetchComments={fetchComments} comment={reply} />
                                             {Array.isArray(comment.replies) && index < comment.replies.length - 1 && <Divider variant="middle" sx={{ marginTop: "10px", marginBottom: "10px"}}></Divider>}
-                                            </>))}
+                                            </Box>))}
                                     </List>
                                 </Collapse>
                             </Grid2>

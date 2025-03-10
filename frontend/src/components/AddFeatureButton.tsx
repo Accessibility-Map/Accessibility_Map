@@ -3,19 +3,13 @@ import React from "react";
 import "./styles/MapView.css";
 import "./styles/AddFeatureModal.css";
 
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import {Box, Modal, Button, Typography, Select, SelectChangeEvent, MenuItem, TextField} from "@mui/material";
 
 interface AddFeatureButtonProps {
   locationID: number;
 }
 
-const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
+const AddFeatureButton = ({ locationID }: AddFeatureButtonProps) => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -28,8 +22,6 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("Form submitted with locationID:", locationID);
-
     if (isNaN(locationID)) {
       console.error("Error: locationID is NaN");
       alert("Invalid LocationID. Please refresh and try again.");
@@ -39,15 +31,13 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
     const formData = new FormData(event.target as HTMLFormElement);
     const notes = formData.get("notes") as string;
 
-    console.log("Form data - Feature:", feature, "Notes:", notes);
-
     try {
       const response = await featureService.createFeature(
         locationID,
         feature,
         notes
       );
-      console.log("Feature created successfully:", response);
+
       handleClose();
     } catch (error) {
       console.error("Error creating feature:", error);
@@ -59,15 +49,8 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
     <>
       <Button
         onClick={handleOpen}
-        variant="outlined"
-        sx={{
-
-
-          padding: "4px 12px",
-          
-          textTransform: "none",
-
-        }}
+        variant="contained"
+        fullWidth
       >
         Add Feature
       </Button>{" "}
@@ -92,7 +75,7 @@ const AddFeatureButton: React.FC<AddFeatureButtonProps> = ({ locationID }) => {
             Add a New Feature
           </Typography>
           <form onSubmit={handleSubmit}>
-            <label htmlFor="locationFeature" className="input-label">
+            <label htmlFor="location-feature-select" className="input-label">
               What is the feature?
             </label>
             <Select
