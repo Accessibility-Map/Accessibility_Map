@@ -37,6 +37,7 @@ namespace backend.Context
         public DbSet<Feature> Features { get; set; }  // The Feature model DbSet
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
     }
 }
