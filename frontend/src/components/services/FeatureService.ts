@@ -30,13 +30,8 @@ export default class FeatureService {
                 Notes: notes.trim() === '' ? '' : notes  // Send an empty string if Notes is empty
             };
             
-            
-            
-
-            console.log("Sending payload to server:", payload);
-
             const response = await axios.post(url.replace(/([^:]\/)\/+/g, "$1"), payload);
-            console.log('Feature created successfully:', response.data);
+
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {

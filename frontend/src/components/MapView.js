@@ -4,11 +4,11 @@ import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import {Icon} from 'leaflet'
 
-import SearchBar from './SearchBar'
-import MarkerPopup from './MarkerPopup'
-import AddMarkerOnClick from './AddMarkerOnClick'
+import SearchBar from './SearchBar.js'
+import MarkerPopup from './MarkerPopup.js'
+import AddMarkerOnClick from './AddMarkerOnClick.js'
 import './styles/MapView.css'
-import AvatarButton from './AvatarButton'
+import AvatarButton from './AvatarButton.tsx'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -46,7 +46,6 @@ const MapView = () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}api/locations`)
         setLocations(response.data)
-        console.log(response.data)
       } catch (error) {
         console.error('Error fetching location data:', error)
       }
@@ -54,7 +53,6 @@ const MapView = () => {
     const fetchFeaturesData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
-        console.log('Fetched features:', response.data); 
         setFeatures(Array.isArray(response.data.features) ? response.data.features : []);
       } catch (error) {
         console.error('Error fetching features data:', error);
@@ -82,7 +80,6 @@ const MapView = () => {
         longitude: location.longitude || 0,
         description: description || '',
       }
-      console.log('Payload for POST request:', payload)
 
       const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
       const newLocation = response.data
