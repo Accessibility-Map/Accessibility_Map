@@ -1,39 +1,65 @@
-/* Desktop */
+/* ✅ Fix: Ensure the container is properly positioned */
 .container {
     position: absolute;
     top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 90%;
-    z-index: 1000;
-    display:inline-flex;
-    background-color: transparent;
-}
-
-.searchBarContainer {
+    z-index: 1000; /* ✅ Ensures it's on top */
     display: flex;
-    align-items: center;
     justify-content: center;
     background-color: transparent;
-    margin-left: 60px;
 }
 
-.searchInput {
-    border-radius: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-    font-size: 15px;
-    padding: 15px 25px;
-    border: none;
-    outline: none;
+/* ✅ Fix: Ensure SearchBar is initially hidden but can be shown */
+.searchBarContainer {
+    position: absolute;
+    top: 60px; /* ✅ Lower it below the header */
+    left: 50%;
+    transform: translateX(-50%);
     width: 400px;
-}
-
-.filters {
+    z-index: 1000; /* ✅ Ensure it's above the map */
+    background-color: white;
+    padding: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 30px;
+    opacity: 1;
     display: flex;
-    gap: 10px;
-    margin-left: 20px;
-    width: 500px;
-}
+    align-items: center;
+    pointer-events: auto; /* ✅ Ensure input works */
+  }
+  
+  
+  /* ✅ Ensure proper visibility */
+  .searchBarContainer.show {
+    opacity: 1;
+    display: flex;
+    height: auto; /* Ensure it doesn't collapse */
+    max-height: 100px;
+  }
 
+/* ✅ Fix: Search Input */
+.searchInput {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    outline: none;
+  }
+
+/* ✅ Fix: Filters */
+.filters {
+    position: relative; /* ✅ Ensures filters are above Leaflet */
+    z-index: 1100; /* ✅ Higher than map */
+    background: white; /* ✅ Ensure readability */
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+
+/* ✅ Fix: Filter Buttons */
 .filter-button {
     border-radius: 20px;
     border: none;
@@ -42,10 +68,9 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: background-color 0.3s ease;
-
 }
 
-/* Tablet */
+/* ✅ Mobile & Tablet Fixes */
 @media (max-width: 960px) {
     .container {
         align-items: center;
@@ -54,7 +79,7 @@
     .searchBarContainer {
         flex-direction: column; 
         align-items: center;
-        display: auto;
+        display: flex; /* ✅ Fixed invalid `display: auto;` */
     }
     .searchInput {
         width: 65vw;
@@ -66,13 +91,18 @@
         margin-left: 0px;
     }
 }
-/* Mobile Device */
+
 @media (max-width: 480px) {
     .searchInput {
-         width:300px 
-
+         width: 300px;
     }
     .filter-button {
         font-size: 13px;
     }
+}
+
+/* ✅ Ensure Leaflet Map Does Not Overlap Search Bar */
+.leaflet-container {
+    position: relative; /* ✅ Ensures search bar stays on top */
+    z-index: 1;
 }

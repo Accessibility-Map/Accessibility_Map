@@ -200,23 +200,7 @@ const MarkerPopup = ({
               <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
                 <FeaturesList featuresList={featuresList}/>
               </Box>
-              {/* {featuresList.map((feature) => (
-                <div key={feature.id} style={{ marginBottom: "20px" }}>
-                  <h5>{feature.locationFeature}</h5>
-                  {feature.imagePath && feature.imagePath !== "null" ? (
-                    <img
-                      src={feature.imagePath}
-                      alt={feature.locationFeature}
-                      style={{ width: "100px", height: "auto", marginBottom: "10px" }}
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  ) : (
-                    <p>No image uploaded</p>
-                  )}
-
-                  <p>{feature.notes}</p>
-                </div>
-              ))} */}
+    
             </Box>
               
             <Box hidden={tab != 3} sx={{ height: "500px" }}>
@@ -252,15 +236,7 @@ const MarkerPopup = ({
                 </Button>
               )}
               
-              {/* <button className="popup-button" onClick={handleEditLocation}>
-                Edit Location
-              </button> */}
-              {/* <button
-                className="popup-button-delete"
-                onClick={() => deleteMarker(location.locationID)}
-              >
-                Delete Location
-              </button> */}
+     
             </Box>
 
             <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 2}>
