@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
-import LoginModal from "./LoginModal";
-import NewAccountModal from "./NewAccountModal";
-import User from "./models/User";
+import LoginModal from "./LoginModal.tsx";
+import NewAccountModal from "./NewAccountModal.tsx";
+import User from "./models/User.ts";
 import "./styles/AvatarButton.css"
-import { UserVerificationEnum } from "./models/UserVerificationStatus";
+import { UserVerificationEnum } from "./models/UserVerificationStatus.ts";
+import UserService from "./services/UserService.ts";
 
-import Avatar from "@mui/material/Avatar"
-import Box from "@mui/material/Box"
-import List from "@mui/material/List"
-import ListItem from "@mui/material/ListItem"
-import ListItemText from "@mui/material/ListItemText"
-import UserService from "./services/UserService";
+import {Avatar, Box, List, ListItem, ListItemText} from "@mui/material"
 import { stat } from "fs";
 
 interface AvatarButtonProps {

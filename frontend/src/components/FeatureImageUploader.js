@@ -1,6 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
 
+import { Button } from "@mui/material";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
 const FeatureImageUploader = ({ feature, onUpdateImage }) => {
   const [uploading, setUploading] = useState(false);
   
@@ -32,15 +35,19 @@ const FeatureImageUploader = ({ feature, onUpdateImage }) => {
   
 
   return (
-    <div>
+    <Button
+      variant="contained"
+      component="label"
+      startIcon={<CloudUploadIcon />}
+    >
+      Upload Image
       <input
         type="file"
-        onChange={handleUpload}
         accept="image/*"
-        disabled={uploading}
+        style={{ display: "none" }}
+        onChange={handleUpload}
       />
-      {uploading && <p>Uploading...</p>}
-    </div>
+    </Button>
   );
 };
 
