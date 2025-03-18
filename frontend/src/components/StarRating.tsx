@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
+import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Grid2 } from "@mui/material";
 import Rating from "@mui/material/Rating";
 import { styled } from "@mui/material/styles";
 import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied";
@@ -7,18 +7,8 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
-import {
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-  DialogTitle,
-  TextField,
-  Typography,
-} from "@mui/material";
-
-import axios from "axios";
+import FavoriteService from "./services/FavoriteService"; // New service to handle favorites
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 type CustomIconType = {
   [index: number]: {
@@ -53,71 +43,35 @@ function IconContainer(props: IconContainerProps) {
 interface StarRatingProps {
   locationID: number;
   userID: number;
+  onFavoriteAdded?: (locationID: number) => void;
 }
 
-const StarRating = ({ locationID, userID }: StarRatingProps) => {
+const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
-  const [hover, setHover] = useState(-1);
+  const [hover, setHover] = useState<number>(-1);
+  const [favorites, setFavorites] = useLocalStorage<number[]>("favorites", []); // Store favorites in localStorage
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
-  const [predictedRating, setPredictedRating] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  const [csvData, setCsvData] = useState({
-    userID: 0,
-    locationID: 0,
-    hasRamp: 0,
-    hasElevator: 0,
-    hasAccessibleBathroom: 0,
-    hasAccessibleParking: 0,
-  });
+  useEffect(() => {
+    FavoriteService.getFavorites(userID).then((favList) => {
+      if (favList.includes(locationID)) {
+        setCurrentRating(5); // Keep it highlighted if it's a favorite
+      }
+    });
+  }, [locationID, userID]);
 
+  const updateRating = (newValue: number | null) => {
+    setCurrentRating(newValue);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const numericValue = parseInt(value);
-
-    if (["hasRamp", "hasElevator", "hasAccessibleBathroom", "hasAccessibleParking"].includes(name)) {
-      if (numericValue === 0 || numericValue === 1 || value === "") {
-        setCsvData({ ...csvData, [name]: numericValue });
-        setError(null);
-      } else {
-        setError("Please enter only 0 or 1 for accessibility features.");
+    if (newValue === 5) {
+      if (!favorites.includes(locationID)) {
+        setFavorites([...favorites, locationID]); // Add to favorites
+        FavoriteService.addFavorite(userID, locationID);
+        if (onFavoriteAdded) onFavoriteAdded(locationID);
       }
     } else {
-      if (!isNaN(numericValue) || value === "") {
-        setCsvData({ ...csvData, [name]: numericValue });
-        setError(null);
-      } else {
-        setError("Please enter a valid number.");
-      }
-    }
-  };
-
-  const handleSubmit = async () => {
-    const validInputs = [csvData.hasRamp, csvData.hasElevator, csvData.hasAccessibleBathroom, csvData.hasAccessibleParking].every(
-      (val) => val === 0 || val === 1
-    );
-
-    if (!validInputs) {
-      setError("Please enter only 0 or 1 for accessibility features.");
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:5232/api/ratings/predict", {
-        UserID: csvData.userID,
-        LocationID: csvData.locationID,
-        HasRamp: csvData.hasRamp,
-        HasElevator: csvData.hasElevator,
-        HasAccessibleBathroom: csvData.hasAccessibleBathroom,
-        HasAccessibleParking: csvData.hasAccessibleParking,
-      });
-
-      console.log("Full Response:", response.data);
-      setPredictedRating(response.data.score);
-    } catch (err) {
-      console.error("Prediction failed:", err);
-      setError("Prediction request failed. Please try again.");
+      setFavorites(favorites.filter((id) => id !== locationID)); // Remove from favorites if deselected
+      FavoriteService.removeFavorite(userID, locationID);
     }
   };
 
@@ -126,63 +80,61 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <StyledRating
-        name="customized-icons"
-        value={currentRating}
-        IconContainerComponent={IconContainer}
-        getLabelText={(value: number) => customIcons[value].label}
-        highlightSelectedOnly
-        precision={1}
-        onChange={(event, newValue) => setCurrentRating(newValue)}
-        onChangeActive={(event, newHover) => setHover(newHover)}
-        emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-      />
-
-      <Typography variant="h6">Enter Accessibility Features (0 or 1):</Typography>
-
-      {["userID", "locationID", "hasRamp", "hasElevator", "hasAccessibleBathroom", "hasAccessibleParking"].map((field) => (
-        <TextField
-          key={field}
-          label={field.replace(/([A-Z])/g, " $1")}
-          name={field}
-          type="number"
-          inputProps={{ min: 0 }}
-          value={csvData[field as keyof typeof csvData]}
-          onChange={handleInputChange}
-          fullWidth
-        />
-      ))}
-
-
-      {error && (
-        <Typography variant="body2" color="error">
-          {error}
-        </Typography>
+    <Box sx={{ width: "100%", height: "100%" }}>
+      {!!userID ? (
+        <Box sx={{ height: "100%" }}>
+          <Grid2 container sx={{ height: "100%" }}>
+            <Grid2 size={6} sx={{ height: "100%", textAlign: "center" }}>
+              <Typography variant="subtitle1">Rate This Location's Accessibility</Typography>
+              <StyledRating
+                name="customized-icons"
+                value={currentRating}
+                IconContainerComponent={IconContainer}
+                getLabelText={(value: number) => customIcons[value].label}
+                highlightSelectedOnly
+                precision={1}
+                onChange={(event, newValue) => updateRating(newValue)}
+                onChangeActive={(event, newHover) => setHover(newHover)}
+                emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+              />
+            </Grid2>
+            <Grid2 size={6} sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "end" }}>
+              {currentRating !== null && (
+                <Typography variant="body2" color="textSecondary" sx={{ margin: "0 !important" }}>
+                  Your Rating: {hover !== -1 ? hover : currentRating} Stars
+                </Typography>
+              )}
+            </Grid2>
+          </Grid2>
+        </Box>
+      ) : (
+        <>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <StyledRating
+              name="customized-icons"
+              value={0}
+              IconContainerComponent={IconContainer}
+              getLabelText={(value: number) => customIcons[value].label}
+              highlightSelectedOnly
+              precision={1}
+              onChange={(event, newValue) => promptLogin()}
+              onChangeActive={(event, newHover) => setHover(newHover)}
+              emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+            />
+          </Box>
+          <Dialog open={loginPromptOpen} onClose={() => setLoginPromptOpen(false)}>
+            <DialogTitle>Login Required</DialogTitle>
+            <DialogContent>
+              <DialogContentText>You must be logged in to rate a location's accessibility.</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
-
-      <Button variant="contained" color="primary" onClick={handleSubmit}>
-        Submit to Get Prediction
-      </Button>
-
-      {predictedRating !== null && !isNaN(Number(predictedRating)) && (
-        <Typography variant="body1" sx={{ marginTop: 2 }}>
-          Predicted Rating: {Number(predictedRating).toFixed(2)} Stars
-        </Typography>
-      )}
-
-
-      <Dialog open={loginPromptOpen} onClose={() => setLoginPromptOpen(false)}>
-        <DialogTitle>Login Required</DialogTitle>
-        <DialogContent>
-          <DialogContentText>You must be logged in to rate a location's accessibility.</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" onClick={() => setLoginPromptOpen(false)}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

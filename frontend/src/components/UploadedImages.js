@@ -1,5 +1,5 @@
 import React from "react";
-import DeleteImageButton from "./DeleteImageButton";
+import DeleteImageButton from "./DeleteImageButton.js";
 
 const UploadedImages = ({ images, handleDeleteImage }) => {
   return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import {BrowserRouter as Router} from 'react-router-dom'
-import MapView from './components/MapView'
+import MapView from './components/MapView.js'
 
 function App() {
   return (

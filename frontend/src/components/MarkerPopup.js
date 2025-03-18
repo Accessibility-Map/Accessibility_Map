@@ -1,17 +1,19 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 import { Icon } from "leaflet";
-import StarRating from "./StarRating";
-import ImageScroller from "./ImageScroller";
-import AddFeatureButton from "./AddFeatureButton";
-import EditLocationPopup from "./EditLocationPopup";
+import StarRating from "./StarRating.tsx";
+import ImageScroller from "./ImageScroller.tsx";
+import AddFeatureButton from "./AddFeatureButton.tsx";
+import EditLocationPopup from "./EditLocationPopup.js";
 import "./styles/MarkerPopup.css";
 import axios from "axios";
-import FeatureService from "./services/FeatureService";
-import CommentList from "./CommentList";
+import FeatureService from "./services/FeatureService.ts";
+import CommentList from "./CommentList.tsx";
+import FeaturesList from "./FeaturesList.tsx";
+import RatingService from "./services/RatingService.ts";
 
-import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
+import {Divider, Chip, Tab, tableList, Tabs, Box, Button, Typography} from "@mui/material";
+import { set } from "react-hook-form";
 
 
 const customMarkerIcon = new Icon({
@@ -38,6 +40,9 @@ const MarkerPopup = ({
   const [locationName, setLocationName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [clicked, setClicked] = useState(false);
+  const [tab, setTab] = useState("1");
+  const [triggerSave, setTriggerSave] = useState(false);
+  const [averageRating, setAverageRating] = useState(null);
   const map = useMap();
 
   useEffect(() => {
@@ -66,7 +71,6 @@ const MarkerPopup = ({
       const fetchFeaturesAndImages = async () => {
         try {
           const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
-          console.log("Before processing:", response.data);
 
           const updatedFeatures = response.data.map((feature) => {
             let fixedImagePath = feature.imagePath;
@@ -77,8 +81,6 @@ const MarkerPopup = ({
             } else {
               fixedImagePath = null;
             }
-
-            console.log("Final fixed image path:", fixedImagePath);
 
             return {
               ...feature,
@@ -110,17 +112,34 @@ const MarkerPopup = ({
     }
   }, [location.locationID, clicked]);
 
+  useEffect(() => {
+    if (clicked) {
+      RatingService.getAverageRating(location.locationID).then((average) => {
+        setAverageRating(average);
+      })
+    }
+  }, [location.locationID, clicked]);
 
   const handleMarkerClick = (locationID) => {
     const bounds = map.getBounds();
     const bottom = bounds.getNorth();
     const center = bounds.getCenter();
     const difference = bottom - center.lat;
-    console.log("Difference:", difference);
     map.setView([(location.latitude + (difference * .9)), location.longitude], 17);
     setClicked(true);
     setOpenPopupId(locationID);
   };
+
+  const handleTabChange = (event, newValue) => {
+    setTab(newValue);
+  };
+
+  const closeEditor = (e) => {
+    e.stopPropagation();
+    setIsEditing(false);
+    setTriggerSave(false);
+  }
+
   return (
     <Marker
       ref={markerRef}
@@ -137,75 +156,51 @@ const MarkerPopup = ({
         maxWidth={700}
         className={`leaflet-popup ${isEditing ? "edit-mode" : ""}`}
       >
-        <div className="leaflet-popup-content" style={{ width: "500px" }}>
-          {isEditing ? (
-            <EditLocationPopup
-              location={location}
-              featuresList={featuresList}
-              setFeaturesList={setFeaturesList}
-              images={images}
-              setImages={setImages}
-              onSave={handleSaveEdit}
-              onClose={() => setIsEditing(false)}
-              saveEdit={saveEdit}
-            />
-          ) : (
-            <>
-              <div className="popup-header">{location.locationName}</div>
-              <p>{location.description}</p>
-              <ImageScroller
+        <div className="leaflet-popup-content" style={{ width: "500px", height: "650px" }}>
+
+            <Box sx={{ height: "48px"}}>
+              <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
+                <Tab label="Description" value="1" />
+                <Tab label="Features" value="2" />
+                <Tab label="Comments" value="3" />
+              </Tabs>
+            </Box>
+
+            <Divider sx={{ marginBottom: "20px" }} />
+
+            <Box hidden={tab != 1} sx={{ height: "450px" }}>
+              {isEditing ? (<EditLocationPopup
+                location={location}
+                featuresList={featuresList}
+                setFeaturesList={setFeaturesList}
                 images={images}
-                heightParam="250px"
-                onDelete={(imageUrl) => {
-                  const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
-                  const relativeImageUrl = imageUrl.replace(baseApiUrl, "").trim().replace(/\\/g, "/");
+                setImages={setImages}
+                onSave={handleSaveEdit}
+                onClose={() => { setIsEditing(false); setTriggerSave(false); }}
+                saveEdit={saveEdit}
+                triggerSave={triggerSave}
+              /> ) : ( 
+                <>
+                <Box sx={{ height: "60%", marginBottom: "10px" }}>
+                  <div className="popup-header">{location.locationName}</div>
+                  <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
+                  <ImageScroller
+                    images={images}
+                    heightParam="250px"
+                  />
+                </Box>
+                <Box sx={{ maxHeight: "37%", overflowY: "auto", overflowX: "hidden", marginTop: "30px" }}>
+                  <p>{location.description}</p>
+                </Box>
+                </>
+              )}
+            </Box>
 
-                  const updatedImages = images.filter((img) => img !== imageUrl);
-                  setImages(updatedImages);
-
-                  axios
-                    .delete(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/delete-image`, {
-                      data: { imageUrl: relativeImageUrl },
-                      headers: { "Content-Type": "application/json" },
-                    })
-                    .then(() => {
-                      return axios.get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`);
-                    })
-                    .then((res) => {
-                      const refreshedImages = res.data.map((picture) => picture.imageUrl);
-                      setImages(refreshedImages);
-                    })
-                    .catch((err) => {
-                      console.error("Error during deletion or re-fetch:", err.response?.data || err.message);
-                      alert("Failed to delete the image or synchronize with the backend.");
-                    });
-                }}
-                onReplace={(newImage, oldImageUrl) => {
-                  if (!newImage) {
-                    alert("Please select a new image to upload.");
-                    return;
-                  }
-
-                  const sanitizedOldImageUrl = oldImageUrl.split("?")[0].trim();
-
-                  const formData = new FormData();
-                  formData.append("file", newImage);
-                  formData.append("oldImageUrl", sanitizedOldImageUrl);
-
-                  axios
-                    .put(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/replace-image`, formData)
-                    .then((response) => {
-                      const newImageUrl = response.data.imageUrl;
-                      setImages((prev) => prev.map((img) => (img === oldImageUrl ? newImageUrl : img)));
-                    })
-                    .catch((err) => {
-                      console.error("Error replacing image:", err.response?.data || err.message);
-                      alert("Failed to replace the image. Please try again.");
-                    });
-                }}
-              />
-
-              {featuresList.map((feature) => (
+            <Box hidden={tab != 2} id="features-list" sx={{ height: "450px" }}>
+              <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
+                <FeaturesList featuresList={featuresList}/>
+              </Box>
+              {/* {featuresList.map((feature) => (
                 <div key={feature.id} style={{ marginBottom: "20px" }}>
                   <h5>{feature.locationFeature}</h5>
                   {feature.imagePath && feature.imagePath !== "null" ? (
@@ -221,27 +216,60 @@ const MarkerPopup = ({
 
                   <p>{feature.notes}</p>
                 </div>
-              ))}
-
-
-              <StarRating locationID={location.locationID} userID={userID} />
-              <AddFeatureButton locationID={location.locationID} />
-
-
+              ))} */}
+            </Box>
+              
+            <Box hidden={tab != 3} sx={{ height: "500px" }}>
               <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
+            </Box>
 
-              <button className="popup-button" onClick={handleEditLocation}>
+            <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 1}>
+              { isEditing ? (
+                <Box sx={{ width: "100%" }}>
+                  <Button
+                  variant="contained"
+                  onClick={closeEditor}
+                  color="error"
+                  sx={{ marginRight: "2%", width: "48%" }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                  variant="contained" 
+                  onClick={() => {setTriggerSave(true);}}
+                  sx={{ marginLeft: "2%", width: "48%" }}
+                  >
+                    Save Changes
+                  </Button>
+                </Box>
+              ) : (
+                <Button 
+                variant="contained" 
+                onClick={handleEditLocation}
+                fullWidth
+                >
+                  Edit Location
+                </Button>
+              )}
+              
+              {/* <button className="popup-button" onClick={handleEditLocation}>
                 Edit Location
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 className="popup-button-delete"
                 onClick={() => deleteMarker(location.locationID)}
               >
                 Delete Location
-              </button>
+              </button> */}
+            </Box>
+
+            <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 2}>
               <AddFeatureButton locationID={location.locationID}/>
-            </>
-          )}
+            </Box>
+            
+            <Box sx={{position: "absolute", bottom: "0", width: "100%", height: "48px"}}>
+              <StarRating locationID={location.locationID} userID={userID} />
+            </Box>
         </div>
       </Popup>
     </Marker>

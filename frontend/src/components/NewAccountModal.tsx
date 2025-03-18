@@ -1,15 +1,11 @@
 import React from "react";
-import UserService from "./services/UserService";
-import User from "./models/User";
-import UserVerificationStatus from "./models/UserVerificationStatus";
-import { UserVerificationEnum } from "./models/UserVerificationStatus";
+import UserService from "./services/UserService.ts";
+import User from "./models/User.ts";
+import UserVerificationStatus from "./models/UserVerificationStatus.ts";
+import { UserVerificationEnum } from "./models/UserVerificationStatus.ts";
 import { useForm } from "react-hook-form";
 
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { Box, Modal, TextField, Button, Typography } from "@mui/material";
 
 interface NewAccountModalProps {
     open: boolean;
@@ -51,10 +47,6 @@ const NewAccountModal = ({open, handleClose, onUpdateUser}: NewAccountModalProps
         });
 
 
-    }
-
-    const logErrors = () => {
-        console.log(errors);
     }
 
     return (

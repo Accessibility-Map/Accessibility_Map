@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import CommentService from "./services/CommentService";
+import CommentService from "./services/CommentService.ts";
 import { TextField, Box, Grid2, Avatar, Button, Alert, Divider } from "@mui/material";
-import CommentDTO from "./models/Comment";
+import CommentDTO from "./models/Comment.ts";
 import { set } from "react-hook-form";
-import User from "./models/User";
-import CommentBlock from "./CommentBlock";
+import User from "./models/User.ts";
+import CommentBlock from "./CommentBlock.tsx";
 
 interface CommentListProps {
     locationID: number;
@@ -61,7 +61,7 @@ const CommentList = ({ locationID, userID, user }: CommentListProps) => {
         setNewComment("");
     }
 
-    return <Box sx={{ width: '100%', marginTop: '18px', overflowY: 'auto', maxHeight: '400px', minHeight: '150px' }}>
+    return <Box sx={{ width: '100%', marginTop: '18px', overflowY: 'auto', maxHeight: '100%', minHeight: '150px' }}>
         <Alert severity="error" sx={{ display: loginAlert ? "flex" : "none"}} onClose={() => setLoginAlert(false)}>You must be logged in to post a comment.</Alert>
         <TextField label="Add a comment" variant="outlined" multiline id="comment" fullWidth onChange={(e) => setNewComment(e.target.value)} value={newComment} sx={{ marginTop: "10px"}}/>
         
@@ -70,11 +70,17 @@ const CommentList = ({ locationID, userID, user }: CommentListProps) => {
 
         <Divider variant="middle" sx={{ marginTop: "10px", marginBottom: "10px"}}></Divider>
         
-        {userComments.map((comment, index) => <><CommentBlock comment={comment} userID={userID} locationID={locationID} fetchComments={fetchComments} key={index}/> <Divider variant="middle" sx={{ marginTop: "10px", marginBottom: "10px"}}></Divider></>)}
+        {userComments.map((comment, index) => <Box key={index}>
+            <CommentBlock comment={comment} userID={userID} locationID={locationID} fetchComments={fetchComments}/>
+            <Divider variant="middle" sx={{ marginTop: "5px", marginBottom: "5px"}}></Divider>
+         </Box>)}
 
         
 
-        {comments.map((comment, index) => <><CommentBlock comment={comment} userID={userID} locationID={locationID} fetchComments={fetchComments} key={index}/> {index < comments.length - 1 && <Divider variant="middle" sx={{ marginTop: "10px", marginBottom: "10px"}}></Divider>}</>)}
+        {comments.map((comment, index) => <Box key={index}>
+            <CommentBlock comment={comment} userID={userID} locationID={locationID} fetchComments={fetchComments}/> 
+            {index < comments.length - 1 && <Divider variant="middle" sx={{ marginTop: "5px", marginBottom: "5px"}}></Divider>}
+        </Box>)}
     </Box>;
 }
 
