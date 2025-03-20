@@ -53,10 +53,11 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
     const fetchFeaturesData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
+        console.log("✅ Features API Response:", response.data);
         setFeatures(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error fetching features data:", error);
-        setFeatures([]); 
+        setFeatures([]);
       }
     };
     fetchFeaturesData();
@@ -64,9 +65,9 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
 
   useEffect(() => {
     const storedLocation = JSON.parse(sessionStorage.getItem("selectedLocation") || "null");
-    
+
     if (storedLocation && storedLocation.locationID) {
-      console.log("Opening location from favorites:", storedLocation);
+      console.log("📌 Opening location from favorites:", storedLocation);
       setOpenPopupId(storedLocation.locationID);
 
       setLocations((prevLocations) => {
@@ -78,34 +79,38 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
     }
   }, []);
 
-  console.log("All locations before filtering:", locations);
-  console.log("All features:", features);
+  console.log("📌 All locations before filtering:", locations);
+  console.log("📌 All features:", features);
 
   const filteredLocations = locations.filter((location) => {
-    console.log("Processing location:", location);
+    console.log("🔍 Processing location:", location);
 
     if (!location?.locationName || typeof location.locationName !== "string") {
-      console.warn("Skipping location due to missing name:", location);
+      console.warn("⚠️ Skipping location due to missing name:", location);
       return false;
     }
 
-    const locationFeatures = Array.isArray(features)
-      ? features.filter((feature) => feature.locationID === location.locationID).map((feature) => feature.locationFeature)
-      : [];
+    // ✅ Ensures features are properly assigned to locations
+    const locationFeatures = features
+      .filter(feature => Number(feature.locationID) === Number(location.locationID))
+      .map(feature => feature.locationFeature.trim().toLowerCase());
 
-    console.log("locationFeatures:", locationFeatures);
+    console.log(`📌 Features for location ${location.locationID}:`, locationFeatures);
+    console.log("🎯 Selected Filters:", selectedFilters);
 
     const matchesSearchTerm =
-      typeof searchTerm === "string" &&
       location.locationName.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (searchTerm && !matchesSearchTerm) return false;
 
     if (selectedFilters.length === 0) return true;
 
-    const matchesFilters = selectedFilters.every((filter) => locationFeatures.includes(filter));
+    // ✅ Fix: Use `every()` to ensure ALL selected filters match
+    const matchesFilters = selectedFilters.every((filter) =>
+      locationFeatures.includes(filter.trim().toLowerCase())
+    );
 
-    console.log("matchesSearch:", matchesSearchTerm, "matchesFilters:", matchesFilters);
+    console.log("✅ matchesSearch:", matchesSearchTerm, "✅ matchesFilters:", matchesFilters);
 
     return matchesSearchTerm && matchesFilters;
   });
@@ -128,7 +133,7 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
       setDescription(newLocation.description || "");
       setOpenPopupId(newLocation.locationID);
     } catch (error) {
-      console.error("Error creating new marker:", error);
+      console.error("❌ Error creating new marker:", error);
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import MapView from "./components/MapView.js";
 import Favorites from "./pages/Favorites.tsx";
 import Header from "./components/Header.tsx";
@@ -25,37 +25,51 @@ function App() {
 
   return (
     <Router>
+      <AppContent
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedFilters={selectedFilters}
+        toggleFilter={toggleFilter}
+        showSearch={showSearch}
+        toggleSearch={toggleSearch}
+        filterOptions={filterOptions}
+      />
+    </Router>
+  );
+}
+
+function AppContent({ searchTerm, setSearchTerm, selectedFilters, toggleFilter, showSearch, toggleSearch, filterOptions }) {
+  const location = useLocation();
+  const isMapPage = location.pathname === "/" || location.pathname === "/map";
+
+  return (
+    <>
       <Header toggleSearch={toggleSearch} showSearch={showSearch} />
 
-      {/* ✅ Show search bar only when toggled on */}
-      {showSearch && (
-        <div className={`searchBarContainer ${showSearch ? "show" : ""}`}>
+      {/* ✅ Show SearchBar only on map pages */}
+      {isMapPage && showSearch && (
+        <div className="searchBarContainer show">
           <SearchBar
             searchTerm={searchTerm}
-            setSearchTerm={(value) => {
-              console.log("Typing:", value);  // ✅ Debug input
-              setSearchTerm(value);
-            }}
+            setSearchTerm={setSearchTerm}
             filterOptions={filterOptions}
             selectedFilters={selectedFilters}
             toggleFilter={toggleFilter}
           />
-
         </div>
       )}
 
       <div className="content">
         <Routes>
-          {/* ✅ Pass showSearch to MapView */}
-          <Route path="/" element={<MapView showSearch={showSearch}
+          <Route path="/" element={<MapView
+            showSearch={showSearch}
             searchTerm={searchTerm}
             selectedFilters={selectedFilters} />} />
+          <Route path="/map" element={<MapView showSearch={true} searchTerm={searchTerm} selectedFilters={selectedFilters} />} />
           <Route path="/favorites" element={<Favorites />} />
-          <Route path="/map" element={<MapView />} />
-
         </Routes>
       </div>
-    </Router>
+    </>
   );
 }
 
