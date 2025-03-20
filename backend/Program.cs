@@ -26,20 +26,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Add services to the container.
 builder.Services.AddControllers();
-// Add CORS services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000","http://localhost:3002", "https://salmon-bush-*.azurestaticapps.net/")  // Allow requests from React app
+            builder.WithOrigins("http://localhost:3000", "http://localhost:3002", "https://salmon-bush-*.azurestaticapps.net/")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
 });
-
 
 // Update DbContext to use MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -47,30 +44,34 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
+builder.Services.AddSingleton<MLModel>();
+builder.Services.AddSingleton<Predictor>();
+
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+var app = builder.Build(); 
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}    
+}
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
-
 // Enable CORS before request pipeline
 app.UseCors("AllowSpecificOrigin");
 
-app.Use(async (context, next) => {
-    context.Response.OnStarting(() => {
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
         context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
         return Task.FromResult(0);
     });
@@ -80,7 +81,7 @@ app.Use(async (context, next) => {
 
 if (app.Environment.IsProduction())
 {
-    var productionUploadPath = Path.Combine("/uploads"); 
+    var productionUploadPath = Path.Combine("/uploads");
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new PhysicalFileProvider(productionUploadPath),
@@ -89,7 +90,6 @@ if (app.Environment.IsProduction())
 }
 else
 {
-    // Use the project directory in development
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new PhysicalFileProvider(
@@ -97,8 +97,6 @@ else
         RequestPath = "/uploads"
     });
 }
-
-
 
 app.UseAuthentication();
 app.UseAuthorization();

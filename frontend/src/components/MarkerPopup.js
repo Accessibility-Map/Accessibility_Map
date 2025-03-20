@@ -11,12 +11,11 @@ import FeatureService from "./services/FeatureService.ts";
 import CommentList from "./CommentList.tsx";
 import FeaturesList from "./FeaturesList.tsx";
 import RatingService from "./services/RatingService.ts";
+import { Heart } from "lucide-react"; // Import Heart Icon
+import { Divider, Tab, Tabs, Box, Button, Typography, AppBar, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Toolbar } from "@mui/material";
 import MarkerPopupContent from "./MarkerPopupContent.js";
-
-import { AppBar, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Toolbar } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { set } from "react-hook-form";
-
 
 const customMarkerIcon = new Icon({
   iconUrl: "/Icons/Mapmarker.png",
@@ -37,11 +36,43 @@ const MarkerPopup = ({
   const markerRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [clicked, setClicked] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [screenWidth, setScreenWidth] = React.useState(window.innerWidth);
   const [mobileDialogOpen, setMobileDialogOpen] = useState(false);
   const map = useMap();
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    setIsFavorite(favorites.some(fav => fav.locationID === location.locationID));
+  }, [location.locationID]);
+  
+
+  const toggleFavorite = () => {
+    if (!location || !location.locationID) {
+      console.error("Error: locationID is undefined or location is missing", location);
+      return;
+    }
+  
+    const storedFavorites = localStorage.getItem("favorites");
+    let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+  
+    if (!Array.isArray(favorites)) {
+      console.error("Error: favorites is not an array");
+      favorites = [];
+    }
+  
+    let updatedFavorites;
+    if (!isFavorite) {
+      updatedFavorites = [...favorites, location]; // ✅ Store full location object, not just ID
+    } else {
+      updatedFavorites = favorites.filter(fav => fav.locationID !== location.locationID);
+    }
+  
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    setIsFavorite(!isFavorite); // ✅ Ensure heart updates correctly
+  };
+
+  useEffect(() => {
     const handleResizeWindow = () => setScreenWidth(window.innerWidth);
      // subscribe to window resize event "onComponentDidMount"
      window.addEventListener("resize", handleResizeWindow);
@@ -82,12 +113,13 @@ const MarkerPopup = ({
       }}
     >
       <Popup
-        onClose={handleClosePopup}
+        onClose={() => setOpenPopupId(null)}
         autoPan={false}
         closeOnClick={false}
         maxWidth={700}
         className={`leaflet-popup ${isEditing ? "edit-mode" : ""}`}
       >
+
         {screenWidth <= 768 ? (
           <Dialog open={mobileDialogOpen} fullScreen >
             <AppBar sx={{ position: 'relative' }}>
