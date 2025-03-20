@@ -101,33 +101,33 @@ const MarkerPopup = ({
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setIsFavorite(favorites.some(fav => fav.locationID === location.locationID));
   }, [location.locationID]);
+  
 
   const toggleFavorite = () => {
     if (!location || !location.locationID) {
       console.error("Error: locationID is undefined or location is missing", location);
       return;
     }
-
+  
     const storedFavorites = localStorage.getItem("favorites");
     let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-
+  
     if (!Array.isArray(favorites)) {
       console.error("Error: favorites is not an array");
       favorites = [];
     }
-
+  
     let updatedFavorites;
     if (!isFavorite) {
-      updatedFavorites = [...favorites, location];
+      updatedFavorites = [...favorites, location]; // ✅ Store full location object, not just ID
     } else {
       updatedFavorites = favorites.filter(fav => fav.locationID !== location.locationID);
     }
-
-
+  
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-    setIsFavorite(!isFavorite);
+    setIsFavorite(!isFavorite); // ✅ Ensure heart updates correctly
   };
-
+  
 
 
 
@@ -166,17 +166,16 @@ const MarkerPopup = ({
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px" }}>
             <Typography variant="h6">{location.locationName}</Typography>
             <Heart
-              size={24}
-              onClick={() => {
-                toggleFavorite();
-                setIsFavorite(prev => !prev);
-              }}
-              style={{
-                cursor: "pointer",
-                color: isFavorite ? "red" : "gray",
-                fill: isFavorite ? "red" : "none",
-              }}
-            />
+  size={24}
+  onClick={toggleFavorite}
+  style={{
+    cursor: "pointer",
+    color: isFavorite ? "red" : "gray",
+    fill: isFavorite ? "red" : "none",
+    transition: "color 0.2s ease-in-out",
+  }}
+/>
+
 
 
 
