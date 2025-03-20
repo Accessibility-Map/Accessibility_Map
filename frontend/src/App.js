@@ -51,6 +51,8 @@ function App() {
             searchTerm={searchTerm}
             selectedFilters={selectedFilters} />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/map" element={<MapView />} />
+
         </Routes>
       </div>
     </Router>

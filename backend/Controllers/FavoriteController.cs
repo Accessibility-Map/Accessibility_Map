@@ -28,6 +28,17 @@ namespace backend.Controllers
 
             return Ok(favorites);
         }
+[HttpGet("location/{LocationID}")]
+public async Task<IActionResult> GetFavoritesByLocation(int LocationID)
+{
+    var favorites = await _context.Favorites
+        .Where(f => f.LocationID == LocationID)
+        .Select(f => f.LocationID) // ✅ Ensure only numbers are returned
+        .ToListAsync();
+
+    return Ok(favorites);
+}
+
 
         [HttpPost("{UserID}/{LocationID}")]
         public async Task<IActionResult> AddFavorite(int UserID, int LocationID)

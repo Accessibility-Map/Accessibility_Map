@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Grid2 } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import Rating from "@mui/material/Rating";
 import { styled } from "@mui/material/styles";
 import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied";
@@ -7,7 +16,7 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
-import FavoriteService from "./services/FavoriteService"; // New service to handle favorites
+import FavoriteService from "./services/FavoriteService";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 type CustomIconType = {
@@ -41,7 +50,7 @@ function IconContainer(props: IconContainerProps) {
 }
 
 interface StarRatingProps {
-  locationID: number;
+  locationID?: number; // Make locationID optional to handle undefined cases
   userID: number;
   onFavoriteAdded?: (locationID: number) => void;
 }
@@ -49,28 +58,53 @@ interface StarRatingProps {
 const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState<number>(-1);
-  const [favorites, setFavorites] = useLocalStorage<number[]>("favorites", []); // Store favorites in localStorage
+  const [favorites, setFavorites] = useLocalStorage<number[]>("favorites", []);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
   useEffect(() => {
-    FavoriteService.getFavorites(userID).then((favList) => {
-      if (favList.includes(locationID)) {
-        setCurrentRating(5); // Keep it highlighted if it's a favorite
+    console.log("StarRating props -> locationID:", locationID);
+  
+    if (!locationID) {
+      console.error("Error: locationID is undefined when calling FavoriteService in StarRating.tsx");
+      return;
+    }
+  
+    const fetchFavorites = async () => {
+      try {
+        console.log(`Fetching favorites for locationID: ${locationID}`);
+        const favList = await FavoriteService.getFavoritesByLocation(locationID);
+  
+        if (favList.length > 0) {  // Check if this location has been favorited
+          setCurrentRating(5);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
       }
-    });
-  }, [locationID, userID]);
+    };
+  
+    fetchFavorites();
+  }, [locationID]); // Only track locationID
+  
+  
+  
+  
 
   const updateRating = (newValue: number | null) => {
+    if (!locationID) {
+      console.error("Error: Cannot update rating, locationID is undefined.");
+      return;
+    }
+
     setCurrentRating(newValue);
 
     if (newValue === 5) {
       if (!favorites.includes(locationID)) {
-        setFavorites([...favorites, locationID]); // Add to favorites
+        setFavorites([...favorites, locationID]);
         FavoriteService.addFavorite(userID, locationID);
         if (onFavoriteAdded) onFavoriteAdded(locationID);
       }
     } else {
-      setFavorites(favorites.filter((id) => id !== locationID)); // Remove from favorites if deselected
+      setFavorites(favorites.filter((id) => id !== locationID));
       FavoriteService.removeFavorite(userID, locationID);
     }
   };
@@ -83,29 +117,23 @@ const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) =>
     <Box sx={{ width: "100%", height: "100%" }}>
       {!!userID ? (
         <Box sx={{ height: "100%" }}>
-          <Grid2 container sx={{ height: "100%" }}>
-            <Grid2 size={6} sx={{ height: "100%", textAlign: "center" }}>
-              <Typography variant="subtitle1">Rate This Location's Accessibility</Typography>
-              <StyledRating
-                name="customized-icons"
-                value={currentRating}
-                IconContainerComponent={IconContainer}
-                getLabelText={(value: number) => customIcons[value].label}
-                highlightSelectedOnly
-                precision={1}
-                onChange={(event, newValue) => updateRating(newValue)}
-                onChangeActive={(event, newHover) => setHover(newHover)}
-                emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-              />
-            </Grid2>
-            <Grid2 size={6} sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "end" }}>
-              {currentRating !== null && (
-                <Typography variant="body2" color="textSecondary" sx={{ margin: "0 !important" }}>
-                  Your Rating: {hover !== -1 ? hover : currentRating} Stars
-                </Typography>
-              )}
-            </Grid2>
-          </Grid2>
+          <Typography variant="subtitle1">Rate This Location's Accessibility</Typography>
+          <StyledRating
+            name="customized-icons"
+            value={currentRating}
+            IconContainerComponent={IconContainer}
+            getLabelText={(value: number) => customIcons[value].label}
+            highlightSelectedOnly
+            precision={1}
+            onChange={(event, newValue) => updateRating(newValue)}
+            onChangeActive={(event, newHover) => setHover(newHover)}
+            emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+          />
+          {currentRating !== null && (
+            <Typography variant="body2" color="textSecondary">
+              Your Rating: {hover !== -1 ? hover : currentRating} Stars
+            </Typography>
+          )}
         </Box>
       ) : (
         <>
