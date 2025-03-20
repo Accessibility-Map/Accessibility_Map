@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Grid2, Box, Modal, IconButton } from '@mui/material';
+import { Grid2, Box, Modal, IconButton, Button } from '@mui/material';
 import axios from "axios";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -150,12 +150,25 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
             </Grid2>)
             : (
             <Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
-                <Grid2 sx={{marginTop: "auto", marginBottom: "auto", width: "100%", height: "95%"}}>
+                <Grid2 sx={{marginTop: "auto", marginBottom: "auto", width: "100%", height: "95%", position: "relative", backgroundColor: "rgba(0, 0, 0, 0.6)", display: "flex"}}>
                     <img
                         src={"./imgs/no-images-uploaded.jpg"}
                         alt="Uploaded location"
                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                     />
+                    <div className="button-container">
+                      <IconButton classes={{root: "image-input-button"}} sx={{display: isEditing ? "flex" : "none", width: "100%"}} component="label">
+                        <AddPhotoAlternateIcon/>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onInput={handleUpload}
+                          style={{
+                            display: "none",
+                          }}
+                        />
+                      </IconButton>
+                    </div>
                 </Grid2>
                 <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
                     <span>No images uploaded</span>
