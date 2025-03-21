@@ -50,7 +50,7 @@ function IconContainer(props: IconContainerProps) {
 }
 
 interface StarRatingProps {
-  locationID?: number; // Make locationID optional to handle undefined cases
+  locationID?: number; // Handle optional locationID
   userID: number;
   onFavoriteAdded?: (locationID: number) => void;
 }
@@ -62,32 +62,22 @@ const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) =>
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
   useEffect(() => {
-    console.log("StarRating props -> locationID:", locationID);
-  
     if (!locationID) {
-      console.error("Error: locationID is undefined when calling FavoriteService in StarRating.tsx");
+      console.error("Error: locationID is undefined in StarRating.tsx");
       return;
     }
-  
+
     const fetchFavorites = async () => {
       try {
-        console.log(`Fetching favorites for locationID: ${locationID}`);
         const favList = await FavoriteService.getFavoritesByLocation(locationID);
-  
-        if (favList.length > 0) {  // Check if this location has been favorited
-          setCurrentRating(5);
-        }
+        if (favList.length > 0) setCurrentRating(5);
       } catch (error) {
         console.error("Error fetching favorites:", error);
       }
     };
-  
+
     fetchFavorites();
-  }, [locationID]); // Only track locationID
-  
-  
-  
-  
+  }, [locationID]);
 
   const updateRating = (newValue: number | null) => {
     if (!locationID) {
@@ -109,14 +99,20 @@ const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) =>
     }
   };
 
-  const promptLogin = () => {
-    setLoginPromptOpen(true);
-  };
-
   return (
-    <Box sx={{ width: "100%", height: "100%" }}>
+    <Box 
+      sx={{
+        width: "100%",
+        height: "60px", // ✅ Fix overflow issue
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: "10px", // ✅ Ensure spacing
+      }}
+    >
       {!!userID ? (
-        <Box sx={{ height: "100%" }}>
+        <>
           <Typography variant="subtitle1">Rate This Location's Accessibility</Typography>
           <StyledRating
             name="customized-icons"
@@ -134,26 +130,24 @@ const StarRating = ({ locationID, userID, onFavoriteAdded }: StarRatingProps) =>
               Your Rating: {hover !== -1 ? hover : currentRating} Stars
             </Typography>
           )}
-        </Box>
+        </>
       ) : (
         <>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <StyledRating
-              name="customized-icons"
-              value={0}
-              IconContainerComponent={IconContainer}
-              getLabelText={(value: number) => customIcons[value].label}
-              highlightSelectedOnly
-              precision={1}
-              onChange={(event, newValue) => promptLogin()}
-              onChangeActive={(event, newHover) => setHover(newHover)}
-              emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
-            />
-          </Box>
+          <StyledRating
+            name="customized-icons"
+            value={0}
+            IconContainerComponent={IconContainer}
+            getLabelText={(value: number) => customIcons[value].label}
+            highlightSelectedOnly
+            precision={1}
+            onChange={(event, newValue) => setLoginPromptOpen(true)}
+            onChangeActive={(event, newHover) => setHover(newHover)}
+            emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
+          />
           <Dialog open={loginPromptOpen} onClose={() => setLoginPromptOpen(false)}>
             <DialogTitle>Login Required</DialogTitle>
             <DialogContent>
-              <DialogContentText>You must be logged in to rate a location's accessibility.</DialogContentText>
+              <DialogContentText>You must be logged in to rate this location.</DialogContentText>
             </DialogContent>
             <DialogActions>
               <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>

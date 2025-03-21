@@ -54,14 +54,22 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
         console.log("✅ Features API Response:", response.data);
-        setFeatures(Array.isArray(response.data) ? response.data : []);
+  
+        // Check if the response contains a 'features' key and extract the array correctly
+        if (response.data && Array.isArray(response.data.features)) {
+          setFeatures(response.data.features);
+        } else {
+          console.error("⚠️ Unexpected features response format:", response.data);
+          setFeatures([]); // Prevent breaking filters
+        }
       } catch (error) {
-        console.error("Error fetching features data:", error);
+        console.error("❌ Error fetching features data:", error);
         setFeatures([]);
       }
     };
     fetchFeaturesData();
   }, []);
+  
 
   useEffect(() => {
     const storedLocation = JSON.parse(sessionStorage.getItem("selectedLocation") || "null");
@@ -84,36 +92,37 @@ const MapView = ({ showSearch, searchTerm = "", selectedFilters = [] }) => {
 
   const filteredLocations = locations.filter((location) => {
     console.log("🔍 Processing location:", location);
-
+  
     if (!location?.locationName || typeof location.locationName !== "string") {
       console.warn("⚠️ Skipping location due to missing name:", location);
       return false;
     }
-
+  
     // ✅ Ensures features are properly assigned to locations
     const locationFeatures = features
-      .filter(feature => Number(feature.locationID) === Number(location.locationID))
-      .map(feature => feature.locationFeature.trim().toLowerCase());
-
+      .filter((feature) => Number(feature.locationID) === Number(location.locationID))
+      .map((feature) => feature.locationFeature.trim().toLowerCase());
+  
     console.log(`📌 Features for location ${location.locationID}:`, locationFeatures);
     console.log("🎯 Selected Filters:", selectedFilters);
-
+  
     const matchesSearchTerm =
       location.locationName.toLowerCase().includes(searchTerm.toLowerCase());
-
+  
     if (searchTerm && !matchesSearchTerm) return false;
-
+  
     if (selectedFilters.length === 0) return true;
-
-    // ✅ Fix: Use `every()` to ensure ALL selected filters match
-    const matchesFilters = selectedFilters.every((filter) =>
+  
+    // ✅ Fix: Use `some()` instead of `every()` to allow partial matches
+    const matchesFilters = selectedFilters.some((filter) =>
       locationFeatures.includes(filter.trim().toLowerCase())
     );
-
+  
     console.log("✅ matchesSearch:", matchesSearchTerm, "✅ matchesFilters:", matchesFilters);
-
+  
     return matchesSearchTerm && matchesFilters;
   });
+  
 
   const handleAddMarker = async (e) => {
     try {
