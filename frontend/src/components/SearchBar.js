@@ -1,9 +1,20 @@
+import React from 'react'
+import DropdownResults from './DropdownResults' // import new dropdown
 import './styles/SearchBar.css'
 
-const SearchBar = ({searchTerm, setSearchTerm, filterOptions, selectedFilters, toggleFilter}) => {
+const SearchBar = ({
+  searchTerm,
+  setSearchTerm,
+  filterOptions,
+  selectedFilters,
+  toggleFilter,
+  filteredLocations, // pass filtered list here
+  onSelectLocation, // for dropdown click
+}) => {
   return (
     <div className='container'>
       <div className='searchBarContainer'>
+        {/* <div style={{position: 'relative', width: '400px'}}> */}
         <input
           type='text'
           placeholder='Search for accessible places...'
@@ -11,6 +22,14 @@ const SearchBar = ({searchTerm, setSearchTerm, filterOptions, selectedFilters, t
           onChange={e => setSearchTerm(e.target.value)}
           className='searchInput'
         />
+        {searchTerm.trim() !== '' && (
+          <DropdownResults
+            results={filteredLocations}
+            onSelect={onSelectLocation}
+            searchTerm={searchTerm}
+          />
+        )}
+        {/* </div> */}
         <div className='filters'>
           {filterOptions.map(filter => (
             <button

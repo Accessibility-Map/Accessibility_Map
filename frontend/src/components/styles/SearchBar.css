@@ -18,11 +18,12 @@
 
 /* ✅ Search Input - Rounded & Subtle Borders */
 .searchInput {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #E0E0E0;
-    border-radius: 25px;
-    font-size: 16px;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0.2, 0.2, 0.2, 0);
+    background-color: #fff;
+    font-size: 15px;
+    padding: 15px 25px;
+    border: none;
     outline: none;
     background: #F9FAFB;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -92,15 +93,27 @@
     box-shadow: inset 0 0 0 3px white;
 }
 
-/* ✅ Mobile Optimizations */
-@media (max-width: 768px) {
+/* Tablet */
+@media (max-width: 1080px) {
+    .container {
+        align-items: center;
+        justify-content: center;
+    }
     .searchBarContainer {
         width: 90%;
     }
     .filters {
-        flex-direction: column;
-        align-items: center;
-        width: auto;
+        justify-content: center;
+        margin-top: 15px;
+        gap: 8px;
+        margin-left: 0px;
+    }
+}
+/* Mobile Device */
+@media (max-width: 540px) {
+    .searchInput {
+         width:260px;
+         height:10px;
     }
     .filter-button {
         width: 100%;
