@@ -1,43 +1,41 @@
+using backend.Models;
 using Microsoft.ML;
-using Microsoft.ML.Data;
-using System;
-using System.IO;
 
-public class Predictor
+namespace backend.Services
 {
-    private readonly MLContext _mlContext;
-    private readonly ITransformer _trainedModel;
-    private readonly string _modelPath;
-
-    public Predictor()
+    public class Predictor
     {
-        _mlContext = new MLContext();
-        _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "model.zip");
-
-        if (File.Exists(_modelPath))
+        public static float PredictRating(int userID, int locationID, bool hasRamp, bool hasElevator, bool hasAccessibleBathroom, bool hasAccessibleParking)
         {
-            _trainedModel = _mlContext.Model.Load(_modelPath, out _);
-            Console.WriteLine("✅ Model loaded successfully.");
+            try
+            {
+                var context = new MLContext();
+
+                ITransformer model = context.Model.Load("RatingModel.zip", out var schema);
+
+                var predictionEngine = context.Model.CreatePredictionEngine<RatingData, RatingPrediction>(model);
+
+                var input = new RatingData
+                {
+                    UserID = userID,
+                    LocationID = locationID,
+                    HasRamp = hasRamp,
+                    HasElevator = hasElevator,
+                    HasAccessibleBathroom = hasAccessibleBathroom,
+                    HasAccessibleParking = hasAccessibleParking
+                };
+
+                var prediction = predictionEngine.Predict(input);
+
+                return Math.Clamp(prediction.PredictedRating, 1.0f, 5.0f);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during prediction: {ex.Message}");
+                throw;
+            }
         }
-        else
-        {
-            Console.WriteLine("⚠️ Warning: Model file not found. Please train the model first.");
-            _trainedModel = null;
-        }
-    }
 
-    public RatingPrediction PredictRating(RatingData input)
-    {
-        if (_trainedModel == null)
-        {
-            throw new InvalidOperationException("❌ Model is not loaded. Train the model before making predictions.");
-        }
-
-        using var predictionEngine = _mlContext.Model.CreatePredictionEngine<RatingData, RatingPrediction>(_trainedModel);
-        float rawPrediction = predictionEngine.Predict(input).Score;
-
-        float clampedPrediction = Math.Clamp(rawPrediction, 1f, 5f);
-
-        return new RatingPrediction { Score = clampedPrediction };
     }
 }
+

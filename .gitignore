@@ -31,8 +31,3 @@ Accessibility_Map.sln
 .env*.local
 
 /backend/RatingModel.zip
-# Ignore dataset files
-*.csv
-
-# Ignore trained model files
-*.zip

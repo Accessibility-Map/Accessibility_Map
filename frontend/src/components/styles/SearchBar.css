@@ -1,22 +1,21 @@
-/* ✅ Search Bar Container - Modern Look */
-.searchBarContainer {
+/* Desktop */
+.container {
     position: absolute;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 450px;
+    top: 20px;
+    width: 90%;
     z-index: 1000;
-    padding: 15px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 1px solid #E0E0E0;
+    display:inline-flex;
+    background-color: transparent;
 }
 
-/* ✅ Search Input - Rounded & Subtle Borders */
+.searchBarContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    margin-left: 60px;
+}
+
 .searchInput {
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0.2, 0.2, 0.2, 0);
@@ -25,72 +24,25 @@
     padding: 15px 25px;
     border: none;
     outline: none;
-    background: #F9FAFB;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 400px;
 }
 
-/* ✅ Filters Section - Clean & Organized */
 .filters {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin-top: 10px;
-    width: 100%;
-    padding: 15px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #E0E0E0;
+    gap: 10px;
+    margin-left: 20px;
+    width: 500px;
 }
 
-/* ✅ Filter Title */
-.filters h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-/* ✅ Filter Buttons - Checkbox Style */
 .filter-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    border-radius: 20px;
     border: none;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 10px 15px;
+    font-size: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    border-radius: 10px;
-    background: white;
     transition: background-color 0.3s ease;
-    width: 100%;
-    text-align: left;
-    color: #333;
-}
 
-/* ✅ Checkbox-Like Effect */
-.filter-button::before {
-    content: "";
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    border: 2px solid #007bff;
-    display: inline-block;
-    background: white;
-    transition: all 0.3s ease-in-out;
-}
-
-/* ✅ Active State - Checked Checkbox Effect */
-.filter-button.active {
-    background: #E3F2FD;
-    color: #007bff;
-}
-
-.filter-button.active::before {
-    background: #007bff;
-    border: 2px solid #007bff;
-    box-shadow: inset 0 0 0 3px white;
 }
 
 /* Tablet */
@@ -100,7 +52,12 @@
         justify-content: center;
     }
     .searchBarContainer {
-        width: 90%;
+        flex-direction: column; 
+        align-items: center;
+        display: auto;
+    }
+    .searchInput {
+        width: 65vw;
     }
     .filters {
         justify-content: center;
@@ -116,7 +73,7 @@
          height:10px;
     }
     .filter-button {
-        width: 100%;
-        text-align: center;
+        font-size: 13px;
     }
+    
 }

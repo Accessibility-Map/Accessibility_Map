@@ -11,28 +11,27 @@ namespace backend.Controllers
     public class RatingController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly MLModel _mlModel;
-        private readonly Predictor _predictor;
 
-        public RatingController(ApplicationDbContext context, MLModel mlModel, Predictor predictor)
+        public RatingController(ApplicationDbContext context)
         {
-            _mlModel = mlModel;
-            _predictor = predictor;
             _context = context;
         }
 
         [HttpPost("train")]
         public IActionResult TrainModel()
         {
-            try
+            var ratings = _context.Ratings
+                .Include(r => r.Location)
+                .ThenInclude(l => l.Features)
+                .ToList();
+
+            if (!ratings.Any())
             {
-                _mlModel.TrainModel();
-                return Ok("✅ Model trained successfully.");
+                return BadRequest("No data available to train the model.");
             }
-            catch (Exception ex)
-            {
-                return BadRequest($"❌ Training failed: {ex.Message}");
-            }
+
+            MLModel.TrainAndSaveModel(ratings);
+            return Ok("Model trained and saved successfully.");
         }
 
         [HttpGet("predict/{userID}/{locationID}")]
@@ -49,25 +48,23 @@ namespace backend.Controllers
                     return NotFound("Location not found.");
                 }
 
-                float hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp") ? 1f : 0f;
-                float hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator") ? 1f : 0f;
-                float hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom") ? 1f : 0f;
-                float hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking") ? 1f : 0f;
+                bool hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp");
+                bool hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator");
+                bool hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom");
+                bool hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking");
 
-                var ratingData = new RatingData
-                {
-                    HasRamp = hasRamp,
-                    HasElevator = hasElevator,
-                    HasAccessibleBathroom = hasAccessibleBathroom,
-                    HasAccessibleParking = hasAccessibleParking
-                };
+             float featureCount = (hasRamp ? 1 : 0) * 0.25f +
+                     (hasElevator ? 1 : 0) * 0.25f +
+                     (hasAccessibleBathroom ? 1 : 0) * 0.25f +
+                     (hasAccessibleParking ? 1 : 0) * 0.25f;
 
-                var predictedRating = _predictor.PredictRating(ratingData);
+                var predictedRating = Predictor.PredictRating(userID, locationID, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking);
 
                 return Ok(new
                 {
                     UserID = userID,
                     LocationID = locationID,
+                    FeatureCount = featureCount,
                     PredictedRating = predictedRating
                 });
             }
@@ -78,12 +75,6 @@ namespace backend.Controllers
             }
         }
 
-        [HttpPost("predict")]
-        public IActionResult Predict([FromBody] RatingData input)
-        {
-            var prediction = _predictor.PredictRating(input);
-            return Ok(prediction);
-        }
 
         [HttpGet("inspect-model")]
         public IActionResult InspectModel()
@@ -164,7 +155,7 @@ namespace backend.Controllers
 
             if (ratings.Any())
             {
-                _mlModel.TrainAndSaveModel(ratings);
+                MLModel.TrainAndSaveModel(ratings);
                 Console.WriteLine("Model retrained successfully.");
             }
             else
@@ -204,22 +195,13 @@ namespace backend.Controllers
                 return NotFound("Location not found.");
             }
 
-            float hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp") ? 1f : 0f;
-            float hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator") ? 1f : 0f;
-            float hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom") ? 1f : 0f;
-            float hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking") ? 1f : 0f;
+            bool hasRamp = location.Features.Any(f => f.LocationFeature == "Ramp");
+            bool hasElevator = location.Features.Any(f => f.LocationFeature == "Elevator");
+            bool hasAccessibleBathroom = location.Features.Any(f => f.LocationFeature == "Accessible Bathroom");
+            bool hasAccessibleParking = location.Features.Any(f => f.LocationFeature == "Accessible Parking");
 
 
-
-            var ratingData = new RatingData
-            {
-                HasRamp = hasRamp,
-                HasElevator = hasElevator,
-                HasAccessibleBathroom = hasAccessibleBathroom,
-                HasAccessibleParking = hasAccessibleParking
-            };
-
-            var predictedRating = _predictor.PredictRating(ratingData);
+            var predictedRating = Predictor.PredictRating(UserID, LocationID, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking);
 
             return Ok(new { UpdatedRating = existingRating, PredictedRating = predictedRating });
         }
