@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using backend.Context;
 using backend.Models;
+using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
@@ -17,27 +18,48 @@ namespace backend.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateFavorite([FromBody] Favorite favorite)
+        [HttpGet("{UserID}")]
+        public async Task<IActionResult> GetFavorites(int UserID)
         {
-            if (favorite == null)
-            {
-                return BadRequest("Invalid favorite data.");
-            }
+            var favorites = await _context.Favorites
+                .Where(f => f.UserID == UserID)
+                .Select(f => f.LocationID)
+                .ToListAsync();
 
-            // Add the favorite to the database
+            return Ok(favorites);
+        }
+[HttpGet("location/{LocationID}")]
+public async Task<IActionResult> GetFavoritesByLocation(int LocationID)
+{
+    var favorites = await _context.Favorites
+        .Where(f => f.LocationID == LocationID)
+        .Select(f => f.LocationID) // ✅ Ensure only numbers are returned
+        .ToListAsync();
+
+    return Ok(favorites);
+}
+
+
+        [HttpPost("{UserID}/{LocationID}")]
+        public async Task<IActionResult> AddFavorite(int UserID, int LocationID)
+        {
+            var favorite = new Favorite { UserID = UserID, LocationID = LocationID };
             _context.Favorites.Add(favorite);
             await _context.SaveChangesAsync();
-
-            // Return a response with the created favorite
-            return Ok(favorite);
+            return Ok();
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetFavoritesByUserId(int userId)
+        [HttpDelete("{UserID}/{LocationID}")]
+        public async Task<IActionResult> RemoveFavorite(int UserID, int LocationID)
         {
-            var favorites = await _context.Favorites.Where(entry => entry.UserID == userId).ToListAsync();
-            return Ok(favorites);
+            var favorite = await _context.Favorites
+                .FirstOrDefaultAsync(f => f.UserID == UserID && f.LocationID == LocationID);
+
+            if (favorite == null) return NotFound();
+
+            _context.Favorites.Remove(favorite);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

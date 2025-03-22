@@ -44,7 +44,6 @@ export default class FeatureService {
 
 
     }
-             // Add the getFeatureCount method
   public static async getFeatureCount(locationID: number): Promise<number> {
     try {
       const url = `${process.env.REACT_APP_API_URL}api/features/count/${locationID}`;

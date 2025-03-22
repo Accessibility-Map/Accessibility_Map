@@ -28,9 +28,13 @@
   position: relative;
 }
 
-.leaflet-container {
+/* .leaflet-container {
   height: 100vh;
   width: 100%;
+} */
+.leaflet-container {
+  position: relative; /* ✅ Ensures search bar appears above */
+  z-index: 1;
 }
 
 .popup-content {
