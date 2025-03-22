@@ -9,6 +9,7 @@ import MarkerPopup from './MarkerPopup.js'
 import AddMarkerOnClick from './AddMarkerOnClick.js'
 import './styles/MapView.css'
 import AvatarButton from './AvatarButton.tsx'
+import Header from './Header.tsx'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -128,6 +129,7 @@ const MapView = () => {
 
   return (
     <div>
+      <Header />
       <SearchBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}

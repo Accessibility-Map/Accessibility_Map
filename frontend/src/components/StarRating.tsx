@@ -132,7 +132,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
                 )}
                 {predictedRating !== null && (
                   <Typography variant="body2" color="textSecondary" sx={{ marginTop: "5px !important"}}>
-                    Predicted Rating: {predictedRating.toFixed(2)} Stars
+                    Predicted Rating: {predictedRating.toFixed?.(2) || 0} Stars
                   </Typography>
                 )}
               </Grid2>

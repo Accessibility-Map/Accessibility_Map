@@ -1,5 +1,5 @@
 import React from 'react'
-import DropdownResults from './DropdownResults' // import new dropdown
+import DropdownResults from './DropdownResults.js' // import new dropdown
 import './styles/SearchBar.css'
 
 const SearchBar = ({

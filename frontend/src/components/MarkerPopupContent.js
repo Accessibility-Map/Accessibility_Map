@@ -11,6 +11,7 @@ import FeaturesList from "./FeaturesList.tsx";
 import {Divider, Tab, Tabs, Box, Button, Typography} from "@mui/material";
 import RatingService from "./services/RatingService.ts";
 import axios from "axios";
+import { Heart } from "lucide-react"; // Import Heart Icon
 
 const MarkerPopupContent = ({ 
     location,
@@ -35,6 +36,7 @@ const MarkerPopupContent = ({
     const [tab, setTab] = useState("1");
     const [triggerSave, setTriggerSave] = useState(false);
     const [averageRating, setAverageRating] = useState(null);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     const handleTabChange = (event, newValue) => {
     setTab(newValue);
@@ -117,6 +119,31 @@ const MarkerPopupContent = ({
         setIsEditing(false);
     };
 
+    const toggleFavorite = () => {
+        if (!location || !location.locationID) {
+          console.error("Error: locationID is undefined or location is missing", location);
+          return;
+        }
+      
+        const storedFavorites = localStorage.getItem("favorites");
+        let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+      
+        if (!Array.isArray(favorites)) {
+          console.error("Error: favorites is not an array");
+          favorites = [];
+        }
+      
+        let updatedFavorites;
+        if (!isFavorite) {
+          updatedFavorites = [...favorites, location]; // ✅ Store full location object, not just ID
+        } else {
+          updatedFavorites = favorites.filter(fav => fav.locationID !== location.locationID);
+        }
+      
+        localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+        setIsFavorite(!isFavorite); // ✅ Ensure heart updates correctly
+    };
+
     return (
         <>
         <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
@@ -131,20 +158,31 @@ const MarkerPopupContent = ({
             <Divider sx={{ marginBottom: "20px" }} />
 
             <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
-            {isEditing ? (<EditLocationPopup
-                location={location}
-                featuresList={featuresList}
-                setFeaturesList={setFeaturesList}
-                images={images}
-                setImages={setImages}
-                onSave={handleSaveEdit}
-                onClose={() => { setIsEditing(false); setTriggerSave(false); }}
-                saveEdit={saveEdit}
-                triggerSave={triggerSave}
-            /> ) : ( 
+                {isEditing ? (<EditLocationPopup
+                    location={location}
+                    featuresList={featuresList}
+                    setFeaturesList={setFeaturesList}
+                    images={images}
+                    setImages={setImages}
+                    onSave={handleSaveEdit}
+                    onClose={() => { setIsEditing(false); setTriggerSave(false); }}
+                    saveEdit={saveEdit}
+                    triggerSave={triggerSave}
+                /> ) : ( 
                 <>
                 <Box sx={{ height: "60%", marginBottom: "10px" }}>
                 <div className="popup-header">{location.locationName}</div>
+
+            <Heart
+                size={24}
+                onClick={toggleFavorite}
+                style={{
+                cursor: "pointer",
+                color: isFavorite ? "red" : "gray",
+                fill: isFavorite ? "red" : "none",
+                transition: "color 0.2s ease-in-out",
+            }}
+            />
                 <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
                 <ImageScroller
                     images={images}
