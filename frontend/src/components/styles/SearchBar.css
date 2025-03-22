@@ -18,7 +18,7 @@
 
 .searchInput {
     border-radius: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0.2, 0.2, 0.2, 0);
     background-color: #fff;
     font-size: 15px;
     padding: 15px 25px;
@@ -46,7 +46,7 @@
 }
 
 /* Tablet */
-@media (max-width: 960px) {
+@media (max-width: 1080px) {
     .container {
         align-items: center;
         justify-content: center;
@@ -67,12 +67,13 @@
     }
 }
 /* Mobile Device */
-@media (max-width: 480px) {
+@media (max-width: 540px) {
     .searchInput {
-         width:300px 
-
+         width:260px;
+         height:10px;
     }
     .filter-button {
         font-size: 13px;
     }
+    
 }

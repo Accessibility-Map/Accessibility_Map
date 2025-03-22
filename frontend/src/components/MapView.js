@@ -35,10 +35,11 @@ const MapView = () => {
   const [description, setDescription] = useState('')
   const [user, setUser] = useState(null)
   const [userID, setUserID] = useState(null)
+  const [map, setMap] = useState(null)
 
-  const updateUserAndUserID = (newUser) => {
-    setUser(newUser);
-    setUserID(newUser.userID);
+  const updateUserAndUserID = newUser => {
+    setUser(newUser)
+    setUserID(newUser.userID)
   }
 
   useEffect(() => {
@@ -52,11 +53,12 @@ const MapView = () => {
     }
     const fetchFeaturesData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
-        setFeatures(Array.isArray(response.data.features) ? response.data.features : []);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
+        console.log('Fetched features:', response.data)
+        setFeatures(Array.isArray(response.data.features) ? response.data.features : [])
       } catch (error) {
-        console.error('Error fetching features data:', error);
-        setFeatures([]);
+        console.error('Error fetching features data:', error)
+        setFeatures([])
       }
     }
     fetchFeaturesData()
@@ -136,9 +138,21 @@ const MapView = () => {
             prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
           )
         }
+        filteredLocations={filteredLocations}
+        onSelectLocation={location => {
+          setOpenPopupId(location.locationID)
+          if (map) {
+            map.setView([location.latitude, location.longitude], 19) // zoom to marker
+          }
+        }}
       />
       <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
-      <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
+      <MapContainer
+        center={UCCoordinates}
+        zoom={17}
+        style={{height: '100vh', width: '100%'}}
+        whenCreated={setMap}>
+        {' '}
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
