@@ -164,7 +164,7 @@ const MapView = () => {
 
   return (
     <div>
-     {isMobile && <Header toggleSearch={toggleSearch} showSearch={showSearch} />}
+     {isMobile && <Header toggleSearch={toggleSearch} showSearch={showSearch} UpdateUser={updateUserAndUserID} />}
 
      {(!isMobile || (isMobile && showSearch)) && (
 

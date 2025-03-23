@@ -8,8 +8,9 @@ import UserService from "./services/UserService.ts";
 
 import { Avatar, Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import { stat } from "fs";
-import { Heart } from "lucide-react"; // ✅ Import Heart icon
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import "./styles/AvatarButton.css";
 interface AvatarButtonProps {
     UpdateUser: (newUser: User) => void
 }
@@ -44,7 +45,6 @@ const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
     };
 
     const updateUserAndSetUserInitials = (newUser: User) => {
-        // Get user's initials
         let initials = "";
         if (newUser.username) {
             let names = newUser.username.split(" ");
@@ -70,13 +70,25 @@ const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
                 <Box className="avatar-menu">
                     <List sx={{ width: "100%" }}>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Change Profile" onClick={handleChangeUserOpen} />
+                            <ListItemText
+                                primary="Change Profile"
+                                onClick={handleChangeUserOpen}
+                                primaryTypographyProps={{ sx: { color: 'black', fontSize: '0.95rem' } }}
+                            />
                         </ListItem>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Create Account" onClick={handleCreateAccountModalOpen} />
+                            <ListItemText
+                                primary="Create Account"
+                                onClick={handleCreateAccountModalOpen}
+                                primaryTypographyProps={{ sx: { color: 'black', fontSize: '0.95rem' } }}
+                            />
                         </ListItem>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Logout" onClick={handleLogout} />
+                            <ListItemText
+                                primary="Logout"
+                                onClick={handleLogout}
+                                primaryTypographyProps={{ sx: { color: 'black', fontSize: '0.95rem' } }}
+                            />
                         </ListItem>
                         <ListItem
                             className="fav-item"
@@ -86,12 +98,13 @@ const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
                             <ListItemIcon sx={{ minWidth: '30px' }}>
                                 <Heart size={18} color="red" fill="red" />
                             </ListItemIcon>
-                            <ListItemText secondary="Favorites" />
+                            <ListItemText
+                                primary="Favorites"
+                                primaryTypographyProps={{ sx: { color: 'black', fontSize: '0.95rem' } }}
+                            />
                         </ListItem>
-
-
-
                     </List>
+
                 </Box>
             ) : (
                 null
