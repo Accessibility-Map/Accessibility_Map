@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSearch, showSearch }) => {
           <Typography
             variant="h6"
             sx={{ cursor: "pointer" }}
-            onClick={() => {navigate("/favorites"); console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")}}
+            onClick={() => {navigate("/favorites")}}
           >
             ❤️
           </Typography>

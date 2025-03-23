@@ -181,6 +181,9 @@ const MarkerPopupContent = ({
                 color: isFavorite ? "red" : "gray",
                 fill: isFavorite ? "red" : "none",
                 transition: "color 0.2s ease-in-out",
+                position: "absolute",
+                top: "75px",
+                right: "30px",
             }}
             />
                 <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
@@ -200,23 +203,7 @@ const MarkerPopupContent = ({
             <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
                 <FeaturesList featuresList={featuresList}/>
             </Box>
-            {/* {featuresList.map((feature) => (
-                <div key={feature.id} style={{ marginBottom: "20px" }}>
-                <h5>{feature.locationFeature}</h5>
-                {feature.imagePath && feature.imagePath !== "null" ? (
-                    <img
-                    src={feature.imagePath}
-                    alt={feature.locationFeature}
-                    style={{ width: "100px", height: "auto", marginBottom: "10px" }}
-                    onError={(e) => (e.target.style.display = "none")}
-                    />
-                ) : (
-                    <p>No image uploaded</p>
-                )}
 
-                <p>{feature.notes}</p>
-                </div>
-            ))} */}
             </Box>
             
             <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
@@ -252,15 +239,7 @@ const MarkerPopupContent = ({
                 </Button>
             )}
             
-            {/* <button className="popup-button" onClick={handleEditLocation}>
-                Edit Location
-            </button> */}
-            {/* <button
-                className="popup-button-delete"
-                onClick={() => deleteMarker(location.locationID)}
-            >
-                Delete Location
-            </button> */}
+
             </Box>
 
             <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 2}>
