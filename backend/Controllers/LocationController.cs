@@ -175,6 +175,12 @@ namespace backend.Controllers
                 var features = _context.Features.Where(f => f.LocationID == id);
                 _context.Features.RemoveRange(features);
 
+                var comments = _context.Comments.Where(c => c.LocationID == id);
+                _context.Comments.RemoveRange(comments);
+
+                var favorites = _context.Favorites.Where(f => f.LocationID == id);
+                _context.Favorites.RemoveRange(favorites);
+
                 _context.Locations.Remove(location);
 
                 await _context.SaveChangesAsync();

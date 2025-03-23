@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Grid2, Box, Modal, IconButton, Button } from '@mui/material';
+import { Grid2, Box, Modal, IconButton, Button, Tooltip } from '@mui/material';
 import axios from "axios";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -18,9 +18,10 @@ interface ImageScrollerProps {
   onReplace: (newImage: File, oldImageUrl: string) => void;
   isEditing: boolean;
   onUpload?: (newImage: File) => void;
+  refetchLocationDetails?: () => void;
 }
 
-const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete, isEditing = false, onUpload }: ImageScrollerProps) => {
+const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete, isEditing = false, onUpload, refetchLocationDetails }: ImageScrollerProps) => {
   const [imageIndex, setIndex] = useState(0);
   const [openPopup, setOpenPopup] = useState(false);
 
@@ -54,6 +55,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     if (event.target.files && event.target.files[0]) {
       const newFile = event.target.files[0];
       onReplace(newFile, images[imageIndex]);
+      refetchLocationDetails?.();
     }
   };
 
@@ -81,35 +83,41 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                         style={{ width: "100%", maxHeight: "100%", cursor: "pointer", objectFit: "contain" }}
                         onClick={handleImageClick}
                     />
-                  <div className="button-container">
-                    <IconButton onClick={handleDelete} classes={{root: "image-delete-button"}} sx={{display: isEditing ? "flex" : "none"}}>
-                      <DeleteForeverIcon/>
-                    </IconButton>
+                  <div className="button-container" style={{display: isEditing ? "flex" : "none"}}>
+                    <Tooltip title="Delete image">
+                      <IconButton onClick={handleDelete} classes={{root: "delete-button"}} >
+                        <DeleteForeverIcon/>
+                      </IconButton>
+                    </Tooltip>
 
-                    <IconButton component="label" classes={{root: "image-input-button"}} sx={{display: isEditing ? "flex" : "none"}}>
-                      <CameraswitchIcon/>
-                      <input
-                        id="fileInputButton"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleReplace}
-                        style={{
-                          display: "none",
-                        }}
-                      />
-                    </IconButton>
+                    <Tooltip title="Swap image">
+                      <IconButton component="label" classes={{root: "image-input-button"}}>
+                        <CameraswitchIcon/>
+                        <input
+                          id="fileInputButton"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleReplace}
+                          style={{
+                            display: "none",
+                          }}
+                        />
+                      </IconButton>
+                    </Tooltip>
 
-                    <IconButton classes={{root: "image-input-button"}} sx={{display: isEditing ? "flex" : "none"}} component="label">
-                      <AddPhotoAlternateIcon/>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onInput={handleUpload}
-                        style={{
-                          display: "none",
-                        }}
-                      />
-                    </IconButton>
+                    <Tooltip title="Upload image">
+                      <IconButton classes={{root: "image-input-button"}} component="label">
+                        <AddPhotoAlternateIcon/>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onInput={handleUpload}
+                          style={{
+                            display: "none",
+                          }}
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </div>
                 </Grid2>
                 <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
@@ -157,6 +165,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                     />
                     <div className="button-container">
+                      <Tooltip title="Upload an Image">
                       <IconButton classes={{root: "image-input-button"}} sx={{display: isEditing ? "flex" : "none", width: "100%"}} component="label">
                         <AddPhotoAlternateIcon/>
                         <input
@@ -168,9 +177,10 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                           }}
                         />
                       </IconButton>
+                      </Tooltip>
                     </div>
                 </Grid2>
-                <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%"}}>
+                <Grid2 sx={{display: "flex", justifyContent: "center", width: "100%", height: "5%", position: "relative", bottom: "25px"}}>
                     <span>No images uploaded</span>
                 </Grid2>
             </Grid2>
@@ -190,6 +200,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
             src={images[imageIndex]}
             alt="Uploaded location"
             style={{ margin: "auto", position: "absolute", maxWidth: "75vw", maxHeight: "75vh" }}
+            onClick={() => setOpenPopup(false)}
           />
         </Box>
       </Modal>

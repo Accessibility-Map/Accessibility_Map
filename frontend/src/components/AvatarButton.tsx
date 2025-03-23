@@ -34,6 +34,9 @@ const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
             UserService.verifyJwt(userToken).then((status: any) => {
                 if (status.status === UserVerificationEnum.VERIFIED) {
                     updateUserAndSetUserInitials(status.user);
+                }else {
+                    localStorage.removeItem("user");
+                    updateUserAndSetUserInitials(new User("", "", "", 0));
                 }
             })
         }

@@ -10,6 +10,7 @@ import AddMarkerOnClick from './AddMarkerOnClick.js'
 import './styles/MapView.css'
 import AvatarButton from './AvatarButton.tsx'
 import Header from './Header.tsx'
+import GenericPromptDialog from './GenericPromptDialog.tsx'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -41,6 +42,8 @@ const MapView = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showSearch, setShowSearch] = useState(false);
   const toggleSearch = () => setShowSearch(prev => !prev);
+  const [promptLogin, setPromptLogin] = useState(false)
+  const [promptDescription, setPromptDescription] = useState("")
 
   const updateUserAndUserID = newUser => {
     setUser(newUser)
@@ -111,24 +114,30 @@ const MapView = () => {
 
 
   const handleAddMarker = async location => {
-    try {
-      const payload = {
-        locationName: locationName || 'Default Location Name',
-        latitude: location.latitude || 0,
-        longitude: location.longitude || 0,
-        description: description || '',
+    if(user && user.username == "Expo User" && user.userID == 49) {
+      try {
+        const payload = {
+          locationName: locationName || 'Default Location Name',
+          latitude: location.latitude || 0,
+          longitude: location.longitude || 0,
+          description: description || '',
+        }
+
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
+        const newLocation = response.data
+
+        setLocations(prevLocations => [...prevLocations, newLocation])
+        setNewMarker(newLocation)
+        setLocationName(newLocation.locationName || '')
+        setDescription(newLocation.description || '')
+        setOpenPopupId(newLocation.locationID)
+      } catch (error) {
+        console.error('Error creating new marker:', error)
       }
-
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
-      const newLocation = response.data
-
-      setLocations(prevLocations => [...prevLocations, newLocation])
-      setNewMarker(newLocation)
-      setLocationName(newLocation.locationName || '')
-      setDescription(newLocation.description || '')
-      setOpenPopupId(newLocation.locationID)
-    } catch (error) {
-      console.error('Error creating new marker:', error)
+    }
+    else {
+      setPromptLogin(true);
+      setPromptDescription("Adding markers has been disabled for the Expo.");
     }
   }
 
@@ -153,12 +162,19 @@ const MapView = () => {
     }
   }
 
-  const deleteMarker = async locationID => {
-    try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
-      setLocations(locations.filter(location => location.locationID !== locationID))
-    } catch (error) {
-      console.error('Error deleting location:', error)
+  const deleteMarker = async (locationID) => {
+    if(user && user.username == "Expo User" && user.userID == 49) {
+      try {
+        console.log(locationID)
+        await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
+        setLocations(locations.filter(location => location.locationID !== locationID))
+      } catch (error) {
+        console.error('Error deleting location:', error)
+      }
+    }
+    else {
+      setPromptLogin(true);
+      setPromptDescription("Deleting markers has been disabled for the Expo.");
     }
   }
 
@@ -242,6 +258,7 @@ const MapView = () => {
         )}
         <AddMarkerOnClick onAddMarker={handleAddMarker} />
       </MapContainer>
+      <GenericPromptDialog isOpen={promptLogin} onClose={() => setPromptLogin(false)} promptingAction={promptDescription} title="Access Restricted"/>
     </div>
   )
 }

@@ -48,77 +48,75 @@ const MarkerPopupContent = ({
     setIsEditing(false);
     setTriggerSave(false);
   }
+  
+  const fetchFeaturesAndImages = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
 
-  useEffect(() => {
-    if (clicked) {
-      const fetchFeaturesAndImages = async () => {
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features/location/${location.locationID}`);
+      const updatedFeatures = response.data.map((feature) => {
+        let fixedImagePath = feature.imagePath;
 
-          const updatedFeatures = response.data.map((feature) => {
-            let fixedImagePath = feature.imagePath;
-
-            if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
-              fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
-              fixedImagePath = `http://localhost:5232${fixedImagePath}`;
-            } else {
-              fixedImagePath = null;
-            }
-
-            return {
-              ...feature,
-              imagePath: fixedImagePath,
-            };
-          });
-
-
-
-          setFeaturesList(updatedFeatures);
-
-          // Fetch images
-          axios
-            .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
-            .then((response) => {
-              const imageUrls = response.data.map((picture) => picture.imageUrl);
-              setImages(imageUrls);
-            })
-            .catch((error) => {
-              console.error("Error fetching images:", error);
-            });
-
-        } catch (error) {
-          console.error("Error fetching features:", error);
+        if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
+          fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
+          fixedImagePath = `http://localhost:5232${fixedImagePath}`;
+        } else {
+          fixedImagePath = null;
         }
-      };
 
-      fetchFeaturesAndImages();
-    }
-  }, [location.locationID, clicked]);
+        return {
+          ...feature,
+          imagePath: fixedImagePath,
+        };
+      });
 
-  useEffect(() => {
-    if (clicked) {
-      RatingService.getAverageRating(location.locationID).then((average) => {
-        setAverageRating(average);
+
+
+      setFeaturesList(updatedFeatures);
+
+      // Fetch images
+      axios
+      .get(`${process.env.REACT_APP_API_URL}api/locations/${location.locationID}/pictures`)
+      .then((response) => {
+        const imageUrls = response.data.map((picture) => picture.imageUrl);
+        setImages(imageUrls);
       })
+      .catch((error) => {
+        console.error("Error fetching images:", error);
+      });
+
+    } catch (error) {
+      console.error("Error fetching features:", error);
     }
-  }, [location.locationID, clicked]);
+  };
 
   useEffect(() => {
-    if (openPopupId === location.locationID && markerRef.current) {
-      markerRef.current.openPopup();
-    }
-  }, [openPopupId, location.locationID]);
+    fetchFeaturesAndImages();
+  }, [location.locationID, clicked]);
 
-  const handleEditLocation = (e) => {
-    e.stopPropagation();
-    setIsEditing(true);
-  };
-
-  const handleSaveEdit = (updatedFeatures, updatedImages) => {
-    setFeaturesList(updatedFeatures);
-    setImages(updatedImages);
-    setIsEditing(false);
-  };
+    useEffect(() => {
+      if (clicked) {
+        RatingService.getAverageRating(location.locationID).then((average) => {
+          setAverageRating(average);
+        })
+      }
+    }, [location.locationID, clicked]);
+    
+    useEffect(() => {
+        if (openPopupId === location.locationID && markerRef.current) {
+        markerRef.current.openPopup();
+        }
+    }, [openPopupId, location.locationID]);
+    
+    const handleEditLocation = (e) => {
+        e.stopPropagation();
+        setIsEditing(true);
+    };
+    
+    const handleSaveEdit = (updatedFeatures, updatedImages) => {
+        setFeaturesList(updatedFeatures);
+        setImages(updatedImages);
+        setIsEditing(false);
+    };
 
   const toggleFavorite = () => {
     if (!location || !location.locationID) {
@@ -158,116 +156,120 @@ const MarkerPopupContent = ({
     }
   }, [location.locationID]);
 
-  return (
-    <>
-      <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
-        <Box sx={{ height: "48px" }}>
-          <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
-            <Tab label="Description" value="1" />
-            <Tab label="Features" value="2" />
-            <Tab label="Comments" value="3" />
-          </Tabs>
-        </Box>
-
-        <Divider sx={{ marginBottom: "20px" }} />
-
-        <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
-          {isEditing ? (<EditLocationPopup
-            location={location}
-            featuresList={featuresList}
-            setFeaturesList={setFeaturesList}
-            images={images}
-            setImages={setImages}
-            onSave={handleSaveEdit}
-            onClose={() => { setIsEditing(false); setTriggerSave(false); }}
-            saveEdit={saveEdit}
-            triggerSave={triggerSave}
-          />) : (
-            <>
-              <Box sx={{ height: "60%", marginBottom: "10px" }}>
-                <div className="popup-header">{location.locationName}</div>
-
-  <span>{location.locationName}</span>
-  <Tooltip title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}>
-    <Heart
-      size={24}
-      onClick={toggleFavorite}
-      style={{
-        cursor: "pointer",
-        color: isFavorite ? "red" : "gray",
-        fill: isFavorite ? "red" : "none",
-        transition: "color 0.2s ease-in-out",
-      }}
-    />
-  </Tooltip>
-
-
-                <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center" }}>{averageRating}/5.00 - Average User Rating</Typography>
-                <ImageScroller
-                  images={images}
-                  heightParam="250px"
-                />
+    return (
+        <>
+        {isEditing ? 
+          (
+            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
+              <EditLocationPopup
+                location={location}
+                featuresList={featuresList}
+                setFeaturesList={setFeaturesList}
+                images={images}
+                setImages={setImages}
+                onSave={handleSaveEdit}
+                onClose={() => { setIsEditing(false); setTriggerSave(false); }}
+                saveEdit={saveEdit}
+                triggerSave={triggerSave}
+                refetchLocationDetails={fetchFeaturesAndImages}
+                deleteMarker={deleteMarker}
+                isMobile={isMobile}
+              /> 
+              <Box sx={{ height: "48px", marginTop: "5px", position: "relative", bottom: "0"}}>
+                <Box sx={{ width: "100%" }}>
+                    <Button
+                    variant="contained"
+                    onClick={closeEditor}
+                    color="error"
+                    sx={{ marginRight: "2%", width: "48%" }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                    variant="contained" 
+                    onClick={() => {setTriggerSave(true);}}
+                    sx={{ marginLeft: "2%", width: "48%" }}
+                    >
+                        Save Changes
+                    </Button>
+                </Box>
               </Box>
-              <Box sx={{ maxHeight: "37%", overflowY: "auto", overflowX: "hidden", marginTop: "30px" }}>
-                <p>{location.description}</p>
+            </div>
+          ) 
+            :
+          (
+            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
+              <Box sx={{ height: "48px"}}>
+              <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
+                  <Tab label="Description" value="1" />
+                  <Tab label="Features" value="2" />
+                  <Tab label="Comments" value="3" />
+              </Tabs>
               </Box>
-            </>
-          )}
-        </Box>
 
-        <Box hidden={tab != 2} id="features-list" sx={{ height: (isMobile ? "85%" : "450px") }}>
-          <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
-            <FeaturesList featuresList={featuresList} />
-          </Box>
+              <Divider sx={{ marginBottom: "20px" }} />
 
-        </Box>
+              <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
+                  <>
+                  <Box sx={{ height: "60%", marginBottom: "10px" }}>
+                  <div className="popup-header">{location.locationName}</div>
 
-        <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
-          <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
-        </Box>
+                    <Tooltip title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}>
+                      <Heart
+                        size={24}
+                        onClick={toggleFavorite}
+                        style={{
+                          cursor: "pointer",
+                          color: isFavorite ? "red" : "gray",
+                          fill: isFavorite ? "red" : "none",
+                          transition: "color 0.2s ease-in-out",
+                        }}
+                      />
+                    </Tooltip>
+                  
+                  <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
+                  <ImageScroller
+                      images={images}
+                      heightParam="250px"
+                  />
+                  </Box>
+                  <Box sx={{ maxHeight: "37%", overflowY: "auto", overflowX: "hidden", marginTop: "30px" }}>
+                  <p>{location.description}</p>
+                  </Box>
+                  </>
+              </Box>
 
-        <Box sx={{ height: "48px", marginTop: "30px" }} hidden={tab != 1}>
-          {isEditing ? (
-            <Box sx={{ width: "100%" }}>
-              <Button
-                variant="contained"
-                onClick={closeEditor}
-                color="error"
-                sx={{ marginRight: "2%", width: "48%" }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => { setTriggerSave(true); }}
-                sx={{ marginLeft: "2%", width: "48%" }}
-              >
-                Save Changes
-              </Button>
-            </Box>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleEditLocation}
-              fullWidth
-            >
-              Edit Location
-            </Button>
-          )}
+              <Box hidden={tab != 2} id="features-list" sx={{ height: (isMobile ? "85%" : "450px") }}>
+              <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
+                  <FeaturesList featuresList={featuresList}/>
+              </Box>
+
+              </Box>
+              
+              <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
+              <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
+              </Box>
+
+              <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 1 && tab != 2}>
+                  <Button 
+                    variant="contained" 
+                    onClick={handleEditLocation}
+                    fullWidth
+                  >
+                  Edit Location
+                  </Button>
+              </Box>
 
 
-        </Box>
-
-        <Box sx={{ height: "48px", marginTop: "30px" }} hidden={tab != 2}>
-          <AddFeatureButton locationID={location.locationID} />
-        </Box>
-
-        <Box sx={{ width: "100%", height: "48px" }}>
-          <StarRating locationID={location.locationID} userID={userID} />
-        </Box>
-      </div>
-    </>
-  )
+              <Box sx={{ width: "100%", height: "48px"}}>
+              <StarRating locationID={location.locationID} userID={userID} />
+              </Box>
+            </div>
+          ) 
+          }
+          
+        </>
+    )
 }
 
 export default MarkerPopupContent;
