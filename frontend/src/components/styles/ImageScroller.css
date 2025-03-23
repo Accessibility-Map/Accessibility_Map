@@ -8,8 +8,9 @@
     top: 10px; /* Position near the top of the image */
     right: 20px; /* Position near the right of the image */
     z-index: 5; /* Ensure buttons appear above the image */
-    background: rgba(255, 255, 255, 0.57);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 21px;
+    border:1.5px solid black;
 }
   
 .image-input-button:hover {

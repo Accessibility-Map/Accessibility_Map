@@ -7,7 +7,7 @@ import ImageScroller from "./ImageScroller.tsx";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 
-import { Box, TextField, Button, Typography, Grid2, Divider, Tabs, Tab, IconButton } from "@mui/material";
+import { Box, TextField, Button, Typography, Grid2, Divider, Tabs, Tab, IconButton, Tooltip } from "@mui/material";
 
 const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, saveEdit, triggerSave, refetchLocationDetails, isMobile, deleteMarker }) => {
   const [locationName, setLocationName] = useState(location.locationName || "");
@@ -140,9 +140,11 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       <form style={{height: "100%", width: "100%" }}>
       <Box hidden={tab != 1}>
         <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Location</div>
-        <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute", top: "60px", right: "38px" }}>
-          <DeleteForeverIcon/>
-        </IconButton>
+        <Tooltip title="Delete Location">
+          <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute", top: "60px", right: "38px" }}>
+            <DeleteForeverIcon/>
+          </IconButton>
+        </Tooltip>
         <Box sx={{ overflowY: "auto", overflowX: "hidden", height: (isMobile ? "85%" : "470px"), width: "100%", paddingTop: "10px" }}>
           <TextField fullWidth label="Location Name" value={locationName} onChange={(e) => setLocationName(e.target.value)} sx={{ marginBottom: "20px" }} />
           <ImageScroller
