@@ -18,9 +18,10 @@ interface ImageScrollerProps {
   onReplace: (newImage: File, oldImageUrl: string) => void;
   isEditing: boolean;
   onUpload?: (newImage: File) => void;
+  refetchLocationDetails?: () => void;
 }
 
-const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete, isEditing = false, onUpload }: ImageScrollerProps) => {
+const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete, isEditing = false, onUpload, refetchLocationDetails }: ImageScrollerProps) => {
   const [imageIndex, setIndex] = useState(0);
   const [openPopup, setOpenPopup] = useState(false);
 
@@ -54,6 +55,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     if (event.target.files && event.target.files[0]) {
       const newFile = event.target.files[0];
       onReplace(newFile, images[imageIndex]);
+      refetchLocationDetails?.();
     }
   };
 
@@ -82,7 +84,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
                         onClick={handleImageClick}
                     />
                   <div className="button-container">
-                    <IconButton onClick={handleDelete} classes={{root: "image-delete-button"}} sx={{display: isEditing ? "flex" : "none"}}>
+                    <IconButton onClick={handleDelete} classes={{root: "delete-button"}} sx={{display: isEditing ? "flex" : "none"}}>
                       <DeleteForeverIcon/>
                     </IconButton>
 
@@ -190,6 +192,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
             src={images[imageIndex]}
             alt="Uploaded location"
             style={{ margin: "auto", position: "absolute", maxWidth: "75vw", maxHeight: "75vh" }}
+            onClick={() => setOpenPopup(false)}
           />
         </Box>
       </Modal>
