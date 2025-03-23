@@ -6,6 +6,8 @@
     z-index: 1000;
     display:inline-flex;
     background-color: transparent;
+    margin-top: 60px; /* or adjust to your header height */
+
 }
 
 .searchBarContainer {
@@ -70,16 +72,33 @@
 /* Mobile Device */
 @media (max-width: 540px) {
     .container {
-      top: 70px; /* 👈 Push it below toggle switch */
-    }
-  
-    .searchInput {
-      width: 260px;
-      height: 36px; /* make it tall enough to see text */
-    }
+        flex-direction: column;
+        align-items: center;
+        padding: 8px; /* ✅ Add some spacing */
+      }
+      .searchBarContainer {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto; /* ✅ Center it */
+      }
+      .searchInput {
+        width: 85vw;
+        max-width: 320px;
+        height: 36px;
+        font-size: 14px;
+        padding: 10px 15px;
+      }
   
     .filter-button {
       font-size: 13px;
     }
+    .filters {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 10px;
+        padding: 0 8px;
+      }
   }
   
