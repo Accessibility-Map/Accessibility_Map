@@ -6,7 +6,6 @@
     z-index: 1000;
     display:inline-flex;
     background-color: transparent;
-    margin-top: 60px; /* or adjust to your header height */
 
 }
 
@@ -52,6 +51,7 @@
     .container {
         align-items: center;
         justify-content: center;
+            /* or adjust to your header height */
     }
     .searchBarContainer {
         flex-direction: column; 
@@ -69,12 +69,19 @@
     }
 }
 /* Mobile Device */
-/* Mobile Device */
+@media (max-width: 768px) {
+    .container {
+
+        margin-top: 60px;
+
+    }
+}
 @media (max-width: 540px) {
     .container {
         flex-direction: column;
         align-items: center;
         padding: 8px; /* ✅ Add some spacing */
+        margin-top: 60px;
       }
       .searchBarContainer {
         width: 100%;
