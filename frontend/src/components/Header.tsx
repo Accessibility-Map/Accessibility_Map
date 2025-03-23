@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Switch } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useLocation } from "react-router-dom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 interface HeaderProps {
   toggleSearch: () => void;
@@ -10,17 +10,27 @@ interface HeaderProps {
 
 const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
     primary: {
-      main: '#1976d2',
+      main: "#1976d2",
     },
   },
 });
 
 const Header: React.FC<HeaderProps> = ({ toggleSearch, showSearch }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const isFavoritesPage = location.pathname === "/favorites";
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -28,24 +38,17 @@ const Header: React.FC<HeaderProps> = ({ toggleSearch, showSearch }) => {
         <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Typography variant="h6">Accessibility Map</Typography>
 
-          {!isFavoritesPage && (
+          {/* ✅ Only show switch if on mobile and not on favorites page */}
+          {!isFavoritesPage && isMobile && (
             <Switch
               checked={showSearch}
               onChange={toggleSearch}
               sx={{
                 mx: "auto",
-                "&:focus": { outline: "none" }, 
+                "&:focus": { outline: "none" },
               }}
             />
           )}
-
-          <Typography
-            variant="h6"
-            sx={{ cursor: "pointer" }}
-            onClick={() => {navigate("/favorites"); console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")}}
-          >
-            ❤️
-          </Typography>
         </Toolbar>
       </AppBar>
     </ThemeProvider>

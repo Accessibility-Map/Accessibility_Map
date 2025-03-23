@@ -67,13 +67,19 @@
     }
 }
 /* Mobile Device */
+/* Mobile Device */
 @media (max-width: 540px) {
+    .container {
+      top: 70px; /* 👈 Push it below toggle switch */
+    }
+  
     .searchInput {
-         width:260px;
-         height:10px;
+      width: 260px;
+      height: 36px; /* make it tall enough to see text */
     }
+  
     .filter-button {
-        font-size: 13px;
+      font-size: 13px;
     }
-    
-}
+  }
+  

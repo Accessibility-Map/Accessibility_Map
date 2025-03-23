@@ -6,19 +6,21 @@ import "./styles/AvatarButton.css"
 import { UserVerificationEnum } from "./models/UserVerificationStatus.ts";
 import UserService from "./services/UserService.ts";
 
-import {Avatar, Box, List, ListItem, ListItemText} from "@mui/material"
+import { Avatar, Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import { stat } from "fs";
-
+import { Heart } from "lucide-react"; // ✅ Import Heart icon
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 interface AvatarButtonProps {
     UpdateUser: (newUser: User) => void
 }
 
-const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
+const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
     let [isActive, setIsActive] = useState(false);
-    const[UserInitials, setUserInitials] = useState("");
+    const [UserInitials, setUserInitials] = useState("");
     const [changeModalOpen, setChangeModalOpen] = useState(false);
     const handleChangeUserClose = () => setChangeModalOpen(false);
     const handleChangeUserOpen = () => setChangeModalOpen(true);
+    const navigate = useNavigate();
 
     const [createAccountModalOpen, setCreateAccountModalOpen] = useState(false);
     const handleCreateAccountModalClose = () => setCreateAccountModalOpen(false);
@@ -26,7 +28,7 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
 
     useEffect(() => {
         const userToken = localStorage.getItem("user");
-        
+
         if (userToken) {
             UserService.verifyJwt(userToken).then((status: any) => {
                 if (status.status === UserVerificationEnum.VERIFIED) {
@@ -61,7 +63,6 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
         updateUserAndSetUserInitials(new User("", "", "", 0));
         window.location.reload();
     }
-
     return (
         <div className="avatar-container">
             <Avatar classes={{ root: "avatar-button" }} onClick={handleClick}>{UserInitials}</Avatar>
@@ -69,14 +70,27 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
                 <Box className="avatar-menu">
                     <List sx={{ width: "100%" }}>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Change Profile" onClick={handleChangeUserOpen}/>
+                            <ListItemText secondary="Change Profile" onClick={handleChangeUserOpen} />
                         </ListItem>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Create Account" onClick={handleCreateAccountModalOpen}/>
+                            <ListItemText secondary="Create Account" onClick={handleCreateAccountModalOpen} />
                         </ListItem>
                         <ListItem className="avatar-menu-item">
-                            <ListItemText secondary="Logout" onClick={handleLogout}/>
+                            <ListItemText secondary="Logout" onClick={handleLogout} />
                         </ListItem>
+                        <ListItem
+                            className="fav-item"
+                            onClick={() => { navigate("/favorites"); setIsActive(false); }}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <ListItemIcon sx={{ minWidth: '30px' }}>
+                                <Heart size={18} color="red" fill="red" />
+                            </ListItemIcon>
+                            <ListItemText secondary="Favorites" />
+                        </ListItem>
+
+
+
                     </List>
                 </Box>
             ) : (

@@ -71,7 +71,12 @@ const MarkerPopup = ({
     setOpenPopupId(locationID);
     setMobileDialogOpen(true);
   };
-
+  useEffect(() => {
+    if (openPopupId === location.locationID && markerRef.current) {
+      markerRef.current.openPopup(); // ✅ opens Leaflet popup
+    }
+  }, [openPopupId, location.locationID]);
+  
   return (
     <Marker
       ref={markerRef}
