@@ -61,7 +61,7 @@ const CommentList = ({ locationID, userID, user }: CommentListProps) => {
         setNewComment("");
     }
 
-    return <Box sx={{ width: '100%', marginTop: '18px', overflowY: 'auto', maxHeight: '100%', minHeight: '150px' }}>
+    return <Box sx={{ width: '100%', overflowY: 'auto', maxHeight: '100%', minHeight: '150px' }}>
         <Alert severity="error" sx={{ display: loginAlert ? "flex" : "none"}} onClose={() => setLoginAlert(false)}>You must be logged in to post a comment.</Alert>
         <TextField label="Add a comment" variant="outlined" multiline id="comment" fullWidth onChange={(e) => setNewComment(e.target.value)} value={newComment} sx={{ marginTop: "10px"}}/>
         

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import {MapContainer, TileLayer, Marker} from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
@@ -9,6 +9,8 @@ import MarkerPopup from './MarkerPopup.js'
 import AddMarkerOnClick from './AddMarkerOnClick.js'
 import './styles/MapView.css'
 import AvatarButton from './AvatarButton.tsx'
+import Header from './Header.tsx'
+import GenericPromptDialog from './GenericPromptDialog.tsx'
 
 const UCCoordinates = [39.1317, -84.515]
 
@@ -35,12 +37,20 @@ const MapView = () => {
   const [description, setDescription] = useState('')
   const [user, setUser] = useState(null)
   const [userID, setUserID] = useState(null)
+  const [map, setMap] = useState(null)
+  const [clicked, setClicked] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 540)
+  const [showSearch, setShowSearch] = useState(false)
+  const toggleSearch = () => setShowSearch(prev => !prev)
+  const [promptLogin, setPromptLogin] = useState(false)
+  const [promptDescription, setPromptDescription] = useState('')
+  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth)
+  const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0)
 
-  const updateUserAndUserID = (newUser) => {
-    setUser(newUser);
-    setUserID(newUser.userID);
+  const updateUserAndUserID = newUser => {
+    setUser(newUser)
+    setUserID(newUser.userID)
   }
-
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
@@ -50,13 +60,15 @@ const MapView = () => {
         console.error('Error fetching location data:', error)
       }
     }
+
     const fetchFeaturesData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`);
-        setFeatures(Array.isArray(response.data.features) ? response.data.features : []);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
+        console.log('Fetched features:', response.data)
+        setFeatures(Array.isArray(response.data.features) ? response.data.features : [])
       } catch (error) {
-        console.error('Error fetching features data:', error);
-        setFeatures([]);
+        console.error('Error fetching features data:', error)
+        setFeatures([])
       }
     }
     fetchFeaturesData()
@@ -72,25 +84,50 @@ const MapView = () => {
       .map(feature => feature.locationFeature)
     return matchesSearchTerm && selectedFilters.every(filter => locationFeatures.includes(filter))
   })
-  const handleAddMarker = async location => {
-    try {
-      const payload = {
-        locationName: locationName || 'Default Location Name',
-        latitude: location.latitude || 0,
-        longitude: location.longitude || 0,
-        description: description || '',
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 540)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  useEffect(() => {
+    const storedLocation = sessionStorage.getItem('selectedLocation')
+    if (storedLocation && locations.length > 0) {
+      const parsedLocation = JSON.parse(storedLocation)
+      const match = locations.find(loc => loc.locationID === parsedLocation.locationID)
+      if (match) {
+        // Clear filters and search
+        setSearchTerm('')
+        setSelectedFilters([])
+        setOpenPopupId(match.locationID)
+        setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1)
       }
+      sessionStorage.removeItem('selectedLocation')
+    }
+  }, [locations, map])
 
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
-      const newLocation = response.data
-
-      setLocations(prevLocations => [...prevLocations, newLocation])
-      setNewMarker(newLocation)
-      setLocationName(newLocation.locationName || '')
-      setDescription(newLocation.description || '')
-      setOpenPopupId(newLocation.locationID)
-    } catch (error) {
-      console.error('Error creating new marker:', error)
+  const handleAddMarker = async location => {
+    if (user && user.username == 'Expo User' && user.userID == 49) {
+      try {
+        const payload = {
+          locationName: locationName || 'Default Location Name',
+          latitude: location.latitude || 0,
+          longitude: location.longitude || 0,
+          description: description || '',
+        }
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
+        const newLocation = response.data
+        setLocations(prevLocations => [...prevLocations, newLocation])
+        setNewMarker(newLocation)
+        setLocationName(newLocation.locationName || '')
+        setDescription(newLocation.description || '')
+        setOpenPopupId(newLocation.locationID)
+      } catch (error) {
+        console.error('Error creating new marker:', error)
+      }
+    } else {
+      setPromptLogin(true)
+      setPromptDescription('Adding markers has been disabled for the Expo. ')
     }
   }
 
@@ -106,7 +143,6 @@ const MapView = () => {
           location.locationID === updatedLocation.locationID ? updatedLocation : location
         )
       )
-
       setEditingLocation(null)
       setIsEditing(false)
       setOpenPopupId(null)
@@ -116,29 +152,59 @@ const MapView = () => {
   }
 
   const deleteMarker = async locationID => {
-    try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
-      setLocations(locations.filter(location => location.locationID !== locationID))
-    } catch (error) {
-      console.error('Error deleting location:', error)
+    if (user && user.username == 'Expo User' && user.userID == 49) {
+      try {
+        console.log(locationID)
+        await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
+        setLocations(locations.filter(location => location.locationID !== locationID))
+      } catch (error) {
+        console.error('Error deleting location:', error)
+      }
+    } else {
+      setPromptLogin(true)
+      setPromptDescription('Deleting markers has been disabled for the Expo.')
     }
   }
 
   return (
     <div>
-      <SearchBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterOptions={filters}
-        selectedFilters={selectedFilters}
-        toggleFilter={filter =>
-          setSelectedFilters(prev =>
-            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
-          )
-        }
-      />
+      {isMobile && (
+        <Header
+          toggleSearch={toggleSearch}
+          showSearch={showSearch}
+          UpdateUser={updateUserAndUserID}
+        />
+      )}
+
+      {(!isMobile || (isMobile && showSearch)) && (
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterOptions={filters}
+          selectedFilters={selectedFilters}
+          showSearch={showSearch}
+          toggleFilter={filter =>
+            setSelectedFilters(prev =>
+              prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+            )
+          }
+          filteredLocations={filteredLocations}
+          onSelectLocation={location => {
+            setOpenPopupId(location.locationID)
+            if (map) {
+              map.setView([location.latitude, location.longitude], 18)
+            }
+          }}
+        />
+      )}
+
       <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
-      <MapContainer center={UCCoordinates} zoom={17} style={{height: '100vh', width: '100%'}}>
+      <MapContainer
+        center={UCCoordinates}
+        zoom={17}
+        style={{height: '100vh', width: '100%'}}
+        ref={setMap}>
+        {' '}
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -159,6 +225,7 @@ const MapView = () => {
             setOpenPopupId={setOpenPopupId}
             userID={userID}
             user={user}
+            triggerOpenMobileDialog={triggerOpenMobileDialog}
           />
         ))}
         {newMarker && (
@@ -181,6 +248,12 @@ const MapView = () => {
         )}
         <AddMarkerOnClick onAddMarker={handleAddMarker} />
       </MapContainer>
+      <GenericPromptDialog
+        isOpen={promptLogin}
+        onClose={() => setPromptLogin(false)}
+        promptingAction={promptDescription}
+        title='Access Restricted'
+      />
     </div>
   )
 }

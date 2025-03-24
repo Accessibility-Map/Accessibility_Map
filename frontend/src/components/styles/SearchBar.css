@@ -3,9 +3,10 @@
     position: absolute;
     top: 20px;
     width: 90%;
-    z-index: 1000;
+    z-index: 500;
     display:inline-flex;
     background-color: transparent;
+
 }
 
 .searchBarContainer {
@@ -18,13 +19,13 @@
 
 .searchInput {
     border-radius: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0.2, 0.2, 0.2, 0);
     background-color: #fff;
     font-size: 15px;
     padding: 15px 25px;
     border: none;
     outline: none;
-    width: 400px;
+    width: 370px;
 }
 
 .filters {
@@ -46,7 +47,7 @@
 }
 
 /* Tablet */
-@media (max-width: 960px) {
+@media (max-width: 1020px) {
     .container {
         align-items: center;
         justify-content: center;
@@ -60,19 +61,54 @@
         width: 65vw;
     }
     .filters {
-        justify-content: center;
+        justify-content:center;
         margin-top: 15px;
         gap: 8px;
         margin-left: 0px;
-    }
-}
-/* Mobile Device */
-@media (max-width: 480px) {
-    .searchInput {
-         width:300px 
-
-    }
-    .filter-button {
         font-size: 13px;
+        left:0
     }
+  
 }
+
+@media (max-width: 800px) {
+.filter-button{
+    font-size: 13px;
+}
+}
+
+
+/* Mobile Device */
+@media (max-width: 540px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+        padding: 8px; /* ✅ Add some spacing */
+        margin-top: 60px;
+      }
+      .searchBarContainer {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto; /* ✅ Center it */
+      }
+      .searchInput {
+        width: 85vw;
+        max-width: 320px;
+        height: 36px;
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+  
+    .filter-button {
+      font-size: 13px;
+    }
+    .filters {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 10px;
+        padding: 0 8px;
+      }
+  }
+  

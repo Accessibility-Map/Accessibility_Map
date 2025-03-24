@@ -4,12 +4,15 @@ import "./styles/MapView.css";
 import "./styles/AddFeatureModal.css";
 
 import {Box, Modal, Button, Typography, Select, SelectChangeEvent, MenuItem, TextField} from "@mui/material";
+import { set } from "react-hook-form";
 
 interface AddFeatureButtonProps {
   locationID: number;
+  setFeaturesList: ([]) => void;
+  featuresList: [];
 }
 
-const AddFeatureButton = ({ locationID }: AddFeatureButtonProps) => {
+const AddFeatureButton = ({ locationID, setFeaturesList, featuresList }: AddFeatureButtonProps) => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -37,6 +40,8 @@ const AddFeatureButton = ({ locationID }: AddFeatureButtonProps) => {
         feature,
         notes
       );
+
+      setFeaturesList([...featuresList, response]);
 
       handleClose();
     } catch (error) {

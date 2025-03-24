@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogContentText, DialogActions, Button, Dialog
 import Typography from "@mui/material/Typography";
 import RatingService from "./services/RatingService";
 import PredictionService from "./services/PredictionService";
+import GenericPromptDialog from "./GenericPromptDialog";
 
 type CustomIconType = {
   [index: number]: {
@@ -68,20 +69,27 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
   
   // Fetch predicted rating
   useEffect(() => {
-    PredictionService.predictRating(userID, locationID).then((rating) => {
-      setPredictedRating(rating);
-    });
+    if(userID) {
+      PredictionService.predictRating(userID, locationID).then((rating) => {
+        setPredictedRating(rating);
+      });
+    }
   }, [locationID, userID]);
 
   // Fetch the initial rating from the backend
   useEffect(() => {
-    RatingService.getRating(userID, locationID).then((rating) => {
-      if (rating && rating.getRating() !== 0) {
-        setCurrentRating(rating.getRating());
-      } else {
-        setUnset(true);
-      }
-    });
+    if(userID) {
+      RatingService.getRating(userID, locationID).then((rating) => {
+        if (rating && rating.getRating() !== 0) {
+          setCurrentRating(rating.getRating());
+        } else {
+          setUnset(true);
+        }
+      });
+    }
+    else{
+      setUnset(true);
+    }
   }, [locationID, userID]);
 
   // Function to update rating in the state and backend
@@ -132,7 +140,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
                 )}
                 {predictedRating !== null && (
                   <Typography variant="body2" color="textSecondary" sx={{ marginTop: "5px !important"}}>
-                    Predicted Rating: {predictedRating.toFixed(2)} Stars
+                    Predicted Rating: {predictedRating.toFixed?.(2) || 0} Stars
                   </Typography>
                 )}
               </Grid2>
@@ -142,8 +150,13 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
         : 
         (
           <>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <StyledRating
+          <Box sx={{ height: "100%"}}>
+            <Grid2 container sx={{ height: "100%"}}>
+              <Grid2 size={6} sx={{ height: "100%", textAlign: "center"}}>
+                <Typography variant="subtitle1">
+                  Rate This Location's Accessibility
+                </Typography>
+                <StyledRating
                 name="customized-icons"
                 value={0}
                 IconContainerComponent={IconContainer}
@@ -154,21 +167,10 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
                 onChangeActive={(event, newHover) => setHover(newHover)}
                 emptyIcon={<span style={{ opacity: 0.55 }}>{customIcons[1].icon}</span>}
               />
-            </Box>
-            <Dialog
-              open={loginPromptOpen}
-              onClose={() => setLoginPromptOpen(false)}
-              >
-                <DialogTitle>Login Required</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    You must be logged in to rate a location's accessibility.
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button color="error" variant="contained" onClick={() => setLoginPromptOpen(false)}>Close</Button>
-                </DialogActions>
-            </Dialog>
+              </Grid2>
+            </Grid2>
+          </Box> 
+            <GenericPromptDialog promptingAction="You must be logged in to rate a location's accessibility." isOpen={loginPromptOpen} onClose={() => setLoginPromptOpen(false)} title="Login Required"/>
           </>
         )
         }
