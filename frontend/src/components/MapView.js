@@ -39,7 +39,7 @@ const MapView = () => {
   const [userID, setUserID] = useState(null)
   const [map, setMap] = useState(null)
   const [clicked, setClicked] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 540)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 620)
   const [showSearch, setShowSearch] = useState(false)
   const toggleSearch = () => setShowSearch(prev => !prev)
   const [promptLogin, setPromptLogin] = useState(false)
@@ -86,7 +86,7 @@ const MapView = () => {
   })
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 540)
+    const handleResize = () => setIsMobile(window.innerWidth <= 620)
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])

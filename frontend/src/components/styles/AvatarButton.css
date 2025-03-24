@@ -55,7 +55,7 @@
   }
 }
   /* Mobile */
-  @media (max-width: 540px) {
+  @media (max-width: 620px) {
     .avatar-menu {
         right: 8px;
         width: 85vw;

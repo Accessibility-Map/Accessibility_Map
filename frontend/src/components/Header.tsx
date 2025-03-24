@@ -23,11 +23,11 @@ const Header: React.FC<HeaderProps> = ({toggleSearch, showSearch, UpdateUser}) =
   const location = useLocation()
   const isFavoritesPage = location.pathname === '/favorites'
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 540)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 620)
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 540)
+      setIsMobile(window.innerWidth <= 620)
     }
 
     window.addEventListener('resize', handleResize)
