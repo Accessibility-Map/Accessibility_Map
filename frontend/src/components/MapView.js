@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import React, {useState, useEffect, useRef} from 'react'
+import {MapContainer, TileLayer, Marker} from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
-import { Icon } from 'leaflet'
+import {Icon} from 'leaflet'
 
 import SearchBar from './SearchBar.js'
 import MarkerPopup from './MarkerPopup.js'
@@ -37,21 +37,20 @@ const MapView = () => {
   const [description, setDescription] = useState('')
   const [user, setUser] = useState(null)
   const [userID, setUserID] = useState(null)
-  const [map, setMap] = useState(null);
-  const [clicked, setClicked] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [showSearch, setShowSearch] = useState(false);
-  const toggleSearch = () => setShowSearch(prev => !prev);
+  const [map, setMap] = useState(null)
+  const [clicked, setClicked] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 540)
+  const [showSearch, setShowSearch] = useState(false)
+  const toggleSearch = () => setShowSearch(prev => !prev)
   const [promptLogin, setPromptLogin] = useState(false)
-  const [promptDescription, setPromptDescription] = useState("")
-  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth);
-  const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0);
+  const [promptDescription, setPromptDescription] = useState('')
+  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth)
+  const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0)
 
   const updateUserAndUserID = newUser => {
     setUser(newUser)
     setUserID(newUser.userID)
   }
-
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
@@ -87,42 +86,28 @@ const MapView = () => {
   })
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    const handleResize = () => setIsMobile(window.innerWidth <= 540)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   useEffect(() => {
-    const storedLocation = sessionStorage.getItem("selectedLocation");
+    const storedLocation = sessionStorage.getItem('selectedLocation')
     if (storedLocation && locations.length > 0) {
-      const parsedLocation = JSON.parse(storedLocation);
-      const match = locations.find(loc => loc.locationID === parsedLocation.locationID);
+      const parsedLocation = JSON.parse(storedLocation)
+      const match = locations.find(loc => loc.locationID === parsedLocation.locationID)
       if (match) {
         // Clear filters and search
-        setSearchTerm('');
-        setSelectedFilters([]);
-
-        setOpenPopupId(match.locationID);
-        setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1);
-        
-        if (map) {
-              // If not using mobile view set the map view
-          if(screenWidth > 768) {
-            const bounds = map.getBounds();
-            const bottom = bounds.getNorth();
-            const center = bounds.getCenter();
-            const difference = bottom - center.lat;
-            map.setView([(match.latitude + (difference * .9)), match.longitude], 17);
-          }
-        }
+        setSearchTerm('')
+        setSelectedFilters([])
+        setOpenPopupId(match.locationID)
+        setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1)
       }
-
-      sessionStorage.removeItem("selectedLocation");
+      sessionStorage.removeItem('selectedLocation')
     }
-  }, [locations, map]);
-
+  }, [locations, map])
 
   const handleAddMarker = async location => {
-    if(user && user.username == "Expo User" && user.userID == 49) {
+    if (user && user.username == 'Expo User' && user.userID == 49) {
       try {
         const payload = {
           locationName: locationName || 'Default Location Name',
@@ -130,10 +115,8 @@ const MapView = () => {
           longitude: location.longitude || 0,
           description: description || '',
         }
-
         const response = await axios.post(`${process.env.REACT_APP_API_URL}api/locations`, payload)
         const newLocation = response.data
-
         setLocations(prevLocations => [...prevLocations, newLocation])
         setNewMarker(newLocation)
         setLocationName(newLocation.locationName || '')
@@ -142,10 +125,9 @@ const MapView = () => {
       } catch (error) {
         console.error('Error creating new marker:', error)
       }
-    }
-    else {
-      setPromptLogin(true);
-      setPromptDescription("Adding markers has been disabled for the Expo.");
+    } else {
+      setPromptLogin(true)
+      setPromptDescription('Adding markers has been disabled for the Expo. ')
     }
   }
 
@@ -161,7 +143,6 @@ const MapView = () => {
           location.locationID === updatedLocation.locationID ? updatedLocation : location
         )
       )
-
       setEditingLocation(null)
       setIsEditing(false)
       setOpenPopupId(null)
@@ -170,8 +151,8 @@ const MapView = () => {
     }
   }
 
-  const deleteMarker = async (locationID) => {
-    if(user && user.username == "Expo User" && user.userID == 49) {
+  const deleteMarker = async locationID => {
+    if (user && user.username == 'Expo User' && user.userID == 49) {
       try {
         console.log(locationID)
         await axios.delete(`${process.env.REACT_APP_API_URL}api/locations/${locationID}`)
@@ -179,47 +160,50 @@ const MapView = () => {
       } catch (error) {
         console.error('Error deleting location:', error)
       }
-    }
-    else {
-      setPromptLogin(true);
-      setPromptDescription("Deleting markers has been disabled for the Expo.");
+    } else {
+      setPromptLogin(true)
+      setPromptDescription('Deleting markers has been disabled for the Expo.')
     }
   }
 
   return (
     <div>
-     {isMobile && <Header toggleSearch={toggleSearch} showSearch={showSearch} UpdateUser={updateUserAndUserID} />}
+      {isMobile && (
+        <Header
+          toggleSearch={toggleSearch}
+          showSearch={showSearch}
+          UpdateUser={updateUserAndUserID}
+        />
+      )}
 
-     {(!isMobile || (isMobile && showSearch)) && (
-
-      <SearchBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterOptions={filters}
-        selectedFilters={selectedFilters}
-        showSearch={showSearch}
-        toggleFilter={filter =>
-          setSelectedFilters(prev =>
-            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
-          )
-        }
-        filteredLocations={filteredLocations}
-        onSelectLocation={location => {
-          setOpenPopupId(location.locationID)
-          if (map) {
-            map.setView([location.latitude, location.longitude], 19)
+      {(!isMobile || (isMobile && showSearch)) && (
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterOptions={filters}
+          selectedFilters={selectedFilters}
+          showSearch={showSearch}
+          toggleFilter={filter =>
+            setSelectedFilters(prev =>
+              prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+            )
           }
-        }}
-      />
-    )}
+          filteredLocations={filteredLocations}
+          onSelectLocation={location => {
+            setOpenPopupId(location.locationID)
+            if (map) {
+              map.setView([location.latitude, location.longitude], 18)
+            }
+          }}
+        />
+      )}
 
       <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer
         center={UCCoordinates}
         zoom={17}
-        style={{ height: '100vh', width: '100%' }}
-        ref={setMap}
-        >
+        style={{height: '100vh', width: '100%'}}
+        ref={setMap}>
         {' '}
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -264,7 +248,12 @@ const MapView = () => {
         )}
         <AddMarkerOnClick onAddMarker={handleAddMarker} />
       </MapContainer>
-      <GenericPromptDialog isOpen={promptLogin} onClose={() => setPromptLogin(false)} promptingAction={promptDescription} title="Access Restricted"/>
+      <GenericPromptDialog
+        isOpen={promptLogin}
+        onClose={() => setPromptLogin(false)}
+        promptingAction={promptDescription}
+        title='Access Restricted'
+      />
     </div>
   )
 }

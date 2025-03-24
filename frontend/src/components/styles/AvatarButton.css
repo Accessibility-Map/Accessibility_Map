@@ -2,8 +2,8 @@
 .avatar-container {
     position: absolute;
     pointer-events: auto;
-    top: 1px;
-    right: 10px;
+    top: 3.5px;
+    right: 20px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -16,19 +16,19 @@
     align-self: center;
     pointer-events: auto;
     margin-top: 20px;
-    margin-right: 0;
+    margin-left: 100px;
   }
   
   /* ===== Avatar Menu Box ===== */
   .avatar-menu {
     position: absolute;
-    top: 50px;
+    top: 80px;
     right: 0;
     background-color: white;
-    border-radius: 8px;
+    border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     z-index: 999;
-    width: 200px;
+    width: 150px;
   }
   
   /* ===== Menu Item & Hover ===== */
@@ -36,32 +36,32 @@
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s ease;
+    font-size: 15px;
+    margin-bottom: 8px;
   }
   
   .avatar-menu-item:hover {
     background-color: #f0f0f0; 
   }
-  
-  .avatar-menu-item-text {
-    color: black !important;
+
+
+  @media (max-width: 800px) {
+  .avatar-menu {
+    width: 100px
   }
-  
-  /* ===== Mobile & Tablet Adjustments ===== */
-  @media (max-width: 1080px) {
-    .avatar-container {
-      right: -50px;
-    }
+  .avatar-menu-item
+  {
+    font-size: 13px;
   }
-  
-  @media (max-width: 768px) {
-    .avatar-menu {
-      right: 8px;
-      width: 85vw;
-      max-width: 280px;
-    }
-  }
-  
+}
+  /* Mobile */
   @media (max-width: 540px) {
+    .avatar-menu {
+        right: 8px;
+        width: 85vw;
+        max-width: 280px;
+      }
+     
     .avatar-button {
       width: 32px !important;
       height: 32px !important;

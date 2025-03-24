@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import DropdownResults from './DropdownResults.js'
 import './styles/SearchBar.css'
 
@@ -12,10 +12,20 @@ const SearchBar = ({
   onSelectLocation,
   showSearch, // ✅ add this
 }) => {
-  const isMobile = window.innerWidth <= 768;
+  const [showDropdown, setShowDropdown] = useState(false)
+
+  const isMobile = window.innerWidth <= 480
+  useEffect(() => {
+    // Auto-hide when search is empty
+    if (searchTerm.trim() === '') {
+      setShowDropdown(false)
+    } else {
+      setShowDropdown(true)
+    }
+  }, [searchTerm])
 
   if (isMobile && !showSearch) {
-    return null; // ✅ Hide search bar on mobile if toggle is off
+    return null // ✅ Hide search bar on mobile if toggle is off
   }
 
   return (
@@ -26,12 +36,14 @@ const SearchBar = ({
           placeholder='Search for accessible places...'
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
+          onClick={() => setShowDropdown(true)}
           className='searchInput'
         />
-        {searchTerm.trim() !== '' && (
+        {showDropdown && searchTerm.trim() !== '' && (
           <DropdownResults
             results={filteredLocations}
             onSelect={onSelectLocation}
+            onClose={() => setShowDropdown(false)}
             searchTerm={searchTerm}
           />
         )}
@@ -44,8 +56,7 @@ const SearchBar = ({
                 backgroundColor: selectedFilters.includes(filter) ? '#007bff' : '#fff',
                 color: selectedFilters.includes(filter) ? '#fff' : '#000',
               }}
-              onClick={() => toggleFilter(filter)}
-            >
+              onClick={() => toggleFilter(filter)}>
               {filter}
             </button>
           ))}
