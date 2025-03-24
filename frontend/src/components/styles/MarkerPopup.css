@@ -160,7 +160,7 @@
   border-radius: 4px;
 }
 /* Media Query for Mobile */
-@media (max-width: 540) {
+@media (max-width: 620) {
   .popup-content {
     padding: 8px;
   }

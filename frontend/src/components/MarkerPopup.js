@@ -76,7 +76,7 @@ const MarkerPopup = ({
 
   const handleMarkerClick = locationID => {
     // If not using mobile view set the map view
-    if (screenWidth > 540) {
+    if (screenWidth > 620) {
       const bounds = map.getBounds()
       const bottom = bounds.getNorth()
       const center = bounds.getCenter()
@@ -114,7 +114,7 @@ const MarkerPopup = ({
         closeOnClick={false}
         maxWidth={700}
         className={`leaflet-popup ${isEditing ? 'edit-mode' : ''}`}>
-        {screenWidth <= 540 ? (
+        {screenWidth <= 620 ? (
           <Dialog open={mobileDialogOpen} fullScreen>
             <AppBar sx={{position: 'relative'}}>
               <Toolbar>
