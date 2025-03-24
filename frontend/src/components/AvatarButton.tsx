@@ -94,7 +94,7 @@ const AvatarButton = ({ UpdateUser }: AvatarButtonProps) => {
                             />
                         </ListItem>
                         <ListItem
-                            className="fav-item"
+                            className="fav-item avatar-menu-item"
                             onClick={() => { navigate("/favorites"); setIsActive(false); }}
                             style={{ cursor: "pointer" }}
                         >

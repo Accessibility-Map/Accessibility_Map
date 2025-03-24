@@ -223,6 +223,9 @@ const MarkerPopupContent = ({
                           color: isFavorite ? "red" : "gray",
                           fill: isFavorite ? "red" : "none",
                           transition: "color 0.2s ease-in-out",
+                          position: "absolute",
+                          top: "70px",
+                          right: "30px",
                         }}
                       />
                     </Tooltip>

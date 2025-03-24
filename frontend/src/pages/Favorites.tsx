@@ -19,8 +19,8 @@ const Favorites: React.FC = () => {
     }
 
     console.log("Navigating to MapView with location:", location);
-    navigate(`/map?locationID=${location.locationID}`);
     sessionStorage.setItem("selectedLocation", JSON.stringify(location));
+    navigate(`/map?locationID=${location.locationID}`);
   };
 
   const validFavorites = favorites.filter((fav: Location) => typeof fav === "object" && fav.locationID);

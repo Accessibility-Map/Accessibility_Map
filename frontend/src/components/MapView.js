@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
@@ -37,13 +37,15 @@ const MapView = () => {
   const [description, setDescription] = useState('')
   const [user, setUser] = useState(null)
   const [userID, setUserID] = useState(null)
-  const [map, setMap] = useState(null)
+  const [map, setMap] = useState(null);
   const [clicked, setClicked] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showSearch, setShowSearch] = useState(false);
   const toggleSearch = () => setShowSearch(prev => !prev);
   const [promptLogin, setPromptLogin] = useState(false)
   const [promptDescription, setPromptDescription] = useState("")
+  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth);
+  const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0);
 
   const updateUserAndUserID = newUser => {
     setUser(newUser)
@@ -94,17 +96,23 @@ const MapView = () => {
     if (storedLocation && locations.length > 0) {
       const parsedLocation = JSON.parse(storedLocation);
       const match = locations.find(loc => loc.locationID === parsedLocation.locationID);
-
       if (match) {
         // Clear filters and search
         setSearchTerm('');
         setSelectedFilters([]);
 
         setOpenPopupId(match.locationID);
-        setClicked(true);
-
+        setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1);
+        
         if (map) {
-          map.setView([match.latitude, match.longitude], 19);
+              // If not using mobile view set the map view
+          if(screenWidth > 768) {
+            const bounds = map.getBounds();
+            const bottom = bounds.getNorth();
+            const center = bounds.getCenter();
+            const difference = bottom - center.lat;
+            map.setView([(match.latitude + (difference * .9)), match.longitude], 17);
+          }
         }
       }
 
@@ -184,33 +192,34 @@ const MapView = () => {
 
      {(!isMobile || (isMobile && showSearch)) && (
 
-  <SearchBar
-    searchTerm={searchTerm}
-    setSearchTerm={setSearchTerm}
-    filterOptions={filters}
-    selectedFilters={selectedFilters}
-    showSearch={showSearch}
-    toggleFilter={filter =>
-      setSelectedFilters(prev =>
-        prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
-      )
-    }
-    filteredLocations={filteredLocations}
-    onSelectLocation={location => {
-      setOpenPopupId(location.locationID)
-      if (map) {
-        map.setView([location.latitude, location.longitude], 19)
-      }
-    }}
-  />
-)}
+      <SearchBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterOptions={filters}
+        selectedFilters={selectedFilters}
+        showSearch={showSearch}
+        toggleFilter={filter =>
+          setSelectedFilters(prev =>
+            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+          )
+        }
+        filteredLocations={filteredLocations}
+        onSelectLocation={location => {
+          setOpenPopupId(location.locationID)
+          if (map) {
+            map.setView([location.latitude, location.longitude], 19)
+          }
+        }}
+      />
+    )}
 
       <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer
         center={UCCoordinates}
         zoom={17}
         style={{ height: '100vh', width: '100%' }}
-        whenCreated={setMap}>
+        ref={setMap}
+        >
         {' '}
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -232,8 +241,7 @@ const MapView = () => {
             setOpenPopupId={setOpenPopupId}
             userID={userID}
             user={user}
-            clicked={clicked}
-            setClicked={setClicked}
+            triggerOpenMobileDialog={triggerOpenMobileDialog}
           />
         ))}
         {newMarker && (
@@ -251,8 +259,6 @@ const MapView = () => {
               openPopupId={openPopupId}
               setOpenPopupId={setOpenPopupId}
               userID={userID}
-              clicked={clicked}
-              setClicked={setClicked}
             />
           </Marker>
         )}
