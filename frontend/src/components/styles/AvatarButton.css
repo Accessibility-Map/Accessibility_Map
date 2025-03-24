@@ -1,54 +1,76 @@
+/* ===== Avatar Container ===== */
 .avatar-container {
     position: absolute;
-    pointer-events: none;
+    pointer-events: auto;
     top: 1px;
     right: 10px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     width: 150px;
-}
-
-.avatar-button {
+  }
+  
+  .avatar-button {
     cursor: pointer;
     z-index: 1000;
     align-self: center;
     pointer-events: auto;
     margin-top: 20px;
-}
-
-.avatar-menu {
-    background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 7px;
-    z-index: 1000;
-    display: block;
-    flex-direction: column;
-    gap: 5px;
-    pointer-events: auto;
-}
-
-.avatar-menu-item {
+    margin-right: 0;
+  }
+  
+  /* ===== Avatar Menu Box ===== */
+  .avatar-menu {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    width: 200px;
+  }
+  
+  /* ===== Menu Item & Hover ===== */
+  .avatar-menu-item {
     cursor: pointer;
-    /* Round the corners */
     border-radius: 4px;
-}
-
-.avatar-menu-item:hover {
-    background-color: #f5f5f5;
-}
-/* Tablet */
-@media (max-width: 1080px) {
+    transition: background-color 0.2s ease;
+  }
+  
+  .avatar-menu-item:hover {
+    background-color: #f0f0f0; 
+  }
+  
+  .avatar-menu-item-text {
+    color: black !important;
+  }
+  
+  /* ===== Mobile & Tablet Adjustments ===== */
+  @media (max-width: 1080px) {
     .avatar-container {
-        right:-50px;
+      right: -50px;
     }
-}
-/* Mobile Device */
-@media (max-width: 540px) {
+  }
+  
+  @media (max-width: 768px) {
+    .avatar-menu {
+      right: 8px;
+      width: 85vw;
+      max-width: 280px;
+    }
+  }
+  
+  @media (max-width: 540px) {
     .avatar-button {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.75rem; /* adjust initials text size too */
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 0.75rem;
+      margin-right: 50px;
     }
-}
+  
+    .avatar-menu-item-text {
+      color: black !important;
+    }
+  }
+  

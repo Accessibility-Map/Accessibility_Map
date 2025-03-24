@@ -32,7 +32,8 @@ const MarkerPopup = ({
   openPopupId,
   setOpenPopupId,
   saveEdit,
-  user
+  user,
+  triggerOpenMobileDialog
 }) => {
   const markerRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -71,7 +72,18 @@ const MarkerPopup = ({
     setOpenPopupId(locationID);
     setMobileDialogOpen(true);
   };
+  useEffect(() => {
+    if (openPopupId === location.locationID && markerRef.current) {
+      markerRef.current.openPopup(); // ✅ opens Leaflet popup
+    }
+  }, [openPopupId, location.locationID]);
 
+  useEffect(() => {
+    if (triggerOpenMobileDialog) {
+      setMobileDialogOpen(true);
+    }
+  }, [triggerOpenMobileDialog]);
+  
   return (
     <Marker
       ref={markerRef}

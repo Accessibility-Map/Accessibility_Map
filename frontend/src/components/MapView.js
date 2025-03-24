@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from 'react'
-import {MapContainer, TileLayer, Marker} from 'react-leaflet'
+import React, { useState, useEffect, useRef } from 'react'
+import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
-import {Icon} from 'leaflet'
+import { Icon } from 'leaflet'
 
 import SearchBar from './SearchBar.js'
 import MarkerPopup from './MarkerPopup.js'
@@ -37,9 +37,15 @@ const MapView = () => {
   const [description, setDescription] = useState('')
   const [user, setUser] = useState(null)
   const [userID, setUserID] = useState(null)
-  const [map, setMap] = useState(null)
+  const [map, setMap] = useState(null);
+  const [clicked, setClicked] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [showSearch, setShowSearch] = useState(false);
+  const toggleSearch = () => setShowSearch(prev => !prev);
   const [promptLogin, setPromptLogin] = useState(false)
   const [promptDescription, setPromptDescription] = useState("")
+  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth);
+  const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0);
 
   const updateUserAndUserID = newUser => {
     setUser(newUser)
@@ -55,6 +61,7 @@ const MapView = () => {
         console.error('Error fetching location data:', error)
       }
     }
+
     const fetchFeaturesData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}api/features`)
@@ -78,6 +85,42 @@ const MapView = () => {
       .map(feature => feature.locationFeature)
     return matchesSearchTerm && selectedFilters.every(filter => locationFeatures.includes(filter))
   })
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  useEffect(() => {
+    const storedLocation = sessionStorage.getItem("selectedLocation");
+    if (storedLocation && locations.length > 0) {
+      const parsedLocation = JSON.parse(storedLocation);
+      const match = locations.find(loc => loc.locationID === parsedLocation.locationID);
+      if (match) {
+        // Clear filters and search
+        setSearchTerm('');
+        setSelectedFilters([]);
+
+        setOpenPopupId(match.locationID);
+        setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1);
+        
+        if (map) {
+              // If not using mobile view set the map view
+          if(screenWidth > 768) {
+            const bounds = map.getBounds();
+            const bottom = bounds.getNorth();
+            const center = bounds.getCenter();
+            const difference = bottom - center.lat;
+            map.setView([(match.latitude + (difference * .9)), match.longitude], 17);
+          }
+        }
+      }
+
+      sessionStorage.removeItem("selectedLocation");
+    }
+  }, [locations, map]);
+
+
   const handleAddMarker = async location => {
     if(user && user.username == "Expo User" && user.userID == 49) {
       try {
@@ -145,12 +188,16 @@ const MapView = () => {
 
   return (
     <div>
-      <Header />
+     {isMobile && <Header toggleSearch={toggleSearch} showSearch={showSearch} UpdateUser={updateUserAndUserID} />}
+
+     {(!isMobile || (isMobile && showSearch)) && (
+
       <SearchBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         filterOptions={filters}
         selectedFilters={selectedFilters}
+        showSearch={showSearch}
         toggleFilter={filter =>
           setSelectedFilters(prev =>
             prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
@@ -160,16 +207,19 @@ const MapView = () => {
         onSelectLocation={location => {
           setOpenPopupId(location.locationID)
           if (map) {
-            map.setView([location.latitude, location.longitude], 19) // zoom to marker
+            map.setView([location.latitude, location.longitude], 19)
           }
         }}
       />
+    )}
+
       <AvatarButton UpdateUser={updateUserAndUserID}></AvatarButton>
       <MapContainer
         center={UCCoordinates}
         zoom={17}
-        style={{height: '100vh', width: '100%'}}
-        whenCreated={setMap}>
+        style={{ height: '100vh', width: '100%' }}
+        ref={setMap}
+        >
         {' '}
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -191,6 +241,7 @@ const MapView = () => {
             setOpenPopupId={setOpenPopupId}
             userID={userID}
             user={user}
+            triggerOpenMobileDialog={triggerOpenMobileDialog}
           />
         ))}
         {newMarker && (

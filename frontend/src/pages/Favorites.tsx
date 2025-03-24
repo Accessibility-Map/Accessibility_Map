@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { List, ListItem, ListItemText, Paper, Typography, Button } from "@mui/material";
+import { List, ListItem, ListItemText, Paper, Typography, Button, AppBar, Toolbar, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 type Location = {
@@ -19,49 +19,58 @@ const Favorites: React.FC = () => {
     }
 
     console.log("Navigating to MapView with location:", location);
-
-    // ✅ Navigate to the map with the location ID
-    navigate(`/map?locationID=${location.locationID}`);
-
-    // ✅ Store the FULL location object in sessionStorage
     sessionStorage.setItem("selectedLocation", JSON.stringify(location));
+    navigate(`/map?locationID=${location.locationID}`);
   };
 
-  // Ensure only valid location objects are displayed
   const validFavorites = favorites.filter((fav: Location) => typeof fav === "object" && fav.locationID);
 
   return (
-    <Paper sx={{ maxWidth: 500, margin: "auto", padding: 2, mt: 4, textAlign: "center" }}>
-      <Typography variant="h6">Favorite Locations</Typography>
-      <List>
-        {validFavorites.length > 0 ? (
-          validFavorites.map((location, index) => (
-            <ListItem
-              key={location.locationID || index}
-              component="div"
-              onClick={() => handleLocationClick(location)}
-              sx={{ cursor: "pointer", textAlign: "left" }}
-            >
-              <ListItemText 
-                primary={location.locationName ? `${location.locationName}` : `Location ID: ${location.locationID}`}
-                secondary={`Location ID: ${location.locationID}`} 
-              />
-            </ListItem>
-          ))
-        ) : (
-          <Typography>No favorite locations yet.</Typography>
-        )}
-      </List>
+    <>
+      {/* Top Nav Bar */}
+      <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Favorite Locations
+          </Typography>
+          <Button color="inherit" onClick={() => navigate("/")}>
+            Back to Map
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={() => navigate("/")} 
-        sx={{ mt: 2 }}
-      >
-        Back to Map
-      </Button>
-    </Paper>
+      {/* Content */}
+      <Box sx={{ maxWidth: 500, margin: "auto", padding: 2, mt: 4 }}>
+        <Paper sx={{ padding: 2 }}>
+          <List>
+            {validFavorites.length > 0 ? (
+              validFavorites.map((location, index) => (
+                <ListItem
+                  key={location.locationID || index}
+                  component="div"
+                  onClick={() => handleLocationClick(location)}
+                  sx={{
+                    cursor: "pointer",
+                    textAlign: "left",
+                    borderRadius: "6px",
+                    "&:hover": {
+                      backgroundColor: "#f5f5f5"
+                    }
+                  }}
+                >
+                  <ListItemText
+                    primary={location.locationName ? location.locationName : `Location ID: ${location.locationID}`}
+                    secondary={`Location ID: ${location.locationID}`}
+                  />
+                </ListItem>
+              ))
+            ) : (
+              <Typography>No favorite locations yet.</Typography>
+            )}
+          </List>
+        </Paper>
+      </Box>
+    </>
   );
 };
 
