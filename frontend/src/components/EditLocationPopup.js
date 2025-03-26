@@ -9,7 +9,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import { Box, TextField, Button, Typography, Grid2, Divider, Tabs, Tab, IconButton, Tooltip } from "@mui/material";
 
-const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, saveEdit, triggerSave, refetchLocationDetails, isMobile, deleteMarker }) => {
+const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, saveEdit, triggerSave, refetchLocationDetails, isMobile, deleteMarker, closeEditor }) => {
   const [locationName, setLocationName] = useState(location.locationName || "");
   const [description, setDescription] = useState(location.description || "");
   const [updatedFeatures, setUpdatedFeatures] = useState(featuresList);
@@ -65,6 +65,11 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       console.error("Error saving changes:", error);
     }
   };
+
+  const handleSaveButton = (e) => {
+    e.stopPropagation();
+    handleSave();
+  }
 
   const updateNotes = (featureId, newNotes) => {
     setUpdatedFeatures((prevFeatures) =>
@@ -135,17 +140,21 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
           <Tab label="Edit Location" value="1"/>
           <Tab label="Edit Features" value="2"/>
         </Tabs>
-        <Divider sx={{ marginBottom: "20px"}}/>
+        <Divider sx={{ marginBottom: "10px"}}/>
       </Box>
-      <form style={{height: "100%", width: "100%" }}>
+      <form style={{height: (tab == 1 ? "81%" : "73%"), width: "100%" }}>
       <Box hidden={tab != 1}>
         <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Location</div>
-        <Tooltip title="Delete Location">
-          <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute", top: "60px", right: "38px" }}>
-            <DeleteForeverIcon/>
-          </IconButton>
-        </Tooltip>
-        <Box sx={{ overflowY: "auto", overflowX: "hidden", height: (isMobile ? "85%" : "470px"), width: "100%", paddingTop: "10px" }}>
+
+        <Box sx={{ position: "relative", left: "85%", bottom: "42px" }}>
+          <Tooltip title="Delete Location">
+            <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute"}} >
+              <DeleteForeverIcon/>
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        <Box sx={{  height: (isMobile ? "85%" : "470px"), width: "100%" }}>
           <TextField fullWidth label="Location Name" value={locationName} onChange={(e) => setLocationName(e.target.value)} sx={{ marginBottom: "20px" }} />
           <ImageScroller
             images={images}
@@ -156,7 +165,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
             refetchLocationDetails={refetchLocationDetails}
             isEditing
           />
-          <TextField fullWidth multiline label="Description" value={description} onChange={(e) => setDescription(e.target.value)} maxRows={10} minRows={4} />
+          <TextField fullWidth multiline label="Description" value={description} onChange={(e) => setDescription(e.target.value)} maxRows={6} minRows={4} />
         </Box>
       </Box>
       <Box hidden={tab != 2}>
@@ -200,11 +209,32 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
             </Box>
           ))}
         </Box>
-        <Box sx={{ height: "48px", marginTop: "20px"}}>
-          <AddFeatureButton locationID={location.locationID} setFeaturesList={setUpdatedFeatures} featuresList={updatedFeatures}/>
-        </Box>
       </Box>
       </form>
+      <Box sx={{ height: (tab == 2 ? "116px" : "48px"), marginTop: "15px", position: "relative", bottom: "0px", width: "100%"}}>
+          <Box hidden={tab != 2}>
+            <Box sx={{ height: "48px", marginTop: "20px"}}>
+              <AddFeatureButton locationID={location.locationID} setFeaturesList={setUpdatedFeatures} featuresList={updatedFeatures}/>
+            </Box>
+          </Box>
+          <Box sx={{ width: "100%" }}>
+              <Button
+              variant="contained"
+              onClick={closeEditor}
+              color="error"
+              sx={{ marginRight: "2%", width: "48%" }}
+              >
+                  Cancel
+              </Button>
+              <Button 
+              variant="contained" 
+              onClick={handleSaveButton}
+              sx={{ marginLeft: "2%", width: "48%" }}
+              >
+                  Save Changes
+              </Button>
+          </Box>
+        </Box>
     </div>
   );
 };

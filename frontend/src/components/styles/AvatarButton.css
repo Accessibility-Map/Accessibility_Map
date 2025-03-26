@@ -7,7 +7,7 @@
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    width: 150px;
+    width: 32px;
   }
   
   .avatar-button {
@@ -15,14 +15,14 @@
     z-index: 1000;
     align-self: center;
     pointer-events: auto;
+    margin-right: 25px;
     margin-top: 20px;
-    margin-left: 100px;
   }
   
   /* ===== Avatar Menu Box ===== */
   .avatar-menu {
     position: absolute;
-    top: 80px;
+    top: 64px;
     right: 0;
     background-color: white;
     border-radius: 20px;
@@ -60,16 +60,18 @@
         right: 8px;
         width: 85vw;
         max-width: 280px;
+        top: 47px;
       }
      
     .avatar-button {
       width: 32px !important;
       height: 32px !important;
       font-size: 0.75rem;
-      margin-right: 50px;
+      margin-right: 25px;
+      margin-top: 8px;
     }
   
-    .avatar-menu-item-text {
+    .avatar-menu-item {
       color: black !important;
     }
   }

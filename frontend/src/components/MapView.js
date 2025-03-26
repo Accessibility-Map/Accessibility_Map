@@ -171,7 +171,6 @@ const MapView = () => {
       {isMobile && (
         <Header
           toggleSearch={toggleSearch}
-          showSearch={showSearch}
           UpdateUser={updateUserAndUserID}
         />
       )}
@@ -190,9 +189,20 @@ const MapView = () => {
           }
           filteredLocations={filteredLocations}
           onSelectLocation={location => {
-            setOpenPopupId(location.locationID)
+            setOpenPopupId(location.locationID);
             if (map) {
-              map.setView([location.latitude, location.longitude], 18)
+              if (screenWidth > 620) {
+                const bounds = map.getBounds()
+                const bottom = bounds.getNorth()
+                const center = bounds.getCenter()
+                const difference = bottom - center.lat
+                map.setView([location.latitude + difference * 0.9, location.longitude], 17)
+              }
+              else{
+                map.setView([location.latitude, location.longitude], 17)
+                setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1);
+              }
+              
             }
           }}
         />

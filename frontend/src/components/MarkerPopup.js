@@ -70,8 +70,8 @@ const MarkerPopup = ({
 
   const handleClosePopup = () => {
     setOpenPopupId(null)
-    setMobileDialogOpen(false)
     document.querySelector('.leaflet-popup-close-button').click()
+    setMobileDialogOpen(false)
   }
 
   const handleMarkerClick = locationID => {
@@ -113,9 +113,9 @@ const MarkerPopup = ({
         autoPan={false}
         closeOnClick={false}
         maxWidth={700}
-        className={`leaflet-popup ${isEditing ? 'edit-mode' : ''}`}>
+        className={`leaflet-popup ${isEditing ? 'edit-mode' : ''} ${screenWidth <= 620 ? 'mobile-popup' : ''}`}>
         {screenWidth <= 620 ? (
-          <Dialog open={mobileDialogOpen} fullScreen>
+          <Dialog open={mobileDialogOpen} fullScreen sx={{ overflowX: 'hidden' }}>
             <AppBar sx={{position: 'relative'}}>
               <Toolbar>
                 <IconButton onClick={handleClosePopup}>
@@ -154,7 +154,8 @@ const MarkerPopup = ({
             clicked={clicked}
             setClicked={setClicked}
             markerRef={markerRef}
-            isMobile={false}></MarkerPopupContent>
+            isMobile={false}>
+          </MarkerPopupContent>
         )}
       </Popup>
     </Marker>

@@ -12,6 +12,11 @@ const FeaturesList = ({ featuresList }: FeaturesListProps) => {
   return (
     <>
       <List sx={{ width: "100%", overflowY: "auto" }}>
+        {featuresList.length === 0 && 
+        <ListItem disablePadding={true}>
+          <ListItemText primary={"No features found for this location. Be the first to add one!"} sx={{ textAlign: "center"}}/>
+        </ListItem>
+        }
         {featuresList.map((feature, index) => (
           <Box key={index}>
             <Grid2 container sx={{ width: "100%" }}>
