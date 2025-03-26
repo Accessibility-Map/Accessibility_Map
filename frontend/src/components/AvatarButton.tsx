@@ -52,7 +52,7 @@ const AvatarButton = ({UpdateUser}: AvatarButtonProps) => {
   }, [])
 
   useEffect(() => {
-    if (screenWidth < 800) {
+    if (screenWidth < 620) {
       setIsWindowSmall(true)
     } else {
       setIsWindowSmall(false)

@@ -174,26 +174,8 @@ const MarkerPopupContent = ({
                 refetchLocationDetails={fetchFeaturesAndImages}
                 deleteMarker={deleteMarker}
                 isMobile={isMobile}
+                closeEditor={closeEditor}
               /> 
-              <Box sx={{ height: "48px", marginTop: "5px", position: "relative", bottom: "0"}}>
-                <Box sx={{ width: "100%" }}>
-                    <Button
-                    variant="contained"
-                    onClick={closeEditor}
-                    color="error"
-                    sx={{ marginRight: "2%", width: "48%" }}
-                    >
-                        Cancel
-                    </Button>
-                    <Button 
-                    variant="contained" 
-                    onClick={() => {setTriggerSave(true);}}
-                    sx={{ marginLeft: "2%", width: "48%" }}
-                    >
-                        Save Changes
-                    </Button>
-                </Box>
-              </Box>
             </div>
           ) 
             :
@@ -207,65 +189,67 @@ const MarkerPopupContent = ({
               </Tabs>
               </Box>
 
-              <Divider sx={{ marginBottom: "20px" }} />
+              <Divider sx={{ marginBottom: "10px" }} />
 
-              <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
-                  <>
-                  <Box sx={{ height: "60%", marginBottom: "10px" }}>
-                  <div className="popup-header">{location.locationName}</div>
+              <Box sx={{ height: "90%"}}>
+                <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
+                    <>
+                    <Box sx={{ height: "60%", marginBottom: "10px" }}>
+                    <div className="popup-header">{location.locationName}</div>
+                      <Box sx={{ position: "relative", left: "85%", bottom: "30px" }}>
+                        <Tooltip title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}>
+                          <Heart
+                            size={24}
+                            onClick={toggleFavorite}
+                            style={{
+                              cursor: "pointer",
+                              color: isFavorite ? "red" : "gray",
+                              fill: isFavorite ? "red" : "none",
+                              transition: "color 0.2s ease-in-out",
+                              position: "absolute",
+                            }}
+                          />
+                        </Tooltip>
+                      </Box>
+                    
+                    <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
+                    <ImageScroller
+                        images={images}
+                        heightParam="250px"
+                    />
+                    </Box>
+                    <Box sx={{ maxHeight: "150px", overflowY: "auto", overflowX: "hidden", height: "35%", marginTop: "30px" }}>
+                      <p>{location.description}</p>
+                    </Box>
+                    </>
+                </Box>
 
-                    <Tooltip title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}>
-                      <Heart
-                        size={24}
-                        onClick={toggleFavorite}
-                        style={{
-                          cursor: "pointer",
-                          color: isFavorite ? "red" : "gray",
-                          fill: isFavorite ? "red" : "none",
-                          transition: "color 0.2s ease-in-out",
-                          position: "absolute",
-                          top: "70px",
-                          right: "30px",
-                        }}
-                      />
-                    </Tooltip>
-                  
-                  <Typography variant="subtitle2" sx={{ margin: "0 !important", textAlign: "center"}}>{averageRating}/5.00 - Average User Rating</Typography>
-                  <ImageScroller
-                      images={images}
-                      heightParam="250px"
-                  />
-                  </Box>
-                  <Box sx={{ maxHeight: "37%", overflowY: "auto", overflowX: "hidden", marginTop: "30px" }}>
-                  <p>{location.description}</p>
-                  </Box>
-                  </>
+                <Box hidden={tab != 2} id="features-list" sx={{ height: (isMobile ? "85%" : "450px") }}>
+                <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
+                    <FeaturesList featuresList={featuresList}/>
+                </Box>
+
+                </Box>
+                
+                <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
+                <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
+                </Box>
+                            <Box>
+                <Box sx={{ height: "40px", marginTop: "15px"}} hidden={tab != 1 && tab != 2}>
+                    <Button 
+                      variant="contained" 
+                      onClick={handleEditLocation}
+                      fullWidth
+                    >
+                    Edit Location
+                    </Button>
+                </Box>
+
+
+                <Box sx={{ width: "100%", height: "40px", marginTop: "auto"}}>
+                  <StarRating locationID={location.locationID} userID={userID} />
+                </Box>
               </Box>
-
-              <Box hidden={tab != 2} id="features-list" sx={{ height: (isMobile ? "85%" : "450px") }}>
-              <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
-                  <FeaturesList featuresList={featuresList}/>
-              </Box>
-
-              </Box>
-              
-              <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
-              <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
-              </Box>
-
-              <Box sx={{ height: "48px", marginTop: "30px"}} hidden={tab != 1 && tab != 2}>
-                  <Button 
-                    variant="contained" 
-                    onClick={handleEditLocation}
-                    fullWidth
-                  >
-                  Edit Location
-                  </Button>
-              </Box>
-
-
-              <Box sx={{ width: "100%", height: "48px"}}>
-              <StarRating locationID={location.locationID} userID={userID} />
               </Box>
             </div>
           ) 

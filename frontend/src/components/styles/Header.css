@@ -1,0 +1,7 @@
+.search-icon {
+    color: white;
+}
+
+.search-button:hover {
+    background-color: rgba(133, 140, 146, 0.424) !important;
+}

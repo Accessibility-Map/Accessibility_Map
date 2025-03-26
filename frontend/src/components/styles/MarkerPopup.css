@@ -187,3 +187,7 @@
 .leaflet-popup-content {
   position: relative;
 }
+
+.mobile-popup {
+  display: none;
+}

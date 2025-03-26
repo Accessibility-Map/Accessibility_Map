@@ -74,7 +74,7 @@ const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthP
     return (
         <>
             {images.length > 0 ?
-            (<Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam, marginBottom: "20px"}}>
+            (<Grid2 container rowSpacing={0} direction={"column"} sx={{justifyContent: "center", width: widthParam, height: heightParam}}>
                 <Grid2 sx={{width: "100%", height: "75%", backgroundColor: "rgba(0, 0, 0, 0.6)", display: "flex", position: "relative"}}>
                     <img
                         key={imageIndex}
