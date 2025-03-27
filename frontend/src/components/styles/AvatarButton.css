@@ -22,7 +22,7 @@
   /* ===== Avatar Menu Box ===== */
   .avatar-menu {
     position: absolute;
-    top: 64px;
+    top: 70px;
     right: 0;
     background-color: white;
     border-radius: 20px;
@@ -47,7 +47,7 @@
 
   @media (max-width: 800px) {
   .avatar-menu {
-    width: 100px
+    width: 110px
   }
   .avatar-menu-item
   {
@@ -59,8 +59,7 @@
     .avatar-menu {
         right: 8px;
         width: 85vw;
-        max-width: 280px;
-        top: 47px;
+        top: 60px;
       }
      
     .avatar-button {

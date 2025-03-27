@@ -39,7 +39,7 @@ const SearchBar = ({
           onClick={() => setShowDropdown(true)}
           className='searchInput'
         />
-        {showDropdown && searchTerm.trim() !== '' && (
+        {showDropdown && (
           <DropdownResults
             results={filteredLocations}
             onSelect={onSelectLocation}

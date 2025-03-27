@@ -17,7 +17,14 @@ const DropdownResults = ({results, onSelect, onClose}) => {
     }
   }, [onClose])
 
-  if (results.length === 0) return null
+  if (results.length === 0)
+    return (
+      <div className='dropdown-results' ref={dropdownRef}>
+        <div key={location.locationID} className='dropdown-item' onClick={() => onSelect(location)}>
+          <p className='dropdown-text'>No Results Found</p>
+        </div>
+      </div>
+    )
 
   return (
     <div className='dropdown-results' ref={dropdownRef}>
