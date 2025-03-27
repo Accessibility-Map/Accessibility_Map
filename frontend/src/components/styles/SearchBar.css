@@ -83,7 +83,6 @@
     .container {
         flex-direction: column;
         align-items: center;
-        padding: 8px; /* ✅ Add some spacing */
         margin-top: 60px;
       }
       .searchBarContainer {
@@ -91,14 +90,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 0 auto; /* ✅ Center it */
       }
       .searchInput {
         width: 85vw;
         max-width: 320px;
-        height: 36px;
         font-size: 14px;
-        padding: 10px 15px;
       }
   
     .filter-button {
