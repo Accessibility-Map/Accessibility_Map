@@ -160,7 +160,7 @@ const MarkerPopupContent = ({
         <>
         {isEditing ? 
           (
-            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
+            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "100%" : "75vh"), display: "flex", flexDirection: "column", maxHeight: "650px", minHeight: "500px", overflowY: "auto" }}>
               <EditLocationPopup
                 location={location}
                 featuresList={featuresList}
@@ -180,23 +180,21 @@ const MarkerPopupContent = ({
           ) 
             :
           (
-            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "auto" : "650px"), display: "flex", flexDirection: "column" }}>
-              <Box sx={{ height: "48px"}}>
-              <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
-                  <Tab label="Description" value="1" />
-                  <Tab label="Features" value="2" />
-                  <Tab label="Comments" value="3" />
-              </Tabs>
+            <div className="leaflet-popup-content" style={{ width: (isMobile ? "auto" : "500px"), height: (isMobile ? "100%" : "75vh"), display: "flex", flexDirection: "column", maxHeight: "650px", minHeight: "500px" }}>
+              <Box sx={{ height: "48px", flexGrow: 0, flexShrink: 0 }}>
+                <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
+                    <Tab label="Description" value="1" />
+                    <Tab label="Features" value="2" />
+                    <Tab label="Comments" value="3" />
+                </Tabs>
               </Box>
 
-              <Divider sx={{ marginBottom: "10px" }} />
+              <Divider sx={{ marginBottom: "10px", flexGrow: 0, flexShrink: 0 }} />
 
-              <Box sx={{ height: "90%"}}>
-                <Box hidden={tab != 1} sx={{ height: (isMobile ? "85%" : "450px") }}>
-                    <>
-                    <Box sx={{ height: "60%", marginBottom: "10px" }}>
+              <Box sx={{ flexGrow: 1, flexShrink: 1, maxHeight: "70%" }}>
+                <Box hidden={tab != 1} sx={{ height: ("100%"), display: (tab == 1 ? "flex" : "none"), flexDirection: "column" }}>
                     <div className="popup-header">{location.locationName}</div>
-                      <Box sx={{ position: "relative", left: "85%", bottom: "30px" }}>
+                      <Box sx={{ position: "relative", left: "85%", bottom: "20px" }}>
                         <Tooltip title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}>
                           <Heart
                             size={24}
@@ -217,25 +215,25 @@ const MarkerPopupContent = ({
                         images={images}
                         heightParam="250px"
                     />
+                    <Box sx={{ overflowY: "auto", overflowX: "hidden", marginTop: "15px", flexGrow: 1 }}>
+                      <Typography variant="body2" sx={{ margin: "0 !important"}}>{location.description}</Typography>
                     </Box>
-                    <Box sx={{ maxHeight: "150px", overflowY: "auto", overflowX: "hidden", height: "35%", marginTop: "30px" }}>
-                      <p>{location.description}</p>
-                    </Box>
-                    </>
                 </Box>
 
-                <Box hidden={tab != 2} id="features-list" sx={{ height: (isMobile ? "85%" : "450px") }}>
+                <Box hidden={tab != 2} id="features-list" sx={{ height: ("100%") }}>
                 <Box sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
                     <FeaturesList featuresList={featuresList}/>
                 </Box>
 
                 </Box>
                 
-                <Box hidden={tab != 3} sx={{ height: (isMobile ? "85%" : "500px") }}>
+                <Box hidden={tab != 3} sx={{ height: ("108%") }}>
                 <CommentList locationID={location.locationID} userID={userID} user={user}></CommentList>
                 </Box>
-                            <Box>
-                <Box sx={{ height: "40px", marginTop: "15px"}} hidden={tab != 1 && tab != 2}>
+              </Box>
+
+              <Box sx={{ height: "fit-content", flexGrow: 0, flexShrink: 0, marginTop: "auto"}}>
+                <Box sx={{ height: "40px", marginBottom: "auto", marginTop: "10px"}} hidden={tab != 1 && tab != 2}>
                     <Button 
                       variant="contained" 
                       onClick={handleEditLocation}
@@ -246,10 +244,9 @@ const MarkerPopupContent = ({
                 </Box>
 
 
-                <Box sx={{ width: "100%", height: "40px", marginTop: "auto"}}>
+                <Box sx={{ width: "100%", height: "fit-content"}}>
                   <StarRating locationID={location.locationID} userID={userID} />
                 </Box>
-              </Box>
               </Box>
             </div>
           ) 

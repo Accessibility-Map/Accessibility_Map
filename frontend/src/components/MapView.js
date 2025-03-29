@@ -101,6 +101,17 @@ const MapView = () => {
         setSelectedFilters([])
         setOpenPopupId(match.locationID)
         setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1)
+        if (map) {
+          if (screenWidth > 620) {
+            const bounds = map.getBounds()
+            const bottom = bounds.getNorth()
+            const center = bounds.getCenter()
+            const difference = bottom - center.lat
+            map.setView([match.latitude + difference * 0.9, match.longitude], 17)
+          } else {
+            map.setView([match.latitude, match.longitude], 17)
+          }
+        }
       }
       sessionStorage.removeItem('selectedLocation')
     }

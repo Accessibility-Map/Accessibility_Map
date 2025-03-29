@@ -134,7 +134,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
 
 
   return (
-    <div style={{height: "100%", width: "100%" }}>
+    <div style={{height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
       <Box sx={{ height: "48px"}}>
         <Tabs onChange={handleTabChange} value={tab} variant="fullWidth" sx={{ height: "30px"}}>
           <Tab label="Edit Location" value="1"/>
@@ -142,76 +142,78 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
         </Tabs>
         <Divider sx={{ marginBottom: "10px"}}/>
       </Box>
-      <form style={{height: (tab == 1 ? "81%" : "73%"), width: "100%" }}>
-      <Box hidden={tab != 1}>
-        <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Location</div>
 
-        <Box sx={{ position: "relative", left: "85%", bottom: "42px" }}>
-          <Tooltip title="Delete Location">
-            <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute"}} >
-              <DeleteForeverIcon/>
-            </IconButton>
-          </Tooltip>
+      <form style={{height: (tab == 1 ? "81%" : "73%"), width: "100%", overflowY: "auto", overflowX: "hidden" }}>
+        <Box hidden={tab != 1}>
+          <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Location</div>
+
+          <Box sx={{ position: "relative", left: "85%", bottom: "42px" }}>
+            <Tooltip title="Delete Location">
+              <IconButton onClick={() => deleteMarker(location.locationID)} classes={{root: "delete-button"}} sx={{ position: "absolute"}} >
+                <DeleteForeverIcon/>
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Box sx={{  height: (isMobile ? "85%" : "470px"), width: "100%" }}>
+            <TextField fullWidth label="Location Name" value={locationName} onChange={(e) => setLocationName(e.target.value)} sx={{ marginBottom: "0px" }} />
+            <ImageScroller
+              images={images}
+              heightParam="250px"
+              onDelete={handleDeleteImage}
+              onReplace={handleReplaceImage}
+              onUpload={handleUpload}
+              refetchLocationDetails={refetchLocationDetails}
+              isEditing
+            />
+            <TextField fullWidth multiline label="Description" value={description} onChange={(e) => setDescription(e.target.value)} maxRows={5} minRows={3} />
+          </Box>
         </Box>
+        <Box hidden={tab != 2}>
+          <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Features</div>
+          <Box sx={{ overflowY: "hidden", overflowX: "hidden", height: (isMobile ? "85%" : "unset"), width: "100%" }}>
+            {updatedFeatures.map((feature, index) => (
+              <Box key={feature.id}>
+                <Grid2 container style={{ marginBottom: "20px" }}>
+                  <Grid2 size={7} sx={{ marginTop: "10px" }}>
+                    <Typography variant="subtitle1" sx={{marginBottom: "15px", fontWeight: "bold"}}>{feature.locationFeature}</Typography>
+                    <TextField fullWidth multiline label="Notes" value={feature.notes} onChange={(e) => updateNotes(feature.id, e.target.value)} placeholder="Add some notes about the accomodation." maxRows={3}/>
+                  </Grid2>
 
-        <Box sx={{  height: (isMobile ? "85%" : "470px"), width: "100%" }}>
-          <TextField fullWidth label="Location Name" value={locationName} onChange={(e) => setLocationName(e.target.value)} sx={{ marginBottom: "20px" }} />
-          <ImageScroller
-            images={images}
-            heightParam="250px"
-            onDelete={handleDeleteImage}
-            onReplace={handleReplaceImage}
-            onUpload={handleUpload}
-            refetchLocationDetails={refetchLocationDetails}
-            isEditing
-          />
-          <TextField fullWidth multiline label="Description" value={description} onChange={(e) => setDescription(e.target.value)} maxRows={6} minRows={4} />
-        </Box>
-      </Box>
-      <Box hidden={tab != 2}>
-        <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Features</div>
-        <Box sx={{ overflowY: "auto", overflowX: "hidden", height: (isMobile ? "85%" : "430px"), width: "100%" }}>
-          {updatedFeatures.map((feature, index) => (
-            <Box key={feature.id}>
-              <Grid2 container style={{ marginBottom: "20px" }}>
-                <Grid2 size={7} sx={{ marginTop: "10px" }}>
-                  <Typography variant="subtitle1" sx={{marginBottom: "15px", fontWeight: "bold"}}>{feature.locationFeature}</Typography>
-                  <TextField fullWidth multiline label="Notes" value={feature.notes} onChange={(e) => updateNotes(feature.id, e.target.value)} placeholder="Add some notes about the accomodation." maxRows={3}/>
-                </Grid2>
+                  <Grid2 size={5} sx={{ marginTop: "10px" }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <Box sx={{width: "100px", height: "100px", marginBottom: "10px"}}>
+                        {feature.imagePath ? (
+                          
+                            <img
+                              src={feature.imagePath}
+                              alt="Feature"
+                              style={{ marginBottom: "10px", objectFit: "contain", height: "100%", width: "100%" }}
+                            />
 
-                <Grid2 size={5} sx={{ marginTop: "10px" }}>
-                  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <Box sx={{width: "100px", height: "100px", marginBottom: "10px"}}>
-                      {feature.imagePath ? (
-                        
+                        ) : (
                           <img
-                            src={feature.imagePath}
-                            alt="Feature"
-                            style={{ marginBottom: "10px", objectFit: "contain", height: "100%", width: "100%" }}
+                            src={"./imgs/no-images-uploaded.jpg"}
+                            alt="Stock image with a slash through it"
+                            style={{ width: "100px", marginBottom: "10px",  objectFit: "contain" }}
                           />
-
-                      ) : (
-                        <img
-                          src={"./imgs/no-images-uploaded.jpg"}
-                          alt="Stock image with a slash through it"
-                          style={{ width: "100px", marginBottom: "10px",  objectFit: "contain" }}
-                        />
-                      )}
+                        )}
+                      </Box>
+                      <FeatureImageUploader
+                        feature={feature}
+                        onUpdateImage={(featureId, newImageUrl) => handleUpdateImage(featureId, newImageUrl)}
+                      />
                     </Box>
-                    <FeatureImageUploader
-                      feature={feature}
-                      onUpdateImage={(featureId, newImageUrl) => handleUpdateImage(featureId, newImageUrl)}
-                    />
-                  </Box>
+                  </Grid2>
                 </Grid2>
-              </Grid2>
-              <Divider />
-            </Box>
-          ))}
+                <Divider />
+              </Box>
+            ))}
+          </Box>
         </Box>
-      </Box>
       </form>
-      <Box sx={{ height: (tab == 2 ? "116px" : "48px"), marginTop: "15px", position: "relative", bottom: "0px", width: "100%"}}>
+
+      <Box sx={{ height: (tab == 2 ? "106px" : "38px"), marginTop: "10px", width: "100%"}}>
           <Box hidden={tab != 2}>
             <Box sx={{ height: "48px", marginTop: "20px"}}>
               <AddFeatureButton locationID={location.locationID} setFeaturesList={setUpdatedFeatures} featuresList={updatedFeatures}/>
@@ -234,7 +236,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
                   Save Changes
               </Button>
           </Box>
-        </Box>
+      </Box>
     </div>
   );
 };
