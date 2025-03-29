@@ -184,7 +184,7 @@ const MarkerPopupContent = ({
               <Box sx={{ height: "48px", flexGrow: 0, flexShrink: 0 }}>
                 <Tabs onChange={handleTabChange} value={tab} variant="fullWidth">
                     <Tab label="Description" value="1" />
-                    <Tab label="Features" value="2" />
+                    <Tab label="Accomodations" value="2" />
                     <Tab label="Comments" value="3" />
                 </Tabs>
               </Box>

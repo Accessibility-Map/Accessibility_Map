@@ -138,7 +138,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       <Box sx={{ height: "48px"}}>
         <Tabs onChange={handleTabChange} value={tab} variant="fullWidth" sx={{ height: "30px"}}>
           <Tab label="Edit Location" value="1"/>
-          <Tab label="Edit Features" value="2"/>
+          <Tab label="Edit Accomodations" value="2"/>
         </Tabs>
         <Divider sx={{ marginBottom: "10px"}}/>
       </Box>
@@ -170,7 +170,7 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
           </Box>
         </Box>
         <Box hidden={tab != 2}>
-          <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Features</div>
+          <div className="popup-header" style={{marginBottom: "10px", marginTop: "20px"}}>Edit Accomodations</div>
           <Box sx={{ overflowY: "hidden", overflowX: "hidden", height: (isMobile ? "85%" : "unset"), width: "100%" }}>
             {updatedFeatures.map((feature, index) => (
               <Box key={feature.id}>
