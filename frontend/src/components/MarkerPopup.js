@@ -123,7 +123,7 @@ const MarkerPopup = ({
                 </IconButton>
               </Toolbar>
             </AppBar>
-            <DialogContent>
+            <DialogContent sx={{ overflowX: 'hidden', paddingTop: 0, paddingBottom: 0 }}>
               <MarkerPopupContent
                 location={location}
                 deleteMarker={deleteMarker}

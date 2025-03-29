@@ -28,6 +28,11 @@ const SearchBar = ({
     return null // ✅ Hide search bar on mobile if toggle is off
   }
 
+  const handleLocationClick = (location) => {
+    setSearchTerm('');
+    onSelectLocation(location);
+  }
+
   return (
     <div className='container'>
       <div className='searchBarContainer'>
@@ -42,7 +47,7 @@ const SearchBar = ({
         {showDropdown && (
           <DropdownResults
             results={filteredLocations}
-            onSelect={onSelectLocation}
+            onSelect={handleLocationClick}
             onClose={() => setShowDropdown(false)}
             searchTerm={searchTerm}
           />

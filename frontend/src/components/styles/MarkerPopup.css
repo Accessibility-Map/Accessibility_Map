@@ -186,6 +186,7 @@
 
 .leaflet-popup-content {
   position: relative;
+  margin-bottom: 0px;
 }
 
 .mobile-popup {
