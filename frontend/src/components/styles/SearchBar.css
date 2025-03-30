@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
-    margin-left: 60px;
+    margin-left: 50px;
 }
 
 .searchInput {
@@ -39,7 +39,7 @@
     border-radius: 20px;
     border: none;
     padding: 10px 15px;
-    font-size: 15px;
+    font-size: 14px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -65,13 +65,15 @@
         margin-top: 15px;
         gap: 8px;
         margin-left: 0px;
-        font-size: 13px;
         left:0
     }
   
 }
 
 @media (max-width: 800px) {
+    .searchInput{
+        font-size: 14px;
+    }
 .filter-button{
     font-size: 13px;
 }
@@ -84,12 +86,15 @@
         flex-direction: column;
         align-items: center;
         margin-top: 60px;
+        justify-content: center;
+
       }
       .searchBarContainer {
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
       }
       .searchInput {
         width: 85vw;
@@ -97,14 +102,15 @@
         font-size: 14px;
       }
   
-    .filter-button {
-      font-size: 13px;
-    }
+  
     .filters {
         flex-wrap: wrap;
         justify-content: center;
         margin-top: 10px;
         padding: 0 8px;
       }
+      .filter-button {
+        font-size: 13px;
+      }
   }
-  
+ 
