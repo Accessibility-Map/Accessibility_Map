@@ -47,6 +47,16 @@ const MapView = () => {
   const [screenWidth, setScreenWidth] = React.useState(window.innerWidth)
   const [triggerOpenMobileDialog, setTriggerOpenMobileDialog] = useState(0)
 
+    useEffect(() => {
+      const handleResizeWindow = () => {setScreenWidth(window.innerWidth)}
+      // subscribe to window resize event "onComponentDidMount"
+      window.addEventListener('resize', handleResizeWindow)
+      return () => {
+        // unsubscribe "onComponentDestroy"
+        window.removeEventListener('resize', handleResizeWindow)
+      }
+    }, [])
+
   const updateUserAndUserID = newUser => {
     setUser(newUser)
     setUserID(newUser.userID)
@@ -103,11 +113,8 @@ const MapView = () => {
         setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1)
         if (map) {
           if (screenWidth > 620) {
-            const bounds = map.getBounds()
-            const bottom = bounds.getNorth()
-            const center = bounds.getCenter()
-            const difference = bottom - center.lat
-            map.setView([match.latitude + difference * 0.9, match.longitude], 17)
+            const zoom17Diff = 0.003824112114102718;
+            map.setView([match.latitude + zoom17Diff, match.longitude], 17);
           } else {
             map.setView([match.latitude, match.longitude], 17)
           }
@@ -198,11 +205,8 @@ const MapView = () => {
             setOpenPopupId(location.locationID)
             if (map) {
               if (screenWidth > 620) {
-                const bounds = map.getBounds()
-                const bottom = bounds.getNorth()
-                const center = bounds.getCenter()
-                const difference = bottom - center.lat
-                map.setView([location.latitude + difference * 0.9, location.longitude], 17)
+                const zoom17Diff = 0.003824112114102718;
+                map.setView([location.latitude + zoom17Diff, location.longitude], 17);
               } else {
                 map.setView([location.latitude, location.longitude], 17)
                 setTriggerOpenMobileDialog(triggerOpenMobileDialog + 1)
