@@ -30,6 +30,7 @@ const SearchBar = ({
 
   const handleLocationClick = (location) => {
     setSearchTerm('');
+    setShowDropdown(false);
     onSelectLocation(location);
   }
 

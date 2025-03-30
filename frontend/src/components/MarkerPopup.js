@@ -77,11 +77,8 @@ const MarkerPopup = ({
   const handleMarkerClick = locationID => {
     // If not using mobile view set the map view
     if (screenWidth > 620) {
-      const bounds = map.getBounds()
-      const bottom = bounds.getNorth()
-      const center = bounds.getCenter()
-      const difference = bottom - center.lat
-      map.setView([location.latitude + difference * 0.9, location.longitude], 17)
+      const zoom17Diff = 0.003824112114102718;
+      map.setView([location.latitude + zoom17Diff, location.longitude], 17);
     }
 
     setClicked(true)
