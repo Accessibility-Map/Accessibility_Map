@@ -12,6 +12,7 @@ import Typography from "@mui/material/Typography";
 import RatingService from "./services/RatingService";
 import PredictionService from "./services/PredictionService";
 import GenericPromptDialog from "./GenericPromptDialog";
+import "./styles/StarRating.css";
 
 type CustomIconType = {
   [index: number]: {
@@ -58,9 +59,10 @@ function IconContainer(props: IconContainerProps) {
 interface StarRatingProps {
   locationID: number;
   userID: number;
+  shortScreen: boolean
 }
 
-const StarRating = ({ locationID, userID }: StarRatingProps) => {
+const StarRating = ({ locationID, userID, shortScreen }: StarRatingProps) => {
   const [currentRating, setCurrentRating] = useState<number | null>(null);
   const [hover, setHover] = useState(-1);
   const [unset, setUnset] = useState(false);
@@ -116,7 +118,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
           <Box sx={{ height: "100%"}}>
             <Grid2 container sx={{ height: "100%"}}>
               <Grid2 size={6} sx={{ height: "100%", textAlign: "center"}}>
-                <Typography variant="subtitle1">
+                <Typography variant="subtitle1" className={shortScreen ? "shortScreen" : ""}>
                   Rate This Location's Accessibility
                 </Typography>
                 <StyledRating
@@ -138,9 +140,9 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
                   Your Rating: {hover !== -1 ? hover : currentRating} Stars
                 </Typography>
                 )}
-                {predictedRating !== null && (
-                  <Typography variant="body2" color="textSecondary" sx={{ marginTop: "5px !important"}}>
-                    Predicted Rating: {predictedRating.toFixed?.(2) || 0} Stars
+                {(
+                  <Typography variant="body2" color="textSecondary" className={shortScreen ? "shortScreen" : "normalScreen"}>
+                    Predicted Rating: { 0} Stars
                   </Typography>
                 )}
               </Grid2>
@@ -153,7 +155,7 @@ const StarRating = ({ locationID, userID }: StarRatingProps) => {
           <Box sx={{ height: "100%"}}>
             <Grid2 container sx={{ height: "100%"}}>
               <Grid2 size={6} sx={{ height: "100%", textAlign: "center"}}>
-                <Typography variant="subtitle1">
+                <Typography variant="subtitle1" className={shortScreen ? "shortScreen" : ""}>
                   Rate This Location's Accessibility
                 </Typography>
                 <StyledRating
