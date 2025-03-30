@@ -13,6 +13,7 @@ import RatingService from "./services/RatingService.ts";
 import axios from "axios";
 import { Heart } from "lucide-react"; // Import Heart Icon
 import { Tooltip } from "@mui/material";
+import { set } from "react-hook-form";
 
 const MarkerPopupContent = ({
   location,
@@ -38,6 +39,18 @@ const MarkerPopupContent = ({
   const [triggerSave, setTriggerSave] = useState(false);
   const [averageRating, setAverageRating] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [screenHeight, setScreenHeight] = React.useState(window.innerHeight);
+  const [shortScreen, setShortScreen] = useState(window.innerHeight <= 700 ? true : false);
+
+    useEffect(() => {
+      const handleResizeWindow = () => {setScreenHeight(window.innerHeight); window.innerHeight <= 700 ? setShortScreen(true) : setShortScreen(false);}
+      // subscribe to window resize event "onComponentDidMount"
+      window.addEventListener('resize', handleResizeWindow)
+      return () => {
+        // unsubscribe "onComponentDestroy"
+        window.removeEventListener('resize', handleResizeWindow)
+      }
+    }, [])
 
   const handleTabChange = (event, newValue) => {
     setTab(newValue);
@@ -245,7 +258,7 @@ const MarkerPopupContent = ({
 
 
                 <Box sx={{ width: "100%", height: "fit-content"}}>
-                  <StarRating locationID={location.locationID} userID={userID} />
+                  <StarRating locationID={location.locationID} userID={userID} shortScreen={shortScreen} />
                 </Box>
               </Box>
             </div>
