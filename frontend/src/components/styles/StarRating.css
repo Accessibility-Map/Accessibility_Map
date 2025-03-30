@@ -1,7 +1,14 @@
-.fa-star {
-  color: #888888;
+p.normalScreen {
+  margin-top: 5px !important;
+  margin-bottom: 0px !important;
 }
 
-.fa-star.filled {
-  color: #ffd700;
+p.shortScreen {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+
+h6.shortScreen {
+  margin-top: -5px !important;
+  font-size: .8rem !important;
 }

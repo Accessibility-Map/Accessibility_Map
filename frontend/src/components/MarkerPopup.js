@@ -58,7 +58,7 @@ const MarkerPopup = ({
       }
     },
   })
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResizeWindow = () => setScreenWidth(window.innerWidth)
     // subscribe to window resize event "onComponentDidMount"
     window.addEventListener('resize', handleResizeWindow)
