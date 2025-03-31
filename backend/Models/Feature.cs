@@ -24,7 +24,7 @@ namespace backend.Models
         [JsonIgnore]
         public Location? Location { get; set; }
 
-            public string? ImagePath { get; set; } // Allow null values
+        public string? ImagePath { get; set; } // Allow null values
 
 
     }
