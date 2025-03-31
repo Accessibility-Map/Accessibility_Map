@@ -63,9 +63,6 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
       // Update the location in the database
       saveLocation(updatedLocation);
 
-      // Update the images in the database
-      FeatureService.uploadFeatureImage
-
       // call onSave() to save locally
       onSave(updatedLocation, images); 
       onClose();
@@ -75,6 +72,13 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
   };
 
   const saveLocation = async (updatedLocation) => {
+    // Remove the process.env.REACT_APP_API_URL prefix from the image paths
+    updatedLocation.features.forEach((feature) => {
+      if (feature.imagePath && typeof feature.imagePath === "string" && feature.imagePath !== "null") {
+        feature.imagePath = feature.imagePath.replace(process.env.REACT_APP_API_URL, "");
+      }
+    });
+
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
@@ -83,6 +87,13 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
     } catch (error) {
       console.error('Error saving location:', error)
     }
+
+    // Put the process.env.REACT_APP_API_URL prefix back on the image paths
+    updatedLocation.features.forEach((feature) => {
+      if (feature.imagePath && typeof feature.imagePath === "string" && feature.imagePath !== "null") {
+        feature.imagePath = `${process.env.REACT_APP_API_URL}${feature.imagePath}`;
+      }
+    });
   }
 
   const handleSaveButton = (e) => {
