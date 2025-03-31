@@ -71,7 +71,7 @@ const MarkerPopupContent = ({
 
         if (fixedImagePath && typeof fixedImagePath === "string" && fixedImagePath !== "null") {
           fixedImagePath = fixedImagePath.replace(/^http:\/\/localhost:5232/, "");
-          fixedImagePath = `http://localhost:5232${fixedImagePath}`;
+          fixedImagePath = `${process.env.REACT_APP_API_URL}${fixedImagePath}`;
         } else {
           fixedImagePath = null;
         }
@@ -81,8 +81,6 @@ const MarkerPopupContent = ({
           imagePath: fixedImagePath,
         };
       });
-
-
 
       setFeaturesList(updatedFeatures);
 
@@ -182,7 +180,7 @@ const MarkerPopupContent = ({
                 images={images}
                 setImages={setImages}
                 onSave={handleSaveEdit}
-                onClose={() => { setIsEditing(false); setTriggerSave(false); }}
+                onClose={() => { setIsEditing(false); setTriggerSave(false); setTab("1"); }}
                 triggerSave={triggerSave}
                 refetchLocationDetails={fetchFeaturesAndImages}
                 deleteMarker={deleteMarker}
