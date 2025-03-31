@@ -5,11 +5,12 @@ import axios from "axios";
 import "./styles/MarkerPopup.css";
 import ImageScroller from "./ImageScroller.tsx";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import FeatureService from "./services/FeatureService.ts";
 
 
 import { Box, TextField, Button, Typography, Grid2, Divider, Tabs, Tab, IconButton, Tooltip } from "@mui/material";
 
-const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, saveEdit, triggerSave, refetchLocationDetails, isMobile, deleteMarker, closeEditor }) => {
+const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, setImages, onSave, onClose, triggerSave, refetchLocationDetails, isMobile, deleteMarker, closeEditor }) => {
   const [locationName, setLocationName] = useState(location.locationName || "");
   const [description, setDescription] = useState(location.description || "");
   const [updatedFeatures, setUpdatedFeatures] = useState(featuresList);
@@ -56,15 +57,33 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
         ...location,
         locationName,
         description,
+        features: updatedFeatures
       };
-      saveEdit(updatedLocation);
 
-      onSave(updatedFeatures, images); 
+      // Update the location in the database
+      saveLocation(updatedLocation);
+
+      // Update the images in the database
+      FeatureService.uploadFeatureImage
+
+      // call onSave() to save locally
+      onSave(updatedLocation, images); 
       onClose();
     } catch (error) {
       console.error("Error saving changes:", error);
     }
   };
+
+  const saveLocation = async (updatedLocation) => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
+        updatedLocation
+      )
+    } catch (error) {
+      console.error('Error saving location:', error)
+    }
+  }
 
   const handleSaveButton = (e) => {
     e.stopPropagation();

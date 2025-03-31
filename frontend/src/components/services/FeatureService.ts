@@ -45,14 +45,34 @@ export default class FeatureService {
 
     }
              // Add the getFeatureCount method
-  public static async getFeatureCount(locationID: number): Promise<number> {
-    try {
-      const url = `${process.env.REACT_APP_API_URL}api/features/count/${locationID}`;
-      const response = await axios.get<{ featureCount: number }>(url.replace(/([^:]\/)\/+/g, "$1"));
-      return response.data.featureCount; // Assuming the API response includes a field "featureCount"
-    } catch (error) {
-      console.error(`Error fetching feature count for locationID ${locationID}:`, error);
-      return 0; 
+    public static async getFeatureCount(locationID: number): Promise<number> {
+        try {
+        const url = `${process.env.REACT_APP_API_URL}api/features/count/${locationID}`;
+        const response = await axios.get<{ featureCount: number }>(url.replace(/([^:]\/)\/+/g, "$1"));
+        return response.data.featureCount; // Assuming the API response includes a field "featureCount"
+        } catch (error) {
+        console.error(`Error fetching feature count for locationID ${locationID}:`, error);
+        return 0; 
+        }
     }
-}
+
+    public static async uploadFeatureImage(featureID: number, imageFile: File) {
+        try {
+            const formData = new FormData();
+            formData.append('featureID', featureID.toString());
+            formData.append('image', imageFile);
+    
+            const url = `${process.env.REACT_APP_API_URL}api/features/${featureID}/upload-image`;
+            const response = await axios.put(url.replace(/([^:]\/)\/+/g, "$1"), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+    
+            return response.data;
+        } catch (error) {
+            console.error('Error uploading feature image:', error);
+            throw error;
+        }
+    }
 }

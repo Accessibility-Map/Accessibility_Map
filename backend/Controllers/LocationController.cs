@@ -343,6 +343,11 @@ namespace backend.Controllers
             existingLocation.LocationName = location.LocationName;
             existingLocation.Description = location.Description;
 
+            if (location.Features != null)
+            {
+                existingLocation.Features = location.Features;
+            }
+
             await _context.SaveChangesAsync();
 
             return Ok(existingLocation);
