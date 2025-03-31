@@ -40,7 +40,7 @@ const MarkerPopup = ({
   userID,
   openPopupId,
   setOpenPopupId,
-  saveEdit,
+  saveEditLocally,
   user,
   triggerOpenMobileDialog,
 }) => {
@@ -127,7 +127,7 @@ const MarkerPopup = ({
                 userID={userID}
                 openPopupId={openPopupId}
                 setOpenPopupId={setOpenPopupId}
-                saveEdit={saveEdit}
+                saveEditLocally={saveEditLocally}
                 user={user}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
@@ -144,7 +144,7 @@ const MarkerPopup = ({
             userID={userID}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
-            saveEdit={saveEdit}
+            saveEditLocally={saveEditLocally}
             user={user}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
