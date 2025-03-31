@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Grid2, Box, Modal, IconButton, Button, Tooltip } from '@mui/material';
 import axios from "axios";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -24,6 +24,14 @@ interface ImageScrollerProps {
 const ImageScroller: React.FC<ImageScrollerProps> = ({ onReplace, images, widthParam = "100%", heightParam, onDelete, isEditing = false, onUpload, refetchLocationDetails }: ImageScrollerProps) => {
   const [imageIndex, setIndex] = useState(0);
   const [openPopup, setOpenPopup] = useState(false);
+
+  useEffect(() => {
+    // Preload images
+    images.forEach((picture: any) => {
+      const img = new Image();
+      img.src = picture;
+    });
+  }, [images]); 
 
 
   const handleNext = () => {
