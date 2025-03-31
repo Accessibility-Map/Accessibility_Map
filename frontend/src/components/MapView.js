@@ -149,24 +149,15 @@ const MapView = () => {
     }
   }
 
-  const saveEdit = async updatedLocation => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}api/locations/${updatedLocation.locationID}`,
-        updatedLocation
+  const saveEditLocally = async updatedLocation => {    
+    setLocations(prevLocations =>
+      prevLocations.map(location =>
+        location.locationID === updatedLocation.locationID ? updatedLocation : location
       )
-
-      setLocations(prevLocations =>
-        prevLocations.map(location =>
-          location.locationID === updatedLocation.locationID ? updatedLocation : location
-        )
-      )
-      setEditingLocation(null)
-      setIsEditing(false)
-      setOpenPopupId(null)
-    } catch (error) {
-      console.error('Error saving location:', error)
-    }
+    )
+    setEditingLocation(null)
+    setIsEditing(false)
+    setOpenPopupId(null)
   }
 
   const deleteMarker = async locationID => {
@@ -238,7 +229,7 @@ const MapView = () => {
             setIsEditing={setIsEditing}
             locationName={locationName}
             setLocationName={setLocationName}
-            saveEdit={saveEdit}
+            saveEditLocally={saveEditLocally}
             deleteMarker={deleteMarker}
             openPopupId={openPopupId}
             setOpenPopupId={setOpenPopupId}
@@ -257,7 +248,7 @@ const MapView = () => {
               setIsEditing={setIsEditing}
               locationName={locationName}
               setLocationName={setLocationName}
-              saveEdit={saveEdit}
+              saveEditLocally={saveEditLocally}
               deleteMarker={deleteMarker}
               openPopupId={openPopupId}
               setOpenPopupId={setOpenPopupId}

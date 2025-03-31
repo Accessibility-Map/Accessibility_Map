@@ -21,7 +21,7 @@ const MarkerPopupContent = ({
   userID,
   openPopupId,
   setOpenPopupId,
-  saveEdit,
+  saveEditLocally,
   user,
   isEditing,
   setIsEditing,
@@ -125,8 +125,9 @@ const MarkerPopupContent = ({
         setIsEditing(true);
     };
     
-    const handleSaveEdit = (updatedFeatures, updatedImages) => {
-        setFeaturesList(updatedFeatures);
+    const handleSaveEdit = (updatedLocation, updatedImages) => {
+        saveEditLocally(updatedLocation);
+        setFeaturesList(updatedLocation.features);
         setImages(updatedImages);
         setIsEditing(false);
     };
@@ -182,7 +183,6 @@ const MarkerPopupContent = ({
                 setImages={setImages}
                 onSave={handleSaveEdit}
                 onClose={() => { setIsEditing(false); setTriggerSave(false); }}
-                saveEdit={saveEdit}
                 triggerSave={triggerSave}
                 refetchLocationDetails={fetchFeaturesAndImages}
                 deleteMarker={deleteMarker}
