@@ -124,6 +124,17 @@ namespace backend.Controllers
                     Console.WriteLine("[INFO] Created uploads folder.");
                 }
 
+                // If the feature already has an image, delete it
+                if (!string.IsNullOrEmpty(feature.ImagePath))
+                {
+                    var imagePath = Path.Combine(uploadsFolder, Path.GetFileName(feature.ImagePath));
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                        Console.WriteLine("[INFO] Deleted existing image.");
+                    }
+                }
+
                 var uniqueFileName = Guid.NewGuid() + "_" + file.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 Console.WriteLine($"[INFO] File path: {filePath}");
