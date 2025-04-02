@@ -3,5 +3,12 @@
     "globalHeaders": {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE"
+    },
+    "navigationFallback": {
+       "rewrite": "index.html",
+       "exclude": ["/static/media/*.{png,jpg,jpeg,gif,bmp}",   "/static/css/*"]
+    },
+    "mimeTypes": {
+        ".json": "text/json"
     }
   }

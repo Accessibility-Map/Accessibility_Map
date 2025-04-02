@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 type Location = {
   locationID: number;
   locationName?: string;
+  description?: string;
 };
 
 const Favorites: React.FC = () => {
@@ -60,7 +61,8 @@ const Favorites: React.FC = () => {
                 >
                   <ListItemText
                     primary={location.locationName ? location.locationName : `Location ID: ${location.locationID}`}
-                    secondary={`Location ID: ${location.locationID}`}
+                    secondary={location?.description?.substring(0, 40) + "..."}
+                    sx={{ '& .MuiListItemText-secondary': { mt: 0, ml: 2 } }}
                   />
                 </ListItem>
               ))
