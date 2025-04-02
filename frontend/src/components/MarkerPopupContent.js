@@ -113,7 +113,6 @@ const MarkerPopupContent = ({
     }, [location.locationID, clicked]);
     
     useEffect(() => {
-      console.log("markerRef in MarkerPopupContent:", markerRef);
         if (openPopupId === location.locationID && markerRef.current) {
         markerRef.current.openPopup();
         }
