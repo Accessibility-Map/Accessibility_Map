@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useState, createRef} from 'react'
+import React, {useRef, useEffect, useState} from 'react'
 import {Marker, Popup, useMap} from 'react-leaflet'
 import {useMapEvents} from 'react-leaflet'
 
@@ -50,6 +50,17 @@ const MarkerPopup = ({
   const [screenWidth, setScreenWidth] = React.useState(window.innerWidth)
   const [mobileDialogOpen, setMobileDialogOpen] = useState(false)
   const map = useMap()
+  const popupRef = useRef(null)
+
+  useEffect(() => {
+    if (popupRef.current) {
+      // Attach event listener to the Leaflet Popup object
+      popupRef.current.on('remove', () => {
+        handleClosePopup();
+      });
+    }
+  }, []);
+
   useMapEvents({
     click(e) {
       // Only close if user clicks map and popup is open
@@ -80,16 +91,22 @@ const MarkerPopup = ({
       const zoom17Diff = 0.003824112114102718;
       map.setView([location.latitude + zoom17Diff, location.longitude], 17);
     }
+    else {
+      // Center the map on the marker
+      map.setView([location.latitude, location.longitude], 17);
+    }
 
     setClicked(true)
     setOpenPopupId(locationID)
     setMobileDialogOpen(true)
   }
+  
   useEffect(() => {
+    console.log("markerRef in MarkerPopup:", markerRef)
     if (openPopupId === location.locationID && markerRef.current) {
       markerRef.current.openPopup() // ✅ opens Leaflet popup
     }
-  }, [openPopupId, location.locationID])
+  }, [openPopupId])
 
   useEffect(() => {
     if (triggerOpenMobileDialog) {
@@ -106,9 +123,9 @@ const MarkerPopup = ({
         click: () => handleMarkerClick(location.locationID),
       }}>
       <Popup
-        onClose={handleClosePopup}
         autoPan={false}
         closeOnClick={false}
+        ref={popupRef}
         maxWidth={700}
         className={`leaflet-popup ${isEditing ? 'edit-mode' : ''} ${screenWidth <= 620 ? 'mobile-popup' : ''}`}>
         {screenWidth <= 620 ? (
