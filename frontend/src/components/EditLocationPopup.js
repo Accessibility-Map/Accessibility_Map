@@ -114,8 +114,8 @@ const EditLocationPopup = ({ location, featuresList, setFeaturesList, images, se
   };
 
   const handleDeleteImage = (imageUrl) => {
-    const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
-    const relativeImageUrl = imageUrl.replace(baseApiUrl, "").trim().replace(/\\/g, "/");
+    const baseApiUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, "").replace(/^https?:\/\//, "");
+    const relativeImageUrl = imageUrl.replace(/^https?:\/\//, "").replace(baseApiUrl, "").trim().replace(/\\/g, "/");
 
     const updatedImages = images.filter((img) => img !== imageUrl);
     setImages(updatedImages);
