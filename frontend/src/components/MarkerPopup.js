@@ -102,7 +102,6 @@ const MarkerPopup = ({
   }
   
   useEffect(() => {
-    console.log("markerRef in MarkerPopup:", markerRef)
     if (openPopupId === location.locationID && markerRef.current) {
       markerRef.current.openPopup() // ✅ opens Leaflet popup
     }
