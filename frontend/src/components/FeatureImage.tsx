@@ -47,6 +47,7 @@ const FeatureImage = ({ src, alt, width }: FeatureImageProps) => {
                 src={src}
                 alt={alt}
                 style={{ margin: "auto", position: "absolute", maxWidth: "75vw", maxHeight: "75vh" }}
+                onClick={() => setOpenPopup(false)}
             />
             </Box>
         </Modal>
